@@ -1,0 +1,52 @@
+========================================
+  COMANDOS DA PASTA SISTEMAS  (cola rápida)
+========================================
+
+Fluxo normal de todo dia:
+1) arrastar/mexer nos arquivos no Finder
+2) rodar UM comando de "salvar" abaixo
+
+
+----------------------------------------
+ENTRAR NA PASTA (sempre antes de qualquer comando)
+----------------------------------------
+cd ~/sistemas
+
+  (o começo da linha muda de "~" para "sistemas" = você entrou)
+
+
+----------------------------------------
+SALVAR  (o comando que serve para tudo)
+----------------------------------------
+cd ~/sistemas && git add -A && git commit -m "comandos sistemas"
+
+  - Use SEMPRE este.
+  - O "-A" pega tudo: arquivos novos, alterados E apagados.
+  - Troque o texto entre aspas pela descrição do que você fez.
+
+
+----------------------------------------
+VER O QUE ESTÁ PENDENTE  (não muda nada, só mostra)
+----------------------------------------
+cd ~/sistemas && git status
+
+
+----------------------------------------
+VER TUDO QUE O GIT GUARDA  (não muda nada, só lista)
+----------------------------------------
+cd ~/sistemas && git ls-files
+
+
+========================================
+  LEMBRETES
+========================================
+- Aspas: use SEMPRE aspas retas ( " ), nunca curvas ( " ).
+  Se o Terminal reclamar de aspas, foi isso.
+  (Dá pra desligar em: Ajustes do Sistema > Teclado > Texto >
+   "Usar aspas e travessões inteligentes")
+
+- Renomear arquivo pelo Terminal (avisa o Git junto):
+  git mv caminho/nome_antigo  caminho/nome_novo
+
+- A gaveta guarda RECEITAS (.bas, .py, .html, .md).
+  Planilhas com dados de paciente ficam FORA, de propósito.
