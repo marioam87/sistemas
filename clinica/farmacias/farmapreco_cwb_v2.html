@@ -345,15 +345,31 @@ function atualizarPillCache() {
 }
 
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
-const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS.
+const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS em Curitiba-PR.
+
+FARMÁCIAS — EM CAMADAS:
+• Camada 1 (buscar sempre — fontes confiáveis): Droga Raia (drogaraia.com.br), Callfarma (callfarma.com.br), Panvel (panvel.com), Pague Menos (paguemenos.com.br), Drogaria Catarinense (drogariacatarinense.com.br)
+• Camada 2 (só se a Camada 1 retornar menos de 3 preços): Morifarma, Preço Popular, Unipreço
+• Nissei: NÃO buscar online (exige login/CPF). Registre em "notas": "Nissei: consultar no app".
+• NÃO usar Consulta Remédios como fonte de preço (carrega via JavaScript, não confiável).
 
 REGRAS ABSOLUTAS:
-• EXCLUIR SEMPRE: EMS (exceto Ozivy, que é permitido), Brace Pharma, Cimed, Teuto
-• SEMAGLUTIDA: comparar Wegovy + Poviztra + Ozivy na mesma dosagem
-• SACUBITRIL-VALSARTANA: comparar Entresto + Neparvis na mesma dosagem
-• ROSUVASTATINA: APENAS comprimidos — excluir cápsulas
-• PBM Tirzepatida: "Lilly Melhor Para Você" em lillyparavoce.com.br
-• FARMÁCIAS ALVO (Curitiba-PR): Droga Raia, Pague Menos, Panvel, Nissei, Morifarma, Preço Popular, Drogaria Catarinense, Unipreço, Callfarma
+• EXCLUIR SEMPRE: EMS (EXCETO Ozivy, que é PERMITIDO), Brace Pharma, Cimed, Teuto — nem genérico, nem similar.
+• SEMAGLUTIDA: comparar Wegovy + Poviztra + Ozivy na mesma dosagem.
+• SACUBITRIL-VALSARTANA: comparar Entresto + Neparvis na mesma dosagem.
+• ROSUVASTATINA (isolada e com ezetimiba): APENAS comprimidos — excluir qualquer marca/laboratório em cápsula.
+• Não gaste buscas revalidando apresentações padrão de mercado; só sinalize em "notas" se a apresentação pedida claramente não existir no Brasil.
+• Máximo 3 buscas por medicamento; inclua preço apenas com fonte de URL direta do produto.
+
+PBM — NÃO PESQUISAR. Preencha o campo "pbms" (lista) a partir desta tabela fixa. Gere UM item para CADA marca comparada que tenha programa (ex.: numa consulta de semaglutida, Wegovy e Ozivy geram 2 itens):
+• Entresto/Neparvis (Novartis): Vale Mais Saúde — valemaissaude.com.br, cadastro por CPF; desconto cheio a partir da 2ª compra (1ª via Kit Adesão, receita de uso contínuo).
+• Wegovy (Novo Nordisk): Novo Dia — programanovodia.com.br, CPF, rede credenciada, retém receita. Preço volátil desde a queda de patente (mar/2026).
+• Ozivy (EMS): Vida + Leve — cerca de R$287/mês nos 3 primeiros meses.
+• Mounjaro/Tirzepatida (Lilly): Lilly Melhor Para Você — lillyparavoce.com.br, CPF.
+• Crestor/Rosuvastatina (AstraZeneca): Faz Bem — fazbem.com.br.
+• Euthyrox/Levotiroxina (Merck): Merck Cuida — 25% só na 1ª caixa, 1x por CPF (NÃO é recorrente).
+• Zoloft/Sertralina (Viatris): Se Cuida — desconto por CPF no balcão.
+• Nenhuma marca com PBM (ex.: só genérico): pbms=[].
 
 FORMATO DE SAÍDA — CRÍTICO:
 • Responda APENAS com o objeto JSON — zero texto antes, zero texto depois
@@ -363,12 +379,12 @@ FORMATO DE SAÍDA — CRÍTICO:
 • Se não encontrou preço real confirmado para uma farmácia, NÃO a inclua em precos
 
 SCHEMA JSON (siga exatamente):
-{"nome":"medicamento + dosagem + forma + qtd","precos":[{"farmacia":"Nome","preco_lista":0.00,"preco_desconto":null,"preco_unidade":0.00,"link":"url","curitiba":true}],"genericos":[{"nome":"Nome","laboratorio":"Lab","farmacia":"Farmácia","preco":0.00}],"pbm":{"existe":false,"descricao":""},"notas":""}
-Regras: precos ordenados por preco_lista ASC; preco_desconto=null se não houver; genericos=[] se não houver.`;
+{"nome":"medicamento + dosagem + forma + qtd","precos":[{"farmacia":"Nome","preco_lista":0.00,"preco_desconto":null,"preco_unidade":0.00,"link":"url","curitiba":true}],"genericos":[{"nome":"Nome","laboratorio":"Lab","farmacia":"Farmácia","preco":0.00}],"pbms":[{"marca":"Nome comercial","programa":"Nome do programa","descricao":"como ativar"}],"notas":""}
+Regras: precos ordenados por preco_lista ASC; preco_desconto=null se não houver; genericos=[] se não houver; pbms preenchido a partir da TABELA PBM acima (um item por marca comparada com programa; sem pesquisar); pbms=[] se nenhuma marca tiver PBM.`;
 
 // ─── API CALL ─────────────────────────────────────────────────────────────────
 async function chamarAPI(medicamento) {
-  const userMsg = `Pesquise preços atuais (junho 2026): ${medicamento}\nFarmácias em Curitiba-PR. Use web search. Retorne apenas JSON.`;
+  const userMsg = `Pesquise os preços mais atuais de: ${medicamento}\nFarmácias em Curitiba-PR. Use web search. Retorne apenas JSON.`;
   let msgs = [{ role: "user", content: userMsg }];
   let rounds = 0;
   while (rounds < 10) {
@@ -615,7 +631,10 @@ function mkCardResultado(data, nomeOrig, fromCache, ts, tentativa) {
 
   const precos = Array.isArray(data.precos) ? data.precos : [];
   const gens = Array.isArray(data.genericos) ? data.genericos : [];
-  const pbm = data.pbm || {};
+  // PBMs como lista; compatível com o formato antigo (objeto pbm único)
+  let pbms = [];
+  if (Array.isArray(data.pbms)) pbms = data.pbms;
+  else if (data.pbm && data.pbm.existe) pbms = [{ descricao: data.pbm.descricao }];
 
   // Max para barra visual
   const maxPreco = Math.max(...precos.map(p => p.preco_lista || 0), 0.01);
@@ -664,8 +683,13 @@ function mkCardResultado(data, nomeOrig, fromCache, ts, tentativa) {
       <tbody>${gRows}</tbody></table>`;
   }
 
-  const pbmHtml = pbm.existe ? `<div class="pbm-row"><span style="font-size:13px">🏥</span>
-    <span class="pbm-txt"><strong>PBM:</strong> ${esc(pbm.descricao || '')}</span></div>` : '';
+  const pbmHtml = pbms.length ? pbms.map(p => {
+    const marca = p.marca ? esc(p.marca) : '';
+    const prog = p.programa ? esc(p.programa) : '';
+    const titulo = marca && prog ? `${marca} — ${prog}` : (marca || prog || 'PBM');
+    return `<div class="pbm-row"><span style="font-size:13px">🏥</span>
+    <span class="pbm-txt"><strong>${titulo}:</strong> ${esc(p.descricao || '')}</span></div>`;
+  }).join('') : '';
   const notasHtml = data.notas ? `<div class="notes-row">ℹ️ ${esc(data.notas)}</div>` : '';
 
   const fc = precos.length, gc = gens.length;
