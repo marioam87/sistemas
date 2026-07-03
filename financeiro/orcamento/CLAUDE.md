@@ -1,7 +1,11 @@
-# Instrucoes do Projeto — Orcamento Pessoal (Mario)
+# Orcamento Pessoal (Mario) — Regras do sistema
 
 ## Arquivo de trabalho
 `orcamento_definitivo.xlsm` — macro-enabled workbook, Mac + Windows.
+
+> **Privacidade:** a planilha `.xlsm` contem dados sensiveis (aba Pacientes com
+> ~4.000 pacientes reais + controle financeiro) e **fica fora do Git**. Esta
+> pasta versiona apenas os modulos VBA (`.bas`) e esta documentacao.
 
 ---
 
@@ -46,6 +50,7 @@ os XMLs dentro do zip, sem passar pelo save do openpyxl.
 openpyxl E LibreOffice removem atributos `codeName` de worksheets e workbook.
 Apos qualquer recalc do LibreOffice: rodar `restore_codenames.py` antes de
 devolver o arquivo. Sem isso, os modulos VBA perdem o vinculo com as abas.
+(O `restore_codenames.py` nao esta versionado aqui — e recriado quando necessario.)
 
 ---
 
