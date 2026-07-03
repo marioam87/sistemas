@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmaPreço CWB v2.0</title>
+<style>
+:root {
+  --bg:#f4f6f9;--surface:#fff;--surface2:#f0f4f8;--border:#dde3ec;--border2:#c8d2df;
+  --accent:#0d7f5f;--accent-lt:#e6f5f0;--accent-mid:#b2ddd1;
+  --gold:#b45309;--gold-lt:#fef3c7;--red:#dc2626;--red-lt:#fef2f2;
+  --blue:#1d4ed8;--blue-lt:#eff6ff;--purple:#6d28d9;--purple-lt:#f5f3ff;
+  --orange:#c2410c;--orange-lt:#fff7ed;
+  --text:#0f172a;--muted:#475569;--dim:#94a3b8;
+  --r:8px;--r-lg:12px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 6px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* API KEY BANNER */
+#apikey-banner{background:#fefce8;border-bottom:1px solid #fde68a;padding:7px 18px;display:flex;align-items:center;gap:10px;font-size:12px;color:#92400e;flex-shrink:0}
+#apikey-banner a{color:#b45309;font-weight:600}
+#apikey-input{flex:1;max-width:360px;padding:5px 10px;border:1px solid #fde68a;border-radius:6px;font-size:12px;background:#fffbeb;outline:none;font-family:monospace;color:#1e293b}
+#apikey-input:focus{border-color:#b45309}
+
+/* HEADER */
+header{display:flex;align-items:center;gap:12px;padding:11px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
+.rx-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:800;letter-spacing:.1em;padding:4px 10px;border-radius:20px;text-transform:uppercase}
+header h1{font-size:16px;font-weight:700;letter-spacing:-.02em}
+header p{font-size:11px;color:var(--muted)}
+.v-badge{font-size:9px;font-weight:700;background:var(--blue-lt);color:var(--blue);border:1px solid #bfdbfe;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.hsp{flex:1}
+.hdr-actions{display:flex;align-items:center;gap:8px}
+.stat-pill{font-size:11px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:20px;white-space:nowrap;cursor:default}
+.cache-pill{color:var(--purple);background:var(--purple-lt);border-color:#ddd6fe}
+.cache-pill.has-cache{cursor:pointer}
+.cache-pill.has-cache:hover{background:#ede9fe}
+.btn-print{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:var(--r);padding:5px 11px;font-size:11px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:5px}
+.btn-print:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:256px 1fr;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+aside{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:14px 14px 0;flex-shrink:0}
+.sb-label{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.med-list{flex:1;overflow-y:auto;padding:0 10px}
+.mi{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:var(--r);padding:7px 9px;margin-bottom:6px;cursor:pointer;transition:.15s;background:var(--surface);box-shadow:var(--shadow)}
+.mi:hover{border-color:var(--accent);background:var(--accent-lt)}
+.mi.loading{border-color:var(--gold);background:var(--gold-lt);animation:pb 1.5s infinite}
+.mi.done{border-color:var(--accent);background:var(--accent-lt)}
+.mi.cached{border-color:var(--purple);background:var(--purple-lt)}
+.mi.error{border-color:var(--red);background:var(--red-lt)}
+@keyframes pb{0%,100%{opacity:.7}50%{opacity:1}}
+.mi-dot{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:.3s}
+.mi.loading .mi-dot{background:var(--gold)}
+.mi.done .mi-dot{background:var(--accent)}
+.mi.cached .mi-dot{background:var(--purple)}
+.mi.error .mi-dot{background:var(--red)}
+.mi-name{font-size:12px;font-weight:500;flex:1;line-height:1.3}
+.mi-del{background:none;border:none;color:var(--dim);cursor:pointer;padding:2px 5px;font-size:14px;border-radius:4px;transition:.1s;flex-shrink:0;opacity:.4}
+.mi-del:hover{color:var(--red);opacity:1;background:var(--red-lt)}
+.sb-bottom{padding:12px;flex-shrink:0;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;background:var(--surface2)}
+.btn-lista{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;transition:.15s}
+.btn-lista:hover{background:#0a6b4f}
+.btn-lista:disabled{opacity:.4;cursor:not-allowed}
+.add-row{display:flex;gap:6px}
+.add-inp{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:7px 9px;font-size:12px;outline:none;transition:.15s}
+.add-inp:focus{border-color:var(--accent)}
+.add-inp::placeholder{color:var(--dim)}
+.btn-add{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:var(--r);padding:7px 12px;cursor:pointer;font-size:16px;transition:.15s;line-height:1}
+.btn-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* MAIN */
+main{display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.search-bar{display:flex;gap:10px;padding:13px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;box-shadow:var(--shadow)}
+.search-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:10px 14px;font-size:14px;outline:none;transition:.15s}
+.search-inp:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(13,127,95,.1)}
+.search-inp::placeholder{color:var(--dim)}
+.btn-search{background:var(--accent);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn-search:hover{background:#0a6b4f}
+.btn-search:disabled{opacity:.4;cursor:not-allowed}
+
+/* PROGRESS */
+.prog-bar{padding:8px 18px;background:var(--surface);border-bottom:1px solid var(--border);display:none;flex-shrink:0}
+.prog-txt{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.prog-cache-tag{font-size:9.5px;background:var(--purple-lt);color:var(--purple);border-radius:10px;padding:1px 7px;font-weight:600;border:1px solid #ddd6fe}
+.prog-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
+
+/* RESULTS */
+#results{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--dim);text-align:center;padding:20px}
+.ph-icon{font-size:48px;opacity:.2}
+.placeholder p{font-size:13px;max-width:320px;line-height:1.7;color:var(--muted)}
+.placeholder strong{color:var(--accent)}
+
+/* ECONOMY SUMMARY BANNER */
+.eco-banner{background:linear-gradient(135deg,#ecfdf5,#f0fdf4);border:1px solid var(--accent-mid);border-radius:var(--r-lg);padding:14px 18px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow-md)}
+.eco-banner-icon{font-size:28px}
+.eco-banner-title{font-size:13px;font-weight:700;color:var(--accent)}
+.eco-banner-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.eco-banner-val{font-family:'Courier New',monospace;font-size:22px;font-weight:800;color:var(--accent);margin-left:auto}
+
+/* RETRY BADGE */
+.retry-badge{font-size:9px;background:var(--orange-lt);color:var(--orange);border:1px solid #fed7aa;border-radius:10px;padding:1px 7px;font-weight:600}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-md)}
+.card-hdr{padding:11px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-sub{font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cache-time{font-size:10px;color:var(--purple);background:var(--purple-lt);border-radius:10px;padding:1px 7px;border:1px solid #ddd6fe}
+.card-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:.07em;white-space:nowrap}
+.b-ok{background:var(--accent-lt);color:var(--accent);border:1px solid var(--accent-mid)}
+.b-cache{background:var(--purple-lt);color:var(--purple);border:1px solid #ddd6fe}
+.b-load{background:var(--gold-lt);color:var(--gold);border:1px solid #fde68a}
+.b-err{background:var(--red-lt);color:var(--red);border:1px solid #fecaca}
+.btn-ref{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 9px;font-size:10px;cursor:pointer;transition:.15s}
+.btn-ref:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-lt)}
+.btn-copy{background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 9px;font-size:10px;cursor:pointer;transition:.15s}
+.btn-copy:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+
+/* TABLE */
+.ptable{width:100%;border-collapse:collapse;font-size:12.5px}
+.ptable th{text-align:left;padding:7px 14px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);background:var(--surface2)}
+.ptable td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:none}
+.ptable tr.best{background:var(--accent-lt)}
+.ptable tr.best td:first-child{border-left:3px solid var(--accent);padding-left:11px}
+.ptable tr:not(.best):hover{background:var(--surface2)}
+.pn{font-family:'Courier New',monospace;font-weight:700;font-size:13px}
+.pn.green{color:var(--accent)}
+.pn.gold{color:var(--gold)}
+.pu{font-family:'Courier New',monospace;font-size:11px;color:var(--muted)}
+.fn{font-weight:600}
+.out-cwb{font-size:10px;color:var(--dim);margin-left:4px;font-weight:400}
+.lnk{color:var(--accent);text-decoration:none;font-size:11px;font-weight:600;opacity:.7;transition:.1s}
+.lnk:hover{opacity:1;text-decoration:underline}
+
+/* MINI PRICE BAR */
+.bar-cell{width:80px;padding:8px 14px 8px 6px}
+.bar-wrap{height:6px;background:var(--border);border-radius:3px;overflow:hidden;width:72px}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.bar-fill.best{background:var(--accent)}
+.bar-fill.mid{background:var(--gold)}
+.bar-fill.high{background:#e2e8f0}
+
+/* SECTIONS */
+.sec-sep{padding:6px 14px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pbm-row{padding:10px 14px;display:flex;align-items:flex-start;gap:8px;border-top:1px solid var(--border);background:var(--blue-lt)}
+.pbm-txt{font-size:12px;color:var(--muted);line-height:1.5}
+.pbm-txt strong{color:var(--blue)}
+.eco-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:12px;flex-wrap:wrap;background:#fffbeb}
+.eco-lbl{color:var(--muted)}
+.eco-val{color:var(--gold);font-weight:700;font-family:'Courier New',monospace;font-size:13px}
+.notes-row{padding:8px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--dim);font-style:italic;background:var(--surface2)}
+
+/* LOADER */
+.loader{padding:16px;display:flex;align-items:center;gap:10px;color:var(--gold);font-size:12px}
+.dots span{display:inline-block;width:5px;height:5px;background:var(--gold);border-radius:50%;animation:dot 1.2s infinite;margin-right:3px}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+.err-msg{padding:12px 14px;font-size:12px;color:var(--red);line-height:1.5}
+.raw-res{padding:14px;font-size:12px;color:var(--muted);line-height:1.7;white-space:pre-wrap;word-break:break-word;background:var(--surface2)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;font-size:12px;padding:10px 16px;border-radius:var(--r);box-shadow:var(--shadow-md);opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;z-index:999}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--dim)}
+
+/* PRINT */
+@media print {
+  #apikey-banner,aside,.search-bar,.prog-bar,.hdr-actions,.btn-ref,.btn-copy,.btn-print,
+  .btn-lista,.add-row,.sb-bottom,.sb-top,.sidebar-label{display:none!important}
+  body,html{height:auto;overflow:visible}
+  .layout{display:block}
+  main{overflow:visible}
+  #results{overflow:visible;padding:0}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #ccc;margin-bottom:12px}
+  .eco-banner{break-inside:avoid}
+  header{box-shadow:none;border-bottom:2px solid #000}
+}
+</style>
+</head>
+<body>
+
+<div id="apikey-banner">
+  <span>🔑 Cole sua <a href="https://console.anthropic.com/settings/keys" target="_blank">API Key da Anthropic</a> para usar localmente:</span>
+  <input id="apikey-input" type="password" placeholder="sk-ant-..." oninput="salvarKey(this.value)">
+  <span id="apikey-status" style="font-size:11px;white-space:nowrap"></span>
+</div>
+
+<header>
+  <span class="rx-badge">Rx</span>
+  <div>
+    <h1>FarmaPreço CWB <span class="v-badge">v2.0</span></h1>
+    <p>Monitoramento de preços · Curitiba-PR</p>
+  </div>
+  <div class="hsp"></div>
+  <div class="hdr-actions">
+    <button class="btn-print" onclick="window.print()" title="Imprimir resultados">🖨️ Imprimir</button>
+    <div class="stat-pill cache-pill" id="cache-pill" onclick="limparCache()">⚡ Cache: 0 itens</div>
+    <div class="stat-pill" id="token-pill">Pronto</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="sb-top"><div class="sb-label">📋 Lista Monitorada</div></div>
+    <div class="med-list" id="med-list"></div>
+    <div class="sb-bottom">
+      <button class="btn-lista" id="btn-lista" onclick="pesquisarLista()">🔍 Pesquisar Lista Completa</button>
+      <div class="add-row">
+        <input class="add-inp" id="new-med" placeholder="Adicionar medicamento..." onkeydown="if(event.key==='Enter')addMed()">
+        <button class="btn-add" onclick="addMed()">+</button>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="search-bar">
+      <input class="search-inp" id="search-inp"
+        placeholder="Ex: Entresto 49/51mg 60cp · Wegovy 1mg · Rosuvastatina 20mg 30cp"
+        onkeydown="if(event.key==='Enter')pesquisarUm()">
+      <button class="btn-search" id="btn-search" onclick="pesquisarUm()">🔍 Pesquisar</button>
+    </div>
+    <div class="prog-bar" id="prog-bar">
+      <div class="prog-txt" id="prog-txt">Pesquisando...</div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+    </div>
+    <div id="results">
+      <div class="placeholder">
+        <div class="ph-icon">💊</div>
+        <p>Digite um medicamento acima ou clique em <strong>Pesquisar Lista Completa</strong> para ver preços nas farmácias de Curitiba-PR.</p>
+        <p style="font-size:11px;margin-top:4px">Resultados ficam em cache durante a sessão. Use <strong>↺</strong> para forçar nova busca.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function toast(msg, dur = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+
+function formatarDataHora(ts) {
+  const agora = new Date();
+  const diffMin = Math.round((agora - ts) / 60000);
+  if (diffMin < 60) return `há ${diffMin} min`;
+  const mesmaData = ts.toDateString() === agora.toDateString();
+  if (mesmaData) return `hoje ${ts.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}`;
+  return ts.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' ' +
+         ts.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+}
+
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+let lista = [
+  "Semaglutida 1mg (Wegovy / Poviztra / Ozivy)",
+  "Semaglutida 2,4mg (Wegovy / Poviztra / Ozivy)",
+  "Tirzepatida 2,5mg (Mounjaro) — 1 caneta",
+  "Tirzepatida 5mg (Mounjaro) — 1 caneta",
+  "Sacubitril-valsartana 50mg (Entresto / Neparvis) — 60cp",
+  "Sacubitril-valsartana 100mg (Entresto / Neparvis) — 60cp",
+  "Sacubitril-valsartana 200mg (Entresto / Neparvis) — 60cp",
+  "Sertralina 50mg — 30cp",
+  "Sertralina 100mg — 30cp",
+  "Levotiroxina 88mcg Euthyrox — 42cp",
+  "Rosuvastatina 20mg comprimidos — 30cp",
+  "Rosuvastatina + Ezetimiba 20/10mg comprimidos — 30cp",
+  "Rosuvastatina + Ezetimiba 40/10mg comprimidos — 30cp"
+];
+let isBusy = false;
+let totalTokens = 0;
+let _apiKey = '';
+
+// ─── API KEY ──────────────────────────────────────────────────────────────────
+function getApiKey() { return _apiKey; }
+
+function salvarKey(val) {
+  _apiKey = val.trim();
+  const status = document.getElementById('apikey-status');
+  const banner = document.getElementById('apikey-banner');
+  if (_apiKey.startsWith('sk-ant-') && _apiKey.length > 20) {
+    status.textContent = '✅ Chave válida';
+    status.style.color = '#065f46';
+    banner.style.background = '#f0fdf4';
+    banner.style.borderColor = '#bbf7d0';
+  } else if (_apiKey.length > 0) {
+    status.textContent = '⚠️ Formato inválido';
+    status.style.color = '#92400e';
+    banner.style.background = '#fefce8';
+    banner.style.borderColor = '#fde68a';
+  } else {
+    status.textContent = '';
+    banner.style.background = '#fefce8';
+    banner.style.borderColor = '#fde68a';
+  }
+}
+
+// ─── CACHE DE SESSÃO ──────────────────────────────────────────────────────────
+const cache = {};
+function cacheKey(med) { return med.toLowerCase().replace(/\s+/g,' ').trim(); }
+function setCache(med, data) { cache[cacheKey(med)] = { data, ts: new Date() }; atualizarPillCache(); }
+function getCache(med) { return cache[cacheKey(med)] || null; }
+function limparCache() {
+  const n = Object.keys(cache).length;
+  if (!n) return;
+  if (!confirm(`Limpar cache de ${n} item(ns)?`)) return;
+  Object.keys(cache).forEach(k => delete cache[k]);
+  atualizarPillCache();
+  renderLista();
+  toast('🗑️ Cache limpo');
+}
+function atualizarPillCache() {
+  const n = Object.keys(cache).length;
+  const pill = document.getElementById('cache-pill');
+  pill.textContent = `⚡ Cache: ${n} item${n !== 1 ? 's' : ''}`;
+  pill.classList.toggle('has-cache', n > 0);
+}
+
+// ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
+const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS.
+
+REGRAS ABSOLUTAS:
+• EXCLUIR SEMPRE: EMS (exceto Ozivy, que é permitido), Brace Pharma, Cimed, Teuto
+• SEMAGLUTIDA: comparar Wegovy + Poviztra + Ozivy na mesma dosagem
+• SACUBITRIL-VALSARTANA: comparar Entresto + Neparvis na mesma dosagem
+• ROSUVASTATINA: APENAS comprimidos — excluir cápsulas
+• PBM Tirzepatida: "Lilly Melhor Para Você" em lillyparavoce.com.br
+• FARMÁCIAS ALVO (Curitiba-PR): Droga Raia, Pague Menos, Panvel, Nissei, Morifarma, Preço Popular, Drogaria Catarinense, Unipreço, Callfarma
+
+FORMATO DE SAÍDA — CRÍTICO:
+• Responda APENAS com o objeto JSON — zero texto antes, zero texto depois
+• PROIBIDO usar markdown, blocos de código, crases ou qualquer formatação
+• A primeira letra da sua resposta DEVE ser { e a última DEVE ser }
+• NÃO inclua farmácias com preco_lista null ou desconhecido — omita-as completamente
+• Se não encontrou preço real confirmado para uma farmácia, NÃO a inclua em precos
+
+SCHEMA JSON (siga exatamente):
+{"nome":"medicamento + dosagem + forma + qtd","precos":[{"farmacia":"Nome","preco_lista":0.00,"preco_desconto":null,"preco_unidade":0.00,"link":"url","curitiba":true}],"genericos":[{"nome":"Nome","laboratorio":"Lab","farmacia":"Farmácia","preco":0.00}],"pbm":{"existe":false,"descricao":""},"notas":""}
+Regras: precos ordenados por preco_lista ASC; preco_desconto=null se não houver; genericos=[] se não houver.`;
+
+// ─── API CALL ─────────────────────────────────────────────────────────────────
+async function chamarAPI(medicamento) {
+  const userMsg = `Pesquise preços atuais (junho 2026): ${medicamento}\nFarmácias em Curitiba-PR. Use web search. Retorne apenas JSON.`;
+  let msgs = [{ role: "user", content: userMsg }];
+  let rounds = 0;
+  while (rounds < 10) {
+    rounds++;
+    const headers = { "Content-Type": "application/json", "anthropic-version": "2023-06-01" };
+    const key = getApiKey();
+    if (key) { headers["x-api-key"] = key; headers["anthropic-dangerous-direct-browser-access"] = "true"; }
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers,
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 2000, system: SYS,
+        tools: [{ type: "web_search_20250305", name: "web_search" }], messages: msgs })
+    });
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+    const data = await res.json();
+    if (data.usage) {
+      totalTokens += (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0);
+      document.getElementById('token-pill').textContent = `~${totalTokens.toLocaleString()} tokens`;
+    }
+    const content = data.content || [];
+    const textBlocks = content.filter(b => b.type === "text");
+    const toolBlocks = content.filter(b => b.type === "tool_use");
+    if (data.stop_reason === "end_turn") return parseJSON(textBlocks.map(b => b.text).join(""), medicamento);
+    if (data.stop_reason === "tool_use" && toolBlocks.length > 0) {
+      msgs.push({ role: "assistant", content });
+      msgs.push({ role: "user", content: toolBlocks.map(b => ({ type: "tool_result", tool_use_id: b.id, content: "Search completed. Continue with price analysis." })) });
+      continue;
+    }
+    const txt = textBlocks.map(b => b.text).join("");
+    if (txt) return parseJSON(txt, medicamento);
+    throw new Error("Resposta inesperada da API");
+  }
+  throw new Error("Timeout: máximo de iterações atingido");
+}
+
+function parseJSON(text, nome) {
+  if (!text) throw new Error("Resposta vazia");
+  // Remover blocos de markdown: ```json...``` ou ```...```
+  let limpo = text.trim();
+  limpo = limpo.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  // Tentar parse direto
+  try { return filtrarNulos(JSON.parse(limpo)); } catch {}
+  // Extrair maior bloco JSON
+  const m = limpo.match(/\{[\s\S]*\}/);
+  if (m) { try { return filtrarNulos(JSON.parse(m[0])); } catch {} }
+  return { nome, _raw: text };
+}
+
+function filtrarNulos(data) {
+  if (Array.isArray(data.precos)) {
+    data.precos = data.precos.filter(p => p.preco_lista != null && p.preco_lista > 0);
+  }
+  return data;
+}
+
+// ─── RETRY AUTOMÁTICO ─────────────────────────────────────────────────────────
+async function chamarAPIComRetry(medicamento, maxTentativas = 2) {
+  let lastError;
+  for (let t = 0; t <= maxTentativas; t++) {
+    try {
+      if (t > 0) {
+        await sleep(2000 * t);
+      }
+      return { data: await chamarAPI(medicamento), tentativa: t };
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}
+
+// ─── BUSCAR COM CACHE ─────────────────────────────────────────────────────────
+async function buscarComCache(med, forcar) {
+  if (!forcar) {
+    const c = getCache(med);
+    if (c) return { data: c.data, fromCache: true, ts: c.ts, tentativa: 0 };
+  }
+  const { data, tentativa } = await chamarAPIComRetry(med);
+  setCache(med, data);
+  return { data, fromCache: false, ts: new Date(), tentativa };
+}
+
+// ─── COPIAR TABELA ────────────────────────────────────────────────────────────
+function copiarTabela(data) {
+  if (!data || !data.precos) return;
+  const linhas = [`Medicamento\tFarmácia\tPreço Lista\tPreço c/ Desconto\tPor Unidade\tLink`];
+  data.precos.forEach(p => {
+    linhas.push([
+      data.nome || '',
+      p.farmacia || '',
+      p.preco_lista != null ? `R$ ${p.preco_lista.toFixed(2)}` : '',
+      p.preco_desconto != null ? `R$ ${p.preco_desconto.toFixed(2)}` : '',
+      p.preco_unidade != null ? `R$ ${p.preco_unidade.toFixed(2)}` : '',
+      p.link || ''
+    ].join('\t'));
+  });
+  if (data.genericos && data.genericos.length > 0) {
+    data.genericos.forEach(g => {
+      linhas.push([data.nome || '', `${g.nome} (${g.laboratorio}) — ${g.farmacia}`,
+        g.preco != null ? `R$ ${g.preco.toFixed(2)}` : '', 'genérico', '', ''].join('\t'));
+    });
+  }
+  navigator.clipboard.writeText(linhas.join('\n'))
+    .then(() => toast('📋 Tabela copiada — cole no Excel ou Google Sheets'))
+    .catch(() => toast('⚠️ Não foi possível copiar'));
+}
+
+// ─── PESQUISAR INDIVIDUAL ─────────────────────────────────────────────────────
+async function pesquisarUm(medOverride, forcar) {
+  if (isBusy) return;
+  const inp = document.getElementById('search-inp');
+  const med = medOverride || inp.value.trim();
+  if (!med) { inp.focus(); return; }
+  setBusy(true);
+  const res = document.getElementById('results');
+  res.innerHTML = '';
+  const cached = !forcar && getCache(med);
+  if (cached) {
+    res.appendChild(mkCardResultado(cached.data, med, true, cached.ts, 0));
+    setBusy(false);
+    return;
+  }
+  res.appendChild(mkCardLoading(med));
+  try {
+    const { data, fromCache, ts, tentativa } = await buscarComCache(med, forcar);
+    res.innerHTML = '';
+    res.appendChild(mkCardResultado(data, med, fromCache, ts, tentativa));
+  } catch (e) {
+    res.innerHTML = '';
+    res.appendChild(mkCardResultado({ _error: e.message }, med, false, null, 0));
+  }
+  setBusy(false);
+}
+
+// ─── PESQUISAR LISTA ──────────────────────────────────────────────────────────
+async function pesquisarLista() {
+  if (isBusy) return;
+  setBusy(true);
+  const res = document.getElementById('results');
+  const pb = document.getElementById('prog-bar');
+  const pf = document.getElementById('prog-fill');
+  const pt = document.getElementById('prog-txt');
+  res.innerHTML = ''; pb.style.display = 'block';
+  const total = lista.length, cards = {};
+  let cacheHits = 0;
+  lista.forEach((med, i) => {
+    const c = getCache(med);
+    let card;
+    if (c) {
+      card = mkCardResultado(c.data, med, true, c.ts, 0);
+      cacheHits++;
+      const si = document.querySelector(`#med-list .mi[data-idx="${i}"]`);
+      if (si) si.className = 'mi cached';
+    } else { card = mkCardLoading(med); }
+    card.dataset.idx = i; res.appendChild(card); cards[i] = card;
+  });
+  const totalBuscar = lista.filter(med => !getCache(med)).length;
+  if (totalBuscar === 0) {
+    pt.innerHTML = `✅ Todos os ${total} itens já estavam em cache!`;
+    pf.style.width = '100%'; setBusy(false);
+    mostrarResumoBanner(res); setTimeout(() => { pb.style.display = 'none'; }, 3000); return;
+  }
+  let buscados = 0;
+  for (let i = 0; i < total; i++) {
+    const med = lista[i];
+    if (getCache(med)) continue;
+    buscados++;
+    pf.style.width = `${Math.round((buscados - 1) / totalBuscar * 100)}%`;
+    const ct = cacheHits > 0 ? `<span class="prog-cache-tag">⚡ ${cacheHits} do cache</span>` : '';
+    pt.innerHTML = `Buscando ${buscados} de ${totalBuscar}: ${esc(med)} ${ct}`;
+    const si = document.querySelector(`#med-list .mi[data-idx="${i}"]`);
+    if (si) si.className = 'mi loading';
+    try {
+      const { data, ts, tentativa } = await buscarComCache(med, false);
+      const nc = mkCardResultado(data, med, false, ts, tentativa);
+      nc.dataset.idx = i; cards[i].replaceWith(nc); cards[i] = nc;
+      if (si) si.className = 'mi done';
+    } catch (e) {
+      const ec = mkCardResultado({ _error: e.message }, med, false, null, 0);
+      ec.dataset.idx = i; cards[i].replaceWith(ec); cards[i] = ec;
+      if (si) si.className = 'mi error';
+    }
+    if (buscados < totalBuscar) await sleep(800);
+  }
+  pf.style.width = '100%';
+  const tag = cacheHits > 0 ? ` (${cacheHits} do cache, ${totalBuscar} buscados)` : '';
+  pt.innerHTML = `✅ Concluído! ${total} medicamentos${tag}`;
+  mostrarResumoBanner(res);
+  setBusy(false);
+  setTimeout(() => { pb.style.display = 'none'; renderLista(); }, 4000);
+}
+
+// ─── BANNER RESUMO ECONOMIA TOTAL ─────────────────────────────────────────────
+function mostrarResumoBanner(container) {
+  let totalEco = 0, itensComEco = 0;
+  Object.values(cache).forEach(({ data }) => {
+    const p = data.precos;
+    if (Array.isArray(p) && p.length >= 2) {
+      const mn = p[0]?.preco_lista, mx = p[p.length - 1]?.preco_lista;
+      if (mn != null && mx != null && mx > mn) { totalEco += (mx - mn); itensComEco++; }
+    }
+  });
+  if (itensComEco < 2) return;
+  const banner = document.createElement('div');
+  banner.className = 'eco-banner';
+  banner.innerHTML = `
+    <div class="eco-banner-icon">💰</div>
+    <div>
+      <div class="eco-banner-title">Economia total identificada na lista</div>
+      <div class="eco-banner-sub">Escolhendo sempre a farmácia mais barata em ${itensComEco} medicamento${itensComEco !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="eco-banner-val">R$ ${totalEco.toFixed(2)}/mês</div>`;
+  container.insertBefore(banner, container.firstChild);
+}
+
+// ─── CARDS ────────────────────────────────────────────────────────────────────
+function mkCardLoading(nome) {
+  const d = document.createElement('div'); d.className = 'card';
+  d.innerHTML = `<div class="card-hdr"><div style="flex:1"><div class="card-title">${esc(nome)}</div></div>
+    <span class="badge b-load">BUSCANDO</span></div>
+    <div class="loader"><div class="dots"><span></span><span></span><span></span></div>Pesquisando em Curitiba-PR...</div>`;
+  return d;
+}
+
+function mkCardResultado(data, nomeOrig, fromCache, ts, tentativa) {
+  const d = document.createElement('div'); d.className = 'card';
+
+  // Serializar data para o botão copiar
+  const dataJSON = JSON.stringify(data).replace(/'/g, "\\'");
+  const ref = `<button class="btn-ref" onclick="pesquisarUm(${JSON.stringify(nomeOrig)},true)">↺ Atualizar</button>`;
+  const cpBtn = `<button class="btn-copy" onclick='copiarTabela(${dataJSON})'>📋 Copiar</button>`;
+
+  if (data._raw) {
+    d.innerHTML = `<div class="card-hdr"><div style="flex:1"><div class="card-title">${esc(data.nome || nomeOrig)}</div></div>
+      <div class="card-acts">${cpBtn}${ref}<span class="badge b-ok">RESPOSTA</span></div></div>
+      <div class="raw-res">${esc(data._raw)}</div>`;
+    return d;
+  }
+  if (data._error) {
+    d.innerHTML = `<div class="card-hdr"><div style="flex:1"><div class="card-title">${esc(nomeOrig)}</div></div>
+      <div class="card-acts">${ref}<span class="badge b-err">ERRO</span></div></div>
+      <div class="err-msg">⚠️ ${esc(data._error)}</div>`;
+    return d;
+  }
+
+  const precos = Array.isArray(data.precos) ? data.precos : [];
+  const gens = Array.isArray(data.genericos) ? data.genericos : [];
+  const pbm = data.pbm || {};
+
+  // Max para barra visual
+  const maxPreco = Math.max(...precos.map(p => p.preco_lista || 0), 0.01);
+
+  // Economia
+  let ecoHtml = '';
+  if (precos.length >= 2) {
+    const mn = precos[0]?.preco_lista, mx = precos[precos.length - 1]?.preco_lista;
+    if (mn != null && mx != null && mx > mn) {
+      const eco = (mx - mn).toFixed(2), pct = Math.round((mx - mn) / mx * 100);
+      const desc = precos[0]?.preco_desconto;
+      const extra = desc != null ? `<span class="eco-lbl"> · com desconto:</span> <span class="eco-val">R$ ${(mx - desc).toFixed(2)}</span>` : '';
+      ecoHtml = `<div class="eco-row"><span>💰</span><span class="eco-lbl">Economia máxima:</span>
+        <span class="eco-val">R$ ${eco}</span><span class="eco-lbl">(${pct}% vs. mais caro)</span>${extra}</div>`;
+    }
+  }
+
+  // Linhas com mini barra
+  const rows = precos.map((p, i) => {
+    const pl = p.preco_lista != null ? `R$&nbsp;${p.preco_lista.toFixed(2)}` : '—';
+    const pd = p.preco_desconto != null ? `R$&nbsp;${p.preco_desconto.toFixed(2)}` : '—';
+    const pu = p.preco_unidade != null ? `R$&nbsp;${p.preco_unidade.toFixed(2)}` : '—';
+    const lnk = p.link ? `<a href="${p.link}" target="_blank" class="lnk">↗</a>` : '—';
+    const out = p.curitiba === false ? `<span class="out-cwb">(fora CWB)</span>` : '';
+    const pct = p.preco_lista != null ? Math.round((p.preco_lista / maxPreco) * 100) : 0;
+    const barClass = i === 0 ? 'best' : (i === precos.length - 1 ? 'high' : 'mid');
+    const barHtml = `<td class="bar-cell"><div class="bar-wrap"><div class="bar-fill ${barClass}" style="width:${pct}%"></div></div></td>`;
+    return `<tr class="${i === 0 ? 'best' : ''}">
+      <td><span class="fn">${esc(p.farmacia || '—')}</span>${out}</td>
+      <td><span class="pn ${i === 0 ? 'green' : ''}">${pl}</span></td>
+      <td><span class="pn ${p.preco_desconto != null ? 'gold' : ''}">${pd}</span></td>
+      <td><span class="pu">${pu}</span></td>
+      ${barHtml}
+      <td>${lnk}</td></tr>`;
+  }).join('');
+
+  // Genéricos
+  let gHtml = '';
+  if (gens.length > 0) {
+    const gRows = gens.map(g => `<tr>
+      <td><span class="fn">${esc(g.nome || '—')}</span><span style="color:var(--dim);font-size:10.5px;font-weight:400"> · ${esc(g.laboratorio || '')}</span></td>
+      <td><span class="pn">${g.preco != null ? `R$&nbsp;${g.preco.toFixed(2)}` : '—'}</span></td>
+      <td>—</td><td>—</td><td></td><td>${esc(g.farmacia || '—')}</td></tr>`).join('');
+    gHtml = `<div class="sec-sep">💊 Genérico / Similar intercambiável</div>
+      <table class="ptable"><thead><tr><th>Nome · Lab</th><th>Preço</th><th>Desconto</th><th>Por Unid.</th><th></th><th>Farmácia</th></tr></thead>
+      <tbody>${gRows}</tbody></table>`;
+  }
+
+  const pbmHtml = pbm.existe ? `<div class="pbm-row"><span style="font-size:13px">🏥</span>
+    <span class="pbm-txt"><strong>PBM:</strong> ${esc(pbm.descricao || '')}</span></div>` : '';
+  const notasHtml = data.notas ? `<div class="notes-row">ℹ️ ${esc(data.notas)}</div>` : '';
+
+  const fc = precos.length, gc = gens.length;
+  const sub = `${fc} farmácia${fc !== 1 ? 's' : ''} encontrada${fc !== 1 ? 's' : ''}${gc > 0 ? ` · ${gc} genérico${gc !== 1 ? 's' : ''}` : ''}`;
+  const ct = fromCache && ts ? `<span class="cache-time">⚡ ${formatarDataHora(ts)}</span>` : '';
+  const retryBadge = tentativa > 0 ? `<span class="retry-badge">↺ ${tentativa}ª tentativa</span>` : '';
+  const badge = fromCache ? `<span class="badge b-cache">⚡ CACHE</span>` : `<span class="badge b-ok">✓ ATUALIZADO</span>`;
+
+  d.innerHTML = `<div class="card-hdr">
+    <div style="flex:1">
+      <div class="card-title">${esc(data.nome || nomeOrig || 'Medicamento')}</div>
+      <div class="card-sub">${sub} ${ct} ${retryBadge}</div>
+    </div>
+    <div class="card-acts">${cpBtn}${ref}${badge}</div></div>
+    ${fc > 0
+      ? `<table class="ptable"><thead><tr>
+          <th>Farmácia</th><th>Preço Lista</th><th>c/ Desconto</th><th>Por Unid.</th><th></th><th>Link</th>
+        </tr></thead><tbody>${rows}</tbody></table>`
+      : `<div style="padding:12px 14px;font-size:12px;color:var(--muted)">Nenhum preço encontrado.</div>`}
+    ${gHtml}${pbmHtml}${ecoHtml}${notasHtml}`;
+  return d;
+}
+
+// ─── LISTA ────────────────────────────────────────────────────────────────────
+function renderLista() {
+  const container = document.getElementById('med-list');
+  container.innerHTML = '';
+  lista.forEach((med, i) => {
+    const cached = getCache(med);
+    const el = document.createElement('div');
+    el.className = `mi${cached ? ' cached' : ''}`;
+    el.dataset.idx = i;
+    el.innerHTML = `<span class="mi-dot"></span><span class="mi-name">${esc(med)}</span>
+      <button class="mi-del" onclick="event.stopPropagation();removerMed(${i})" title="Remover">×</button>`;
+    el.onclick = () => { document.getElementById('search-inp').value = med; pesquisarUm(med); };
+    container.appendChild(el);
+  });
+}
+
+function addMed() {
+  const inp = document.getElementById('new-med');
+  const val = inp.value.trim();
+  if (!val) return;
+  lista.push(val); renderLista(); inp.value = '';
+  toast(`➕ "${val}" adicionado à lista`);
+}
+
+function removerMed(i) {
+  const nome = lista[i];
+  lista.splice(i, 1); renderLista();
+  toast(`🗑️ "${nome}" removido`);
+}
+
+function setBusy(busy) {
+  isBusy = busy;
+  ['btn-search','btn-lista'].forEach(id => document.getElementById(id).disabled = busy);
+  document.getElementById('search-inp').disabled = busy;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderLista();
+</script>
+</body>
+</html>
