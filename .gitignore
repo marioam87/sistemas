@@ -1,0 +1,20 @@
+# ==== NUNCA versionar dados sensíveis ====
+# Dados de paciente, exames, laudos gerados, qualquer PII
+*.pdf
+laudos/
+exames/
+outputs/
+saidas/
+
+# Planilhas com dados reais (mantenha só os .bas versionados)
+*.xlsm
+*.xlsx
+
+# Segredos
+.env
+*.key
+credentials*
+
+# Sistema / editores
+.DS_Store
+node_modules/
