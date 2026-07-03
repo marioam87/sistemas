@@ -1,0 +1,36 @@
+{
+  "NOME":       "JOAO DA SILVA TESTE",
+  "SEXO":       "Masculino",
+  "IDADE":      "45 anos",
+  "INICIO":     "10/06/2025 às 08h00",
+  "TERMINO":    "11/06/2025 às 08h15",
+  "DURACAO":    "24h15",
+  "EMISSAO":    "20/06/2025",
+
+  "N_VALIDAS":  "72",
+  "PCT_VALIDO": "95%",
+  "N_VIG":      48,
+  "N_SONO":     24,
+
+  "SIS_TOTAL":  128,
+  "DIA_TOTAL":  82,
+  "SIS_VIG":    132,
+  "DIA_VIG":    86,
+  "SIS_SONO":   118,
+  "DIA_SONO":   72,
+
+  "PICO_SIS":   { "valor": "165", "hora": "09h30" },
+  "PICO_DIA":   { "valor": "105", "hora": "09h30" },
+
+  "C_VIG_SIS":  35.00,
+  "C_VIG_DIA":  42.00,
+  "C_SONO_SIS": 20.00,
+  "C_SONO_DIA": 15.00,
+
+  "DESC_SIS":   10.61,
+  "DESC_DIA":   16.28,
+
+  "NOMENCLATURA":  "vigilia_sono",
+  "ARTEFATOS":     [],
+  "MEDIAS_RECALC": null
+}
