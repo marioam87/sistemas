@@ -283,14 +283,14 @@ function formatarDataHora(ts) {
 let lista = [
   "Semaglutida 1mg (Wegovy / Poviztra / Ozivy)",
   "Semaglutida 2,4mg (Wegovy / Poviztra / Ozivy)",
-  "Tirzepatida 2,5mg (Mounjaro) — 1 caneta",
-  "Tirzepatida 5mg (Mounjaro) — 1 caneta",
+  "Tirzepatida 2,5mg (Mounjaro)",
+  "Tirzepatida 5mg (Mounjaro)",
   "Sacubitril-valsartana 50mg (Entresto / Neparvis) — 60cp",
   "Sacubitril-valsartana 100mg (Entresto / Neparvis) — 60cp",
   "Sacubitril-valsartana 200mg (Entresto / Neparvis) — 60cp",
   "Sertralina 50mg — 30cp",
   "Sertralina 100mg — 30cp",
-  "Levotiroxina 88mcg Euthyrox — 42cp",
+  "Levotiroxina 88mcg Euthyrox",
   "Rosuvastatina 20mg comprimidos — 30cp",
   "Rosuvastatina + Ezetimiba 20/10mg comprimidos — 30cp",
   "Rosuvastatina + Ezetimiba 40/10mg comprimidos — 30cp"
@@ -345,21 +345,29 @@ function atualizarPillCache() {
 }
 
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
-const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS em Curitiba-PR.
+const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS em Curitiba-PR. Pesquise por nome comercial, nome genérico e laboratório.
 
-FARMÁCIAS — EM CAMADAS:
-• Camada 1 (buscar sempre — fontes confiáveis): Droga Raia (drogaraia.com.br), Callfarma (callfarma.com.br), Panvel (panvel.com), Pague Menos (paguemenos.com.br), Drogaria Catarinense (drogariacatarinense.com.br)
-• Camada 2 (só se a Camada 1 retornar menos de 3 preços): Morifarma, Preço Popular, Unipreço
-• Nissei: NÃO buscar online (exige login/CPF). Registre em "notas": "Nissei: consultar no app".
+FARMÁCIAS (todas atuam em Curitiba-PR):
+Nissei (farmaciasnissei.com.br), Droga Raia (drogaraia.com.br), Pague Menos (paguemenos.com.br), Panvel (panvel.com), Morifarma (morifarma.com.br), Preço Popular (precopopular.com.br), Drogaria Catarinense (drogariacatarinense.com.br), Unipreço (farmaciasunipreco.com.br), Callfarma (callfarma.com.br).
+• Fontes mais confiáveis para preço exato: URLs diretas de produto da Droga Raia e da Callfarma (retornam preço em meta tags).
+• Nissei: a loja online exige login/CPF. Se não houver preço público confirmado, NÃO invente — registre em "notas": "Nissei: consultar no app".
 • NÃO usar Consulta Remédios como fonte de preço (carrega via JavaScript, não confiável).
+• Máximo ~3 buscas por medicamento; inclua preço apenas com fonte de URL direta do produto.
 
-REGRAS ABSOLUTAS:
-• EXCLUIR SEMPRE: EMS (EXCETO Ozivy, que é PERMITIDO), Brace Pharma, Cimed, Teuto — nem genérico, nem similar.
-• SEMAGLUTIDA: comparar Wegovy + Poviztra + Ozivy na mesma dosagem.
-• SACUBITRIL-VALSARTANA: comparar Entresto + Neparvis na mesma dosagem.
-• ROSUVASTATINA (isolada e com ezetimiba): APENAS comprimidos — excluir qualquer marca/laboratório em cápsula.
-• Não gaste buscas revalidando apresentações padrão de mercado; só sinalize em "notas" se a apresentação pedida claramente não existir no Brasil.
-• Máximo 3 buscas por medicamento; inclua preço apenas com fonte de URL direta do produto.
+VALIDAÇÃO PRÉVIA (antes de buscar preços):
+• Confira as apresentações REAIS do medicamento no Brasil (dosagens e quantidades registradas).
+• Se a DOSE ou a QUANTIDADE pedida NÃO existir no Brasil: NÃO busque preços. Retorne precos=[] e, em "notas", liste as apresentações reais disponíveis e peça para o usuário escolher qual usar.
+• Não gaste buscas revalidando apresentações padrão de mercado que claramente existem.
+
+EXCLUSÃO DE LABORATÓRIOS (regra absoluta):
+• NUNCA inclua EMS, Brace Pharma, Cimed ou Teuto — nem genérico, nem similar.
+• EXCEÇÃO única: Ozivy (semaglutida injetável, EMS) é PERMITIDO. Todo o resto da EMS permanece excluído.
+
+COMPARAÇÕES OBRIGATÓRIAS (mesma dosagem):
+• SEMAGLUTIDA: comparar Wegovy + Poviztra + Ozivy.
+• SACUBITRIL-VALSARTANA: comparar Entresto + Neparvis.
+
+ROSUVASTATINA (isolada e com ezetimiba): APENAS comprimidos — excluir qualquer marca/laboratório em cápsula.
 
 PBM — NÃO PESQUISAR. Preencha o campo "pbms" (lista) a partir desta tabela fixa. Gere UM item para CADA marca comparada que tenha programa (ex.: numa consulta de semaglutida, Wegovy e Ozivy geram 2 itens):
 • Entresto/Neparvis (Novartis): Vale Mais Saúde — valemaissaude.com.br, cadastro por CPF; desconto cheio a partir da 2ª compra (1ª via Kit Adesão, receita de uso contínuo).
@@ -384,19 +392,44 @@ Regras: precos ordenados por preco_lista ASC; preco_desconto=null se não houver
 
 // ─── API CALL ─────────────────────────────────────────────────────────────────
 async function chamarAPI(medicamento) {
+  const key = getApiKey();
+  // A chave é OPCIONAL: dentro do Claude.ai (artifact) as chamadas são tratadas
+  // automaticamente e não precisam de chave. Rodando o arquivo localmente
+  // (file:// ou servidor próprio), a API da Anthropic exige a chave — não há
+  // modo "sem autenticação". Por isso não bloqueamos aqui: tentamos a chamada e,
+  // se falhar, explicamos a causa provável.
+  if (key && !key.startsWith('sk-ant-')) {
+    throw new Error("A API key colada não parece válida (deve começar com sk-ant-). Verifique se copiou a chave completa, sem espaços.");
+  }
   const userMsg = `Pesquise os preços mais atuais de: ${medicamento}\nFarmácias em Curitiba-PR. Use web search. Retorne apenas JSON.`;
   let msgs = [{ role: "user", content: userMsg }];
   let rounds = 0;
   while (rounds < 10) {
     rounds++;
     const headers = { "Content-Type": "application/json", "anthropic-version": "2023-06-01" };
-    const key = getApiKey();
     if (key) { headers["x-api-key"] = key; headers["anthropic-dangerous-direct-browser-access"] = "true"; }
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST", headers,
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 2000, system: SYS,
-        tools: [{ type: "web_search_20250305", name: "web_search" }], messages: msgs })
-    });
+    let res;
+    try {
+      res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", headers,
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 2000, system: SYS,
+          tools: [{ type: "web_search_20250305", name: "web_search" }], messages: msgs })
+      });
+    } catch (networkErr) {
+      console.error("FarmaPreço fetch error:", networkErr);
+      const semChave = !key
+        ? "Você não colou uma API key. Rodando o arquivo localmente (fora do Claude.ai), a chave é obrigatória — cole-a no campo amarelo do topo. "
+        : "";
+      throw new Error(
+        semChave +
+        "Falha de rede/CORS ao contatar a API (\"Failed to fetch\"). Outras causas comuns: " +
+        "(1) o arquivo foi aberto via file:// — sirva a pasta com um servidor local " +
+        "(ex.: `python3 -m http.server` e acesse http://localhost:8000/farmapreco_cwb_v2.html); " +
+        "(2) extensão de bloqueio (uBlock, Brave Shields) bloqueando api.anthropic.com — desative para este site; " +
+        "(3) firewall/rede bloqueando api.anthropic.com; (4) você está offline. " +
+        "Abra o Console (F12) para ver o erro técnico completo."
+      );
+    }
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
     const data = await res.json();
     if (data.usage) {
@@ -440,6 +473,9 @@ function filtrarNulos(data) {
 }
 
 // ─── RETRY AUTOMÁTICO ─────────────────────────────────────────────────────────
+function erroNaoRecuperavel(msg) {
+  return /Nenhuma API key inserida|não parece válida/.test(msg || '');
+}
 async function chamarAPIComRetry(medicamento, maxTentativas = 2) {
   let lastError;
   for (let t = 0; t <= maxTentativas; t++) {
@@ -450,6 +486,7 @@ async function chamarAPIComRetry(medicamento, maxTentativas = 2) {
       return { data: await chamarAPI(medicamento), tentativa: t };
     } catch (e) {
       lastError = e;
+      if (erroNaoRecuperavel(e.message)) break; // não adianta tentar de novo sem chave válida
     }
   }
   throw lastError;
