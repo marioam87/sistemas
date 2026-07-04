@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eu Fui! — Dashboard</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Eu Fui!">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --card2: #f0f1f6;
+  --accent: #e87722;
+  --accent2: #d4611a;
+  --navy: #1a1a2e;
+  --blue: #2563eb;
+  --text: #1e1e2e;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --pri: #e87722;
+  --green: #16a34a;
+  --shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; min-height: 100vh; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--navy);
+  border-bottom: 3px solid var(--accent);
+  display: flex; align-items: center; padding: 0 1.2rem; overflow-x: auto; gap: 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+nav h1 { color: var(--accent); font-size: 1.25rem; padding: 0.75rem 1.2rem 0.75rem 0; border-right: 1px solid rgba(255,255,255,0.15); margin-right: 0.5rem; white-space: nowrap; }
+nav button {
+  background: none; border: none; color: rgba(255,255,255,0.65); cursor: pointer;
+  padding: 0.75rem 1rem; font-family: inherit; font-size: 0.85rem;
+  border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; margin-bottom: -3px;
+}
+nav button:hover { color: #fff; }
+nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* PAGES */
+.page { display: none; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* STAT CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--accent);
+  border-radius: 10px; padding: 1.1rem; text-align: center; box-shadow: var(--shadow);
+}
+.stat-card .num { font-size: 2.2rem; font-weight: bold; color: var(--accent); line-height: 1; }
+.stat-card .label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; margin-top: 0.3rem; letter-spacing: 1px; }
+
+/* CARD */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; box-shadow: var(--shadow); }
+.card h2 { color: var(--navy); font-size: 0.95rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 0.4rem; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
+@media(max-width:900px) { .grid-2,.grid-3 { grid-template-columns: 1fr; } }
+.mb { margin-bottom: 1.2rem; }
+.mt { margin-top: 1.2rem; }
+
+/* BAR CHART shows por ano */
+.bar-chart { display: flex; align-items: flex-end; gap: 2px; height: 260px; padding-top: 1rem; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 2px; }
+.bar-col .bar-num { font-size: 0.58rem; color: var(--accent); font-weight: bold; line-height: 1; }
+.bar-col .bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; transition: opacity 0.2s; }
+.bar-col .bar:hover { opacity: 0.75; }
+.bar-col .bar-yr { font-size: 0.55rem; color: var(--muted); padding-top: 2px; }
+
+/* HBAR */
+.hbar-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.hbar-row { display: flex; align-items: center; gap: 0.6rem; }
+.hbar-label { width: 170px; font-size: 0.78rem; text-align: right; color: var(--text); flex-shrink: 0; }
+.hbar-track { flex: 1; background: var(--border); border-radius: 3px; height: 22px; }
+.hbar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: flex-end; padding-right: 7px; }
+.hbar-fill span { font-size: 0.7rem; font-weight: bold; color: #fff; white-space: nowrap; }
+
+/* TABLES */
+.tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.tbl th { background: var(--navy); color: #fff; padding: 0.5rem 0.7rem; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.tbl th:first-child { border-radius: 6px 0 0 0; }
+.tbl th:last-child { border-radius: 0 6px 0 0; }
+.tbl td { padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border); }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:nth-child(even) td { background: var(--card2); }
+.tbl tr:hover td { background: #fff3e0; }
+
+/* SEARCH */
+.search-bar { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.search-bar input, .search-bar select {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  padding: 0.5rem 0.8rem; border-radius: 6px; font-family: inherit; font-size: 0.85rem; flex: 1; min-width: 140px;
+}
+.search-bar input:focus, .search-bar select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,119,34,0.15); }
+
+/* SHOW CARDS */
+.show-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 0.9rem; }
+.show-card {
+  background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  border-radius: 8px; padding: 0.9rem; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: var(--shadow);
+}
+.show-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+.show-card .sc-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.show-card .sc-num { color: var(--accent); font-size: 0.7rem; font-weight: bold; }
+.show-card .sc-band { font-weight: bold; font-size: 0.92rem; margin: 0.25rem 0 0.15rem; color: var(--navy); }
+.show-card .sc-meta { font-size: 0.72rem; color: var(--muted); }
+.show-card .sc-dur { font-size: 0.68rem; color: var(--accent); font-weight: bold; margin-top: 3px; }
+.show-card .sc-sets { display: none; margin-top: 0.7rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }
+.show-card.expanded .sc-sets { display: block; }
+.show-card .sc-songs { columns: 2; gap: 0.5rem; }
+.show-card .sc-songs li { list-style: none; font-size: 0.7rem; padding: 1px 0; color: var(--text); }
+.show-card .sc-songs li::before { content: attr(data-n) '. '; color: var(--accent); font-weight: bold; }
+.badge-pri { display: inline-block; background: var(--pri); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 0.65rem; font-weight: bold; }
+.count-info { color: var(--muted); font-size: 0.78rem; margin-bottom: 0.8rem; }
+
+/* COMPARAÇÃO */
+.comp-group { margin-bottom: 1rem; }
+.comp-group-label { font-size: 0.72rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 0.5rem; }
+.comp-group-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.comp-btn {
+  background: var(--card2); border: 1px solid var(--border); color: var(--navy);
+  border-radius: 20px; padding: 0.35rem 0.9rem; cursor: pointer;
+  font-family: inherit; font-size: 0.8rem; font-weight: bold; transition: all 0.18s;
+}
+.comp-btn .btn-count {
+  font-size: 0.62rem; font-weight: normal; color: var(--accent); letter-spacing: 0.3px; line-height: 1.2;
+  transition: color 0.18s;
+}
+.comp-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.comp-btn:hover .btn-count { color: rgba(255,255,255,0.85); }
+.comp-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.comp-btn.active .btn-count { color: rgba(255,255,255,0.85); }
+.comp-result { display: grid; gap: 1rem; }
+.comp-card { background: var(--card); border: 1px solid var(--border); border-top: 4px solid var(--accent); border-radius: 8px; padding: 1rem; box-shadow: var(--shadow); }
+.comp-card h3 { font-size: 0.9rem; color: var(--navy); margin-bottom: 0.5rem; }
+.comp-card .comp-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.6rem; }
+.comp-songs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 0.2rem; }
+.comp-song { font-size: 0.72rem; padding: 2px 4px; border-radius: 3px; }
+.comp-song.shared { background: #fff3e0; color: var(--accent); font-weight: bold; }
+
+/* BUSCA POR MÚSICA */
+.musica-result { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 0.8rem; margin-top: 1rem; }
+.musica-card { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: 8px; padding: 0.9rem; box-shadow: var(--shadow); }
+.musica-card .mc-band { font-weight: bold; color: var(--navy); font-size: 0.9rem; }
+.musica-card .mc-meta { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.musica-card .mc-song { font-size: 0.75rem; color: var(--accent); margin-top: 0.3rem; font-weight: bold; }
+.musica-card .mc-pos { font-size: 0.68rem; color: var(--muted); }
+
+/* RANKING */
+.rank-group { margin-bottom: 1.3rem; }
+.rank-label { display: inline-flex; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.6rem; }
+
+/* ESTILOS */
+.estilo-row { margin-bottom: 1rem; }
+.estilo-top { display: flex; justify-content: space-between; margin-bottom: 0.3rem; }
+.estilo-name { font-size: 0.85rem; font-weight: bold; color: var(--navy); }
+.estilo-pct { color: var(--accent); font-weight: bold; font-size: 0.85rem; }
+.estilo-bar-bg { background: var(--border); border-radius: 4px; height: 10px; }
+.estilo-bar-fill { background: var(--accent); height: 10px; border-radius: 4px; }
+.estilo-desc { font-size: 0.78rem; color: var(--text); margin-top: 0.35rem; line-height: 1.5; font-style: italic; }
+.estilo-bands { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; line-height: 1.4; }
+
+/* OUTROS */
+.outros-year h3 { color: var(--accent); font-size: 1rem; margin: 1rem 0 0.5rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--accent); }
+.evento-card { background: var(--card2); border-left: 3px solid var(--accent); border-radius: 4px; padding: 0.6rem 0.9rem; margin-bottom: 0.4rem; }
+.evento-card .ev-nome { font-weight: bold; font-size: 0.88rem; color: var(--navy); margin-bottom: 0.2rem; }
+.evento-card .ev-desc { font-size: 0.76rem; color: var(--muted); }
+
+/* FESTIVAL */
+.fest-row { display: flex; justify-content: space-between; align-items: center; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.83rem; }
+.fest-row:last-child { border-bottom: none; }
+.fest-name { font-weight: bold; color: var(--navy); }
+.fest-info { color: var(--muted); font-size: 0.76rem; }
+
+/* TABS inside pages */
+.inner-tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 2px solid var(--border); }
+.inner-tab { background: none; border: none; color: var(--muted); cursor: pointer; padding: 0.5rem 1rem; font-family: inherit; font-size: 0.85rem; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.inner-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: bold; }
+.inner-pane { display: none; }
+.inner-pane.active { display: block; }
+
+.section-sep { height: 1px; background: var(--border); margin: 1.5rem 0; }
+</style>
+</head>
+<body>
+
+<nav>
+  <h1>🎸 Eu Fui!</h1>
+  <button class="active" onclick="showPage('overview',this)">Visão Geral</button>
+  <button onclick="showPage('setlists',this)">Setlists</button>
+  <button onclick="showPage('musica',this)">Busca por Música</button>
+  <button onclick="showPage('comparacao',this)">Comparação</button>
+  <button onclick="showPage('ranking',this)">Ranking</button>
+  <button onclick="showPage('estilos',this)">Estilos</button>
+  <button onclick="showPage('outros',this)">Outros Eventos</button>
+</nav>
+
+<!-- ══ OVERVIEW ══ -->
+<div id="page-overview" class="page active">
+  <div class="stats-grid">
+    <div class="stat-card" style="border-top-color:var(--accent)">
+      <div class="num" id="anos-num">19</div>
+      <div class="label">Anos</div>
+    </div>
+    <div class="stat-card"><div class="num">75</div><div class="label">Eventos</div><div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem">(9 festivais)</div></div>
+    <div class="stat-card"><div class="num">121</div><div class="label">Shows</div></div>
+    <div class="stat-card"><div class="num">86</div><div class="label">Bandas</div></div>
+    <div class="stat-card"><div class="num">14</div><div class="label">Países</div></div>
+    <div class="stat-card"><div class="num">8</div><div class="label">Cidades</div></div>
+
+  </div>
+
+  <div class="grid-2 mb">
+    <div class="card">
+      <h2>📊 Shows por Ano</h2>
+      <div id="bar-anos" class="bar-chart" style="height:var(--anos-h,260px)"></div>
+    </div>
+    <div class="card">
+      <h2>📍 Shows por Cidade</h2>
+      <div id="hbar-cidades" class="hbar-list"></div>
+    </div>
+  </div>
+
+  <div class="grid-2 mb">
+    <div class="card">
+      <h2>🌍 Países das Bandas</h2>
+      <div id="hbar-paises" class="hbar-list"></div>
+    </div>
+    <div class="card">
+      <h2>🎪 Festivais</h2>
+      <div id="festivais-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETLISTS ══ -->
+<div id="page-setlists" class="page">
+  <div class="search-bar">
+    <input id="search-input" type="text" placeholder="Buscar banda...">
+    <select id="filter-ano"><option value="">Todos os anos</option></select>
+    <select id="filter-pais"><option value="">Todos os países</option></select>
+    <select id="filter-pri">
+      <option value="">Todos</option>
+      <option value="pri">Somente *Pri</option>
+      <option value="nao">Sem *Pri</option>
+    </select>
+  </div>
+  <div id="shows-count" class="count-info"></div>
+  <div id="show-grid" class="show-grid"></div>
+</div>
+
+<!-- ══ BUSCA POR MÚSICA ══ -->
+<div id="page-musica" class="page">
+  <div class="card mb">
+    <h2>🎵 Em quais shows ouvi esta música?</h2>
+    <div class="search-bar">
+      <input id="musica-input" type="text" placeholder="Digite o nome de uma música...">
+    </div>
+    <div id="musica-count" class="count-info"></div>
+    <div id="musica-result" class="musica-result"></div>
+  </div>
+</div>
+
+<!-- ══ COMPARAÇÃO ══ -->
+<div id="page-comparacao" class="page">
+  <div class="card mb">
+    <h2>🔀 Comparar Shows por Banda</h2>
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem">Clique em uma banda para comparar todos os seus shows. Músicas em comum aparecem em laranja.</p>
+    <div id="comp-buttons"></div>
+  </div>
+  <div id="comp-summary" style="display:none;margin-bottom:0.75rem;font-size:0.95rem;font-weight:bold;color:var(--accent)"></div>
+  <div id="comp-result" class="comp-result"></div>
+
+</div>
+
+<!-- ══ RANKING ══ -->
+<div id="page-ranking" class="page">
+  <div id="ranking-content"></div>
+</div>
+
+<!-- ══ ESTILOS ══ -->
+<div id="page-estilos" class="page">
+  <div class="card">
+    <h2>🎸 Estilos Musicais</h2>
+    <div id="estilos-content"></div>
+  </div>
+</div>
+
+<!-- ══ OUTROS ══ -->
+<div id="page-outros" class="page">
+  <div id="outros-content"></div>
+</div>
+
+<script>
+// ═══ DATA ═══
+const SHOWS = [{"n": 1, "banda": "DONAVON FRANKENREITER", "pais": "🇺🇸 EUA", "data": "20/01/2007", "local": "El Divino Club, Florianópolis – SC", "pri": false, "sets": ["Free", "It Don't Matter", "Move by Yourself", "So Far Away", "On My Mind", "Call Me Papa", "Too Much Water", "Beautiful Day", "Day Dreamer", "The Way It Is", "Make You Mine", "Shine", "Swing On Down", "Butterfly (cover – Jason Mraz, ocasional)"]}, {"n": 2, "banda": "BEN HARPER", "pais": "🇺🇸 EUA", "data": "20/01/2007", "local": "El Divino Club, Florianópolis – SC", "pri": false, "sets": ["Ground On Down", "Gold To Me", "Serve Your Soul", "Burn To Shine", "Please Don't Talk About Murder While I'm Eating", "Black Rain", "Morning Yearning", "Waiting For You", "Forgiven", "Steal My Kisses", "Burn One Down", "With My Own Two Hands", "Another Lonely Day", "Walk Away", "Sexual Healing", "Diamonds On The Inside", "Get Up Stand Up", "Better Way"]}, {"n": 3, "banda": "FATBOY SLIM", "pais": "🇬🇧 Inglaterra", "data": "17/02/2007", "local": "Balneário Camboriú – SC", "pri": false, "sets": ["Right Here Right Now", "The Rockafeller Skank", "Weapon of Choice", "Praise You", "Ya Mama", "Star 69", "Everybody Loves a Carnival", "Sunset (Bird of Prey)", "Push the Tempo", "Gangster Trippin", "Don't Let the Man Get You Down", "Wonderful Night", "Slash Dot Dash", "Mashups e remixes"]}, {"n": 4, "banda": "OASIS", "pais": "🇬🇧 Inglaterra", "data": "10/05/2009", "local": "Arena Expotrade, Pinhais – PR", "pri": false, "sets": ["Fuckin' In The Bushes", "Rock 'n' Roll Star", "Lyla", "The Shock Of The Lightning", "Cigarettes & Alcohol", "The Meaning Of Soul", "To Be Where There's Life", "Waiting For The Rapture", "The Masterplan", "Songbird", "Slide Away", "Morning Glory", "Ain't Got Nothin'", "The Importance of Being Idle", "I'm Outta Time", "Wonderwall", "Supersonic", "Don't Look Back In Anger", "Falling Down", "Champagne Supernova", "I Am The Walrus (The Beatles cover)"]}, {"n": 5, "banda": "ILL NIÑO", "pais": "🇺🇸 EUA", "data": "14/06/2009", "local": "Curitiba Master Hall, Curitiba – PR", "pri": false, "sets": ["If You Still Hate Me", "When It Cuts", "This Is War", "Lifeless... Life...", "Unreal", "Finger Painting (With The Enemy)", "I Am Loco", "My Resurrection", "God Save Us", "Corazon Of Mine", "Te Amo... I Hate You", "How Can I Live", "The Alibi Of Tyrants", "Drum Jam", "Cleansing", "Liar", "Rumba", "What Comes Around"]}, {"n": 6, "banda": "DONAVON FRANKENREITER", "pais": "🇺🇸 EUA", "data": "20/11/2009", "local": "Lupaluna – Bioparque, Curitiba – PR", "pri": false, "sets": ["Move by Yourself", "Free", "It Don't Matter", "Too Much Water", "Shine", "So Far Away", "Your Heart", "The Way It Is", "Make You Mine", "Beautiful Day", "Day Dreamer", "Call Me Papa", "Swing On Down"]}, {"n": 7, "banda": "JASON MRAZ", "pais": "🇺🇸 EUA", "data": "21/11/2009", "local": "Lupaluna – Bioparque, Curitiba – PR", "pri": false, "sets": ["Make It Mine", "The Remedy (I Won't Worry)", "You and I Both", "Lucky", "If It Kills Me", "Live High", "Butterfly", "A Beautiful Mess", "Details in the Fabric", "Coyotes", "Only Human", "Geek in the Pink", "I'm Yours", "Plane", "Song for a Friend"]}, {"n": 8, "banda": "METALLICA", "pais": "🇺🇸 EUA", "data": "30/01/2010", "local": "Morumbi, São Paulo – SP", "pri": false, "sets": ["The Ecstasy Of Gold", "Creeping Death", "For Whom The Bell Tolls", "The Four Horsemen", "Harvester Of Sorrow", "Fade To Black", "That Was Just Your Life", "The End Of The Line", "The Day That Never Comes", "Sad But True", "Broken Beat And Scarred", "One", "Master Of Puppets", "Blackened", "Nothing Else Matters", "Enter Sandman", "Stone Cold Crazy (Queen cover)", "Motorbreath", "Seek & Destroy"]}, {"n": 9, "banda": "AVENGED SEVENFOLD", "pais": "🇺🇸 EUA", "data": "11/10/2010", "local": "SWU – Fazenda Meada, Itu – SP", "pri": false, "sets": ["Nightmare", "Critical Acclaim", "Welcome to the Family", "Beast and the Harlot", "Buried Alive", "Afterlife", "God Hates Us", "Unholy Confessions", "Almost Easy"]}, {"n": 10, "banda": "INCUBUS", "pais": "🇺🇸 EUA", "data": "11/10/2010", "local": "SWU – Fazenda Meada, Itu – SP", "pri": false, "sets": ["Megalomaniac", "Anna Molly", "Nice To Know You", "Pardon Me", "Circles", "Make Yourself", "Oil and Water", "Drive", "A Crow Left of the Murder", "Are You In?", "Look Alive", "The Warmth", "Love Hurts", "Wish You Were Here"]}, {"n": 11, "banda": "QUEENS OF THE STONE AGE", "pais": "🇺🇸 EUA", "data": "11/10/2010", "local": "SWU – Fazenda Meada, Itu – SP", "pri": false, "sets": ["Feel Good Hit Of The Summer", "The Lost Art of Keeping a Secret", "3's & 7's", "Sick Sick Sick", "Monsters in the Parasol", "Burn the Witch", "Long Slow Goodbye", "In My Head", "Little Sister", "Do It Again", "I Think I Lost My Headache", "Go With the Flow", "No One Knows", "A Song for the Dead"]}, {"n": 12, "banda": "LINKIN PARK", "pais": "🇺🇸 EUA", "data": "11/10/2010", "local": "SWU – Fazenda Meada, Itu – SP", "pri": false, "sets": ["The Requiem", "Wretches and Kings", "Papercut", "Given Up", "New Divide", "Faint", "Empty Spaces", "When They Come for Me", "No More Sorrow", "Jornada del Muerto", "Waiting for the End", "Wisdom Justice and Love", "Iridescent", "Numb", "The Radiance", "Breaking the Habit", "Shadow of the Day", "Crawling", "One Step Closer", "Fallout", "The Catalyst", "The Messenger", "In the End", "What I've Done", "Bleed It Out"]}, {"n": 13, "banda": "IRON MAIDEN", "pais": "🇬🇧 Inglaterra", "data": "05/04/2011", "local": "Arena Expotrade, Pinhais – PR", "pri": true, "sets": ["Satellite 15... The Final Frontier", "El Dorado", "2 Minutes to Midnight", "The Talisman", "Coming Home", "Dance of Death", "The Trooper", "The Wicker Man", "Blood Brothers", "When the Wild Wind Blows", "The Evil That Men Do", "Fear of the Dark", "Iron Maiden", "The Number of the Beast", "Hallowed Be Thy Name", "Running Free"]}, {"n": 14, "banda": "AVENGED SEVENFOLD", "pais": "🇺🇸 EUA", "data": "06/04/2011", "local": "Curitiba Master Hall, Curitiba – PR", "pri": false, "sets": ["Nightmare", "Critical Acclaim", "Welcome to the Family", "Beast and the Harlot", "Buried Alive", "So Far Away", "Afterlife", "God Hates Us", "Bat Country", "Unholy Confessions", "Fiction", "Save Me"]}, {"n": 15, "banda": "STONE SOUR", "pais": "🇺🇸 EUA", "data": "24/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["Mission Statement", "Reborn", "Made Of Scars", "Digital (Did You Tell)", "Orchids", "Say You'll Haunt Me", "Come What(ever) May", "Your God", "Bother", "Through Glass", "Get Inside", "Hell & Consequences", "30/30-150"]}, {"n": 16, "banda": "SNOW PATROL", "pais": "🇬🇧 Irlanda do Norte", "data": "24/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["You're all I have", "Take back the city", "Called out in the dark", "Hands open", "This isn't everything you are", "Run", "Shut your eyes", "Make this go on forever", "Set the fire", "Chocolate", "Just say yes", "Chasing cars", "Fallen empires", "Open your eyes"]}, {"n": 17, "banda": "RED HOT CHILI PEPPERS", "pais": "🇺🇸 EUA", "data": "24/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["Monarchy of Roses", "Can't Stop", "Charlie", "Otherside", "Look Around", "Dani California", "Under the Bridge", "Factory of Faith", "Throw Away Your Television", "Pea", "The Adventures of Rain Dance Maggie", "Me & My Friends", "Did I Let You Know", "Higher Ground", "Californication", "By the Way", "Around the World", "Blood Sugar Sex Magik", "Give It Away"]}, {"n": 18, "banda": "MOTÖRHEAD", "pais": "🇬🇧 Inglaterra", "data": "25/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["Iron Fist", "Stay Clean", "Get Back In Line", "Metropolis", "Over the Top", "One Night Stand", "I Know How to Die", "The Chase Is Better Than the Catch", "In the Name of Tragedy", "Going to Brazil", "Killed by Death", "Ace of Spades", "Overkill"]}, {"n": 19, "banda": "SLIPKNOT", "pais": "🇺🇸 EUA", "data": "25/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["(sic)", "Eyeless", "Wait and Bleed", "The Blister Exists", "Liberate", "Before I Forget", "Pulse Of The Maggots", "Disasterpiece", "Psychosocial", "The Heretic Anthem", "Duality", "Spit It Out", "People = Shit", "Surfacing"]}, {"n": 20, "banda": "METALLICA", "pais": "🇺🇸 EUA", "data": "25/09/2011", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["The Ecstasy of Gold", "Creeping Death", "For Whom the Bell Tolls", "Fuel", "Ride the Lightning", "Fade to Black", "Cyanide", "All Nightmare Long", "Sad But True", "Welcome Home (Sanitarium)", "Orion", "One", "Master of Puppets", "Blackened", "Nothing Else Matters", "Enter Sandman", "Am I Evil? (Diamond Head cover)", "Whiplash", "Seek & Destroy"]}, {"n": 21, "banda": "SYSTEM OF A DOWN", "pais": "🇺🇸 EUA", "data": "01/10/2011", "local": "Chácara Jockey Club, São Paulo – SP", "pri": true, "sets": ["Prison Song", "Soldier Side – Intro", "B.Y.O.B.", "Revenga", "Needles", "Deer Dance", "Radio/Video", "Hypnotize", "Question!", "Suggestions", "Psycho", "Chop Suey!", "Lonely Day", "Bounce", "Lost in Hollywood", "Kill Rock 'n Roll", "Forest", "Science", "Mind", "Innervision", "Holy Mountains", "Aerials", "Vicinity of Obscenity", "Tentative", "Cigaro", "Suite-Pee", "War?", "Toxicity", "Sugar"]}, {"n": 22, "banda": "PEARL JAM", "pais": "🇺🇸 EUA", "data": "09/11/2011", "local": "Vila Capanema, Curitiba – PR", "pri": true, "sets": ["Go", "Arms Aloft (Joe Strummer cover)", "Animal", "Olé", "Why Go", "Elderly Woman Behind the Counter in a Small Town", "Corduroy", "Given To Fly", "Dissident", "The Fixer", "Even Flow", "In Hiding", "Setting Forth", "Not For You", "Red Mosquito", "Got Some", "World Wide Suicide", "Porch", "Just Breathe", "Off He Goes", "Unthought Known", "Breath", "Supersonic", "Black", "Jeremy", "Better Man", "Leaving Here (Holland-Dozier-Holland cover)", "Footsteps", "Once", "Alive", "Baba O'Riley (The Who cover)", "Yellow Ledbetter"]}, {"n": 23, "banda": "THE BEAUTIFUL GIRLS", "pais": "🇦🇺 Austrália", "data": "04/05/2012", "local": "Treasure Eventos, Curitiba – PR", "pri": false, "sets": ["Music", "Periscopes", "Let's Take the Long Way Home", "La Mar", "The Weight of the World", "Ashes", "Move On", "California", "Freedom", "Ten Mile Stereo", "Baby I'm a Fool", "Goodtimes", "Girl Lately", "Hold Your Head High"]}, {"n": 24, "banda": "KATCHAFIRE", "pais": "🇳🇿 Nova Zelândia", "data": "04/05/2012", "local": "Treasure Eventos, Curitiba – PR", "pri": false, "sets": ["Get Away", "Irie", "Giddy Up", "Who You With", "Seriously", "Collie Herb Man", "100", "Hey Girl", "Love Letter", "Reggae Revival", "Working", "Dance With You", "Mr Flava", "This World"]}, {"n": 25, "banda": "YANNI", "pais": "🇬🇷 Grécia", "data": "09/10/2012", "local": "Teatro Positivo, Curitiba – PR", "pri": false, "sets": ["Truth of Touch", "Echo of a Dream", "Keys to Imagination", "Rainmaker", "Felitsa", "Enchantment", "Nightingale", "Marching Season", "World Dance", "Until the Last Moment", "If I Could Tell You", "The Storm", "End of August", "Santorini", "Standing in Motion"]}, {"n": 26, "banda": "FATBOY SLIM", "pais": "🇬🇧 Inglaterra", "data": "04/01/2013", "local": "Café Curaçao, Guaratuba – PR", "pri": false, "sets": ["Intro / Big Beat Mix", "Right Here Right Now", "The Rockafeller Skank", "Star 69", "Weapon of Choice", "Praise You", "Ya Mama", "Don't Let the Man Get You Down", "Wonderful Night", "Gangster Trippin", "Slash Dot Dash", "Eat Sleep Rave Repeat", "Sunset (Bird of Prey)", "Everybody Loves a Carnival", "Mashups e remixes (incl. White Stripes, Rolling Stones, Queen)"]}, {"n": 27, "banda": "WHITESNAKE", "pais": "🇬🇧 Inglaterra", "data": "15/10/2013", "local": "Bioparque, Curitiba – PR", "pri": true, "sets": ["Give Me All Your Love", "Ready an' Willing", "Love Ain't No Stranger", "Is This Love", "Slide It In / Slow an' Easy", "Love Will Set You Free", "Pistols at Dawn (Guitar Duel)", "Steal Your Heart Away (com drum solo)", "Fool for Your Loving", "Here I Go Again", "Still of the Night", "Soldier of Fortune (Deep Purple cover)", "Burn"]}, {"n": 28, "banda": "AEROSMITH", "pais": "🇺🇸 EUA", "data": "15/10/2013", "local": "Bioparque, Curitiba – PR", "pri": true, "sets": ["Let the Music Do the Talking", "Love in an Elevator", "Toys in the Attic", "Oh Yeah", "Pink", "Dude (Looks Like a Lady)", "Same Old Song and Dance", "Cryin'", "Last Child", "Jaded", "Stop Messin' Around (Fleetwood Mac cover)", "What It Takes", "Livin' on the Edge", "I Don't Want to Miss a Thing", "No More No More", "Come Together (The Beatles cover)", "Mother Popcorn (James Brown cover)", "Walk This Way", "Dream On", "Sweet Emotion", "Crazy", "Movin' Out", "Train Kept A-Rollin'"]}, {"n": 29, "banda": "KILLSWITCH ENGAGE", "pais": "🇺🇸 EUA", "data": "19/10/2013", "local": "Monsters of Rock – Arena Anhembi, São Paulo – SP", "pri": false, "sets": ["The New Awakening", "A Bid Farewell", "Fixation on the Darkness", "You Don't Bleed for Me (Live Debut)", "Vide Infra", "A Tribute to the Fallen", "The Hell in Me", "Rose of Sharyn", "Reckoning", "No End in Sight", "My Last Serenade", "The End of Heartache", "My Curse", "In Due Time"]}, {"n": 30, "banda": "LIMP BIZKIT", "pais": "🇺🇸 EUA", "data": "19/10/2013", "local": "Monsters of Rock – Arena Anhembi, São Paulo – SP", "pri": true, "sets": ["Thieves (Ministry cover)", "Rollin'", "Hot Dog", "My Generation", "Livin' It Up", "My Way", "Smells Like Teen Spirit (Nirvana cover)", "Killing in the Name (RATM cover)", "Eat You Alive", "Faith (George Michael cover)", "Take a Look Around", "Break Stuff"]}, {"n": 31, "banda": "KORN", "pais": "🇺🇸 EUA", "data": "19/10/2013", "local": "Monsters of Rock – Arena Anhembi, São Paulo – SP", "pri": true, "sets": ["Blind", "Twist", "Falling Away from Me", "Love & Meth", "Narcissistic Cannibal", "Coming Undone", "Prey For Me", "Shoots and Ladders / Somebody Someone", "Never Never", "Here to Stay", "Y'All Want a Single", "Roots Bloody Roots (Sepultura cover)", "Got the Life", "Freak on a Leash"]}, {"n": 32, "banda": "SLIPKNOT", "pais": "🇺🇸 EUA", "data": "19/10/2013", "local": "Monsters of Rock – Arena Anhembi, São Paulo – SP", "pri": true, "sets": ["Disasterpiece", "Liberate", "Wait and Bleed", "Get This", "Before I Forget", "Eyeless", "The Blister Exists", "Dead Memories", "Sulfur", "Left Behind", "Gently", "Pulse of the Maggots", "Everything Ends", "The Heretic Anthem", "Psychosocial", "Duality", "Spit It Out", "(sic)", "People = Shit", "Surfacing"]}, {"n": 33, "banda": "P.O.D.", "pais": "🇺🇸 EUA", "data": "12/03/2014", "local": "Curitiba Master Hall, Curitiba – PR", "pri": false, "sets": ["Murdered Love", "Lost in Forever", "Boom", "Set It Off", "Eyez", "Babylon the Murderer", "Without Jah Nothin'", "Roots in Stereo", "Youth of the Nation", "Beautiful", "Southtown", "Bullet the Blue Sky (U2 cover)", "Panic & Run", "Alive", "On Fire", "Higher", "Satellite"]}, {"n": 34, "banda": "AVENGED SEVENFOLD", "pais": "🇺🇸 EUA", "data": "19/03/2014", "local": "Curitiba Master Hall, Curitiba – PR", "pri": false, "sets": ["Shepherd of Fire", "Critical Acclaim", "Beast and the Harlot", "Hail to the King", "Doing Time", "Buried Alive", "Seize the Day", "Nightmare", "Eternal Rest", "Afterlife", "This Means War", "Almost Easy", "Unholy Confessions", "A Little Piece of Heaven"]}, {"n": 35, "banda": "METALLICA", "pais": "🇺🇸 EUA", "data": "22/03/2014", "local": "Morumbi, São Paulo – SP", "pri": true, "sets": ["The Ecstasy of Gold", "Battery", "Master of Puppets", "Welcome Home (Sanitarium)", "Fuel", "The Unforgiven", "Lords of Summer", "Wherever I May Roam", "Sad but True", "Fade to Black", "And Justice for All", "One", "For Whom the Bell Tolls", "Creeping Death", "Nothing Else Matters", "Enter Sandman", "Whiskey in the Jar", "The Day That Never Comes", "Seek & Destroy"]}, {"n": 36, "banda": "KAISER CHIEFS", "pais": "🇬🇧 Inglaterra", "data": "23/01/2015", "local": "Morumbi, São Paulo – SP", "pri": false, "sets": ["Everyday I Love You Less and Less", "Everything Is Average Nowadays", "Ruffians on Parade", "Never Miss a Beat", "Coming Home", "The Angry Mob", "Cannons", "Ruby", "I Predict a Riot", "Misery Company", "Oh My God"]}, {"n": 37, "banda": "FOO FIGHTERS", "pais": "🇺🇸 EUA", "data": "23/01/2015", "local": "Morumbi, São Paulo – SP", "pri": false, "sets": ["Something From Nothing", "The Pretender", "Learn to Fly", "Breakout", "Arlandria", "My Hero", "Congregation", "Walk", "Cold Day in the Sun", "I'll Stick Around", "Monkey Wrench", "Skin and Bones", "Wheels", "Times Like These", "Detroit Rock City (KISS cover)", "Stay With Me (The Faces cover)", "Tie Your Mother Down (Queen cover)", "Under Pressure (Queen/Bowie cover)", "All My Life", "These Days", "Outside", "Best Of You", "Everlong"]}, {"n": 38, "banda": "ELUVEITIE", "pais": "🇨🇭 Suíça", "data": "14/04/2015", "local": "John Bull, Curitiba – PR", "pri": false, "sets": ["King", "Nil", "From Darkness", "Uis Elveti", "Thousandfold", "Primordial Breath", "Sucellos", "Omnos", "De Ruef vo de Barge", "Inception", "Memento", "Brictom", "A Rose For Epona", "The Nameless", "Kingdom Come Undone", "The Silver Sister", "Quoth The Raven", "Alesia", "Inis Mona", "Tegernakô"]}, {"n": 39, "banda": "MOTÖRHEAD", "pais": "🇬🇧 Inglaterra", "data": "28/04/2015", "local": "Monsters Tour – Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Shoot You In The Back", "Damage Case", "Stay Clean", "Metropolis", "Over The Top", "The Chase Is Better Than The Catch", "Rock It", "Do You Believe", "Lost Woman Blues", "Doctor Rock", "Just 'Cos You Got The Power", "Going To Brasil", "Ace Of Spades", "Overkill"]}, {"n": 40, "banda": "JUDAS PRIEST", "pais": "🇬🇧 Inglaterra", "data": "28/04/2015", "local": "Monsters Tour – Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Dragonaut", "Metal Gods", "Devil's Child", "Victim Of Changes", "Halls Of Valhalla", "Turbo Lover", "Redeemer Of Souls", "Jawbreaker", "Breaking The Law", "Hell Bent For Leather", "Electric Eye", "Painkiller", "Living After Midnight"]}, {"n": 41, "banda": "OZZY OSBOURNE", "pais": "🇬🇧 Inglaterra", "data": "28/04/2015", "local": "Monsters Tour – Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Bark At The Moon", "Mr. Crowley", "I Don't Know", "Fairies Wear Boots", "Suicide Solution", "Road To Nowhere", "War Pigs", "Shot In The Dark", "Rat Salad", "Iron Man", "I Don't Want To Change The World", "Crazy Train", "Paranoid"]}, {"n": 42, "banda": "DAVID GARRETT", "pais": "🇩🇪 Alemanha", "data": "22/07/2015", "local": "Teatro Positivo, Curitiba – PR", "pri": false, "sets": ["He's a Pirate / Smooth Criminal / Smells Like Teen Spirit / Walk This Way", "Baila Me (Gipsy Kings cover)", "Born In The USA (Bruce Springsteen cover)", "Ma Dove Sei", "Tico Tico (Zequinha de Abreu cover)", "Babooshka (Kate Bush cover)", "Lacrimosa (Mozart cover)", "Fuel (Metallica cover)", "I Have a Dream (ABBA cover)", "Fortuna Imperatrix Mundi", "Livin' on a Prayer (Bon Jovi cover)", "We Will Rock You (Queen cover)", "Melancholia", "We Are The Champions (Queen cover)", "Dude Looks Like a Lady (Aerosmith cover)", "Symphony nº 5 (Beethoven cover)", "Your Song (Elton John cover)", "Requiem (Verdi cover)", "La Bamba (Ritchie Valens cover)", "Wrecking Ball (Miley Cyrus cover)", "Viva La Vida (Coldplay cover)", "Master Of Puppets (Metallica cover)", "Always on My Mind (Brenda Lee cover)"]}, {"n": 43, "banda": "ROLLING STONES", "pais": "🇬🇧 Inglaterra", "data": "20/02/2016", "local": "Maracanã, Rio de Janeiro – RJ", "pri": true, "sets": ["Start Me Up", "It's Only Rock 'n' Roll (But I Like It)", "Tumbling Dice", "Out Of Control", "Like a Rolling Stone (Bob Dylan cover)", "Doom And Gloom", "Angie", "Paint It Black", "Honky Tonk Women", "You Got The Silver", "Before They Make Me Run", "Midnight Rambler", "Miss You", "Gimme Shelter", "Brown Sugar", "Sympathy For The Devil", "Jumpin' Jack Flash", "You Can't Always Get What You Want", "(I Can't Get No) Satisfaction"]}, {"n": 44, "banda": "MUMFORD & SONS", "pais": "🇬🇧 Inglaterra", "data": "14/02/2016", "local": "Metropolitan, Rio de Janeiro – RJ", "pri": true, "sets": ["Snake Eyes", "Little Lion Man", "Below My Feet", "Wilder Mind", "White Blank Page", "Lover Of The Light", "Tompkins Square Park", "Believe", "Monster", "The Cave", "Ditmas", "Dust Bowl Dance", "Hot Gates", "I'm on Fire (Bruce Springsteen cover)", "I Will Wait", "The Wolf"]}, {"n": 45, "banda": "FLORENCE & THE MACHINE", "pais": "🇬🇧 Inglaterra", "data": "14/02/2016", "local": "Metropolitan, Rio de Janeiro – RJ", "pri": true, "sets": ["What The Water Gave Me", "Ship To Wreck", "Shake It Out", "Rabbit Heart (Raise It Up)", "Delilah", "How Big How Blue How Beautiful", "Third Eye", "Heartlines", "Sweet Nothing (Calvin Harris cover)", "Queen Of Peace", "Spectrum", "You've Got The Love (The Source cover)", "Dog Days Are Over", "Which Witch", "What Kind Of Man", "Drumming Song"]}, {"n": 46, "banda": "IRON MAIDEN", "pais": "🇬🇧 Inglaterra", "data": "17/03/2016", "local": "HSBC Arena, Rio de Janeiro – RJ", "pri": true, "sets": ["If Eternity Should Fail", "Speed Of Light", "Children Of The Damned", "Tears Of A Clown", "The Red And The Black", "The Trooper", "Powerslave", "Death Or Glory", "The Book Of Souls", "Hallowed Be Thy Name", "Fear Of The Dark", "Iron Maiden", "The Number Of The Beast", "Blood Brothers", "Wasted Years"]}, {"n": 47, "banda": "COLDPLAY", "pais": "🇬🇧 Inglaterra", "data": "10/04/2016", "local": "Maracanã, Rio de Janeiro – RJ", "pri": false, "sets": ["A Head Full Of Dreams", "Yellow", "Every Teardrop Is A Waterfall", "The Scientist", "Birds", "Paradise", "Everglow", "Princess Of China", "Magic", "Clocks", "Midnight", "Charlie Brown", "Hymn For The Weekend", "Fix You", "Heroes (David Bowie cover)", "Viva La Vida", "Adventure Of a Lifetime", "Parachutes", "Shiver", "A Message", "Amazing Day", "A Sky Full Of Stars", "Up&Up"]}, {"n": 48, "banda": "STEVE 'N' SEAGULLS", "pais": "🇫🇮 Finlândia", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Paradise City (Guns n' Roses cover)", "The Trooper (Iron Maiden cover)", "You Shook Me All Night Long (AC/DC cover)", "Seek & Destroy (Metallica cover)", "Aces High (Iron Maiden cover)", "Thunderstruck (AC/DC cover)"]}, {"n": 49, "banda": "SHINEDOWN", "pais": "🇺🇸 EUA", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Diamond Eyes (Boom-Lay Boom-Lay Boom)", "Enemies", "Cut The Cord", "Sound Of Madness"]}, {"n": 50, "banda": "BLACK STONE CHERRY", "pais": "🇺🇸 EUA", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Me and Mary Jane", "Blind Man", "In My Blood", "Cheaper to Drink Alone", "Soul Machine", "Blame It on Boom Boom", "Lonely Train", "Ace of Spades (Motörhead cover)"]}, {"n": 51, "banda": "HALESTORM", "pais": "🇺🇸 EUA", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Love Bites (So Do I)", "Mz. Hyde", "Apocalyptic", "Amen", "I Like It Heavy", "I Am The Fire", "I Get Off", "Freak Like Me", "Mayhem", "I Miss The Misery"]}, {"n": 52, "banda": "DISTURBED", "pais": "🇺🇸 EUA", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Ten Thousand Fists", "The Game", "The Vengeful One", "Prayer", "Liberate", "Another Way To Die", "Stupify", "The Sound Of Silence (Simon & Garfunkel cover)", "Inside The Fire", "I Still Haven't Found What I'm Looking For (U2 cover)", "Baba O'Riley (The Who cover)", "Killing In The Name (RATM cover)", "The Light", "Stricken", "Indestructible", "Voices", "Down With The Sickness"]}, {"n": 53, "banda": "MARILYN MANSON", "pais": "🇺🇸 EUA", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Angel With The Scabbed Wings", "Disposable Teens", "No Reflection", "Mobscene", "Cupid Carries A Gun", "Irresponsible Hate Anthem", "Deep Six", "The Dope Show", "Sweet Dreams (Eurythmics cover)", "Cruci-Fiction in Space", "Coma White", "The Beautiful People"]}, {"n": 54, "banda": "RAMMSTEIN", "pais": "🇩🇪 Alemanha", "data": "07/09/2016", "local": "Maximus Festival – Autódromo de Interlagos, São Paulo – SP", "pri": false, "sets": ["Ramm 4", "Reise Reise", "Hallelujah", "Zerstören", "Keine Lust", "Feuer Frei!", "Seemann", "Ich Tu Dir Weh", "Du Riechst So Gut", "Mein Herz Brennt", "Links 2-3-4", "Ich Will", "Du Hast", "Stripped (Depeche Mode cover)", "Sonne", "Amerika", "Engel", "Te Quiero Puta!"]}, {"n": 55, "banda": "CHRIS CORNELL", "pais": "🇺🇸 EUA", "data": "08/12/2016", "local": "Teatro Bradesco, Rio de Janeiro – RJ", "pri": true, "sets": ["Before We Disappear", "Can't Change Me", "'Til The Sun Comes Back Around", "Nothing Compares 2 U (Prince cover)", "Nearly Forgot My Broken Heart", "Improvisation (based on Seasons)", "The Times They Are A-Changin' (Bob Dylan cover)", "Josephine", "Fell on Black Days", "Thank You (Led Zeppelin cover)", "Doesn't Remind Me", "Wide Awake", "Like a Stone", "Wooden Jesus", "All Night Thing", "Blow Up the Outside World", "When I'm Down", "Let Your Eyes Wander", "I Am the Highway", "Rusty Cage", "Black Hole Sun", "Getaway Car", "A Day in the Life (The Beatles cover)", "Hunger Strike", "Seasons", "Higher Truth"]}, {"n": 56, "banda": "KORN", "pais": "🇺🇸 EUA", "data": "20/04/2017", "local": "Live Curitiba, Curitiba – PR", "pri": true, "sets": ["Right Now", "Here To Stay", "Rotting In Vain", "Somebody Someone", "Word Up! (Cameo cover)", "Coming Undone", "Insane", "Y'All Want a Single", "Make Me Bad", "Shoots and Ladders", "Blind", "Twist", "Good God", "Falling Away From Me", "Freak on a Leash"]}, {"n": 57, "banda": "ALTER BRIDGE", "pais": "🇺🇸 EUA", "data": "22/09/2017", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["Come To Life", "Addicted To Pain", "Cry Of Achilles", "My Champion", "Waters Rising", "Isolation", "Blackbird", "Open Your Eyes", "Metalingus", "Rise Today"]}, {"n": 58, "banda": "BON JOVI", "pais": "🇺🇸 EUA", "data": "22/09/2017", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["This House Is Not For Sale", "Raise Your Hands", "Knockout", "You Give Love A Bad Name", "Born To Be My Baby", "Lost Highway", "Because We Can", "I'll Sleep When I'm Dead", "Runaway", "We Got It Goin' On", "Someday I'll Be Saturday Night", "Bed of Roses", "It's My Life", "Captain Crash & The Beauty Queen From Mars", "Roller Coaster", "Wanted Dead Or Alive", "Lay Your Hands On Me", "Keep The Faith", "Bad Medicine", "Have A Nice Day", "Livin' On A Prayer"]}, {"n": 59, "banda": "THE OFFSPRING", "pais": "🇺🇸 EUA", "data": "24/09/2017", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["You're Gonna Go Far Kid", "All I Want", "Come Out And Play", "(Can't Get My) Head Around You", "Original Prankster", "Have You Ever", "Staring At The Sun", "Want You Bad", "Bad Habit", "Hit That", "Gone Away", "Why Don't You Get A Job?", "Americana", "Pretty Fly (For a White Guy)", "The Kids Aren't Alright", "Self Esteem"]}, {"n": 60, "banda": "RED HOT CHILI PEPPERS", "pais": "🇺🇸 EUA", "data": "24/09/2017", "local": "Rock In Rio, Rio de Janeiro – RJ", "pri": true, "sets": ["Intro Jam", "Can't Stop", "Snow (Hey Oh)", "The Zephyr Song", "Dark Necessities", "Did I Let You Know", "I Wanna Be Your Dog (The Stooges cover)", "Right On Time", "Go Robot", "Californication", "Tell Me Baby", "Sir Psycho Sexy", "They're Red Hot (Robert Johnson cover)", "The Power Of Equality", "Under The Bridge", "By The Way", "Goodbye Angels", "Give It Away"]}, {"n": 61, "banda": "IN FLAMES", "pais": "🇸🇪 Suécia", "data": "20/10/2017", "local": "Circo Voador, Rio de Janeiro – RJ", "pri": false, "sets": ["Drained", "Before I Fall", "Everything's Gone", "Take This Life", "Trigger", "Only For The Weak", "Dead Alone", "Darker Times", "Drifter", "Moonshield", "The Jester's Dance", "Save Me", "Alias", "Here Until Forever", "The Truth", "Deliver Us", "The Mirror's Truth", "The Quiet Place", "The End"]}, {"n": 62, "banda": "JOHN MAYER", "pais": "🇺🇸 EUA", "data": "27/10/2017", "local": "Jeunesse Arena, Rio de Janeiro – RJ", "pri": true, "sets": ["Helpless", "Why Georgia / No Such Thing", "Love On The Weekend", "Rosie", "Moving On And Getting Over", "Daughters", "Love Is a Verb", "Split Screen Sadness", "In Your Atmosphere", "Cross Road Blues (Robert Johnson cover)", "Vultures", "Wait Until Tomorrow (Jimi Hendrix cover)", "Belief", "I Don't Trust Myself", "Slow Dancing In A Burning Room", "Stop This Train", "Waiting On The World To Change", "In The Blood", "Gravity"]}, {"n": 63, "banda": "GREEN DAY", "pais": "🇺🇸 EUA", "data": "01/11/2017", "local": "Jeunesse Arena, Rio de Janeiro – RJ", "pri": true, "sets": ["Know Your Enemy", "Bang Bang", "Revolution Radio", "Holiday", "Letterbomb", "Boulevard Of Broken Dreams", "Longview", "Youngblood", "2000 Light Years Away", "Hitchin' A Ride", "When I Come Around", "Welcome To Paradise", "Minority", "Are We The Waiting", "St. Jimmy", "Operation Ivy Cover", "Basket Case", "She", "King For A Day", "Shout / Always Look On The Bright Side / Satisfaction / Hey Dude", "Still Breathing", "Forever Now", "American Idiot", "Jesus Of Suburbia", "21 Guns", "Good Riddance (Time Of Your Life)"]}, {"n": 64, "banda": "JACK JOHNSON", "pais": "🇺🇸 EUA", "data": "05/11/2017", "local": "Jeunesse Arena, Rio de Janeiro – RJ", "pri": true, "sets": ["You And Your Heart", "Taylor", "Staple It Together / Whole Lotta Love", "Sitting Waiting Wishing", "Flake", "The Horizon Has Been Defeated", "Badfish / Boss DJ", "Inaudible Melodies", "You Can't Control It", "My Mind Is For Sale", "Tomorrow Morning", "If I Had Eyes", "Foxy Lady (Jimi Hendrix cover)", "Good People", "No Other Way", "Breakdown", "I Got You", "Big Sur", "Upside Down", "Belle / Banana Pancakes", "At Or With Me", "Shot Reverse Shot", "Wasting Time", "Bubble Toes", "Mudfootball", "Do You Remember", "Times Like These", "Angel / Better Together"]}, {"n": 65, "banda": "QUEENS OF THE STONE AGE", "pais": "🇺🇸 EUA", "data": "25/02/2018", "local": "Maracanã, Rio de Janeiro – RJ", "pri": true, "sets": ["If I Had A Tail", "Smooth Sailing", "My God Is The Sun", "Feet Don't Fail Me", "The Way You Used To Do", "You Think I Ain't Worth A Dollar...", "No One Knows", "The Evil Has Landed", "I Sat By The Ocean", "Make It Wit Chu", "Domesticated Animals", "Villains Of Circumstance", "Little Sister", "The Lost Art Of Keeping A Secret", "Go With The Flow", "A Song For The Dead"]}, {"n": 66, "banda": "FOO FIGHTERS", "pais": "🇺🇸 EUA", "data": "25/02/2018", "local": "Maracanã, Rio de Janeiro – RJ", "pri": true, "sets": ["Run", "All My Life", "Learn To Fly", "The Pretender", "The Sky Is A Neighborhood", "Rope", "Sunday Rain", "My Hero", "These Days", "Walk", "Breakout", "Make It Right", "Under My Wheels (Alice Cooper cover)", "Another One Bites The Dust / Blitzkrieg Bop / Love Of My Life", "Under Pressure (Queen cover)", "Monkey Wrench", "Times Like These", "Best Of You", "This Is A Call", "Let There Be Rock", "Everlong"]}, {"n": 67, "banda": "OZZY OSBOURNE", "pais": "🇬🇧 Inglaterra", "data": "20/05/2018", "local": "Jeunesse Arena, Rio de Janeiro – RJ", "pri": true, "sets": ["Bark At The Moon", "Mr. Crowley", "I Don't Know", "Fairies Wear Boots", "Suicide Solution", "No More Tears", "Road To Nowhere", "War Pigs", "Miracle Man / Crazy Babies / Desire / Perry Mason (Instrumental medley)", "Shot In The Dark", "I Don't Want To Change The World", "Crazy Train", "Mama I'm Coming Home", "Paranoid"]}, {"n": 68, "banda": "BLACK LABEL SOCIETY", "pais": "🇺🇸 EUA", "data": "31/03/2019", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Genocide Junkies", "Funeral Bell", "Suffering Overdue", "Bleed For Me", "Heart of Darkness", "Suicide Messiah", "Trampled Down Below", "All That Once Shined", "Room Of Nightmares", "Bridge to Cross", "Spoke in the Wheel", "In This River", "The Blessed Hellride", "A Love Unreal", "Fire It Up", "Concrete Jungle", "Stillborn"]}, {"n": 69, "banda": "SLASH, MYLES KENNEDY & THE CONSPIRATORS", "pais": "🇺🇸 EUA", "data": "24/05/2019", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["The Call Of The Wild", "Halo", "Standing In The Sun", "Apocalyptic Love", "Back From Cali", "My Antidote", "Serve You Right", "Boulevard Of Broken Hearts", "Shadow Life", "We're All Gonna Die", "Doctor Alibi", "The One You Loved Is Gone", "Wicked Stone", "Mind Your Manners", "Driving Rain", "By The Sword", "Nightrain", "Starlight", "You're A Lie", "World On Fire", "Avalon", "Anastasia"]}, {"n": 70, "banda": "BAD RELIGION", "pais": "🇺🇸 EUA", "data": "28/10/2019", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["21st Century (Digital Boy)", "Fuck You", "Anesthesia", "Chaos From Within", "Stranger Than Fiction", "The Dichotomy", "Recipe for Hate", "Los Angeles Is Burning", "We're Only Gonna Die", "End of History", "Lose Your Head", "Automatic Man", "Skyscraper", "Do What You Want", "New Dark Ages", "Infected", "No Control", "You", "Do The Paranoid Style", "Punk Rock Song", "Sorrow", "Fuck Armageddon... This Is Hell", "American Jesus"]}, {"n": 71, "banda": "THE OFFSPRING", "pais": "🇺🇸 EUA", "data": "28/10/2019", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["Americana", "All I Want", "Come Out and Play", "It Won't Get Better", "Want You Bad", "Genocide", "Staring at the Sun", "Whole Lotta Rosie (AC/DC cover)", "Blitzkrieg Bop (Ramones cover)", "Bad Habit", "Gotta Get Away", "Gone Away", "Why Don't You Get a Job?", "(Can't Get My) Head Around You", "Pretty Fly (For a White Guy)", "The Kids Aren't Alright", "You're Gonna Go Far Kid", "Self Esteem"]}, {"n": 72, "banda": "KISS", "pais": "🇺🇸 EUA", "data": "28/05/2022", "local": "Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Detroit Rock City", "Shout It Out Loud", "Deuce", "War Machine", "Heaven's on Fire", "I Love It Loud", "Say Yeah", "Cold Gin", "Lick It Up", "Calling Dr. Love", "Tears Are Falling", "Psycho Circus", "100.000 Years", "God of Thunder", "Love Gun", "I Was Made For Lovin' You", "Black Diamond", "Beth", "Do You Love Me", "Rock And Roll All Nite"]}, {"n": 73, "banda": "GRETA VAN FLEET", "pais": "🇺🇸 EUA", "data": "07/05/2022", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["Built by Nations", "Black Smoke Rising", "Caravel", "My Way Soon", "Lover Leaver (Taker Believer)", "The Weight of Dreams", "Highway Tune"]}, {"n": 74, "banda": "METALLICA", "pais": "🇺🇸 EUA", "data": "07/05/2022", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["Whiplash", "Ride the Lightning", "The Memory Remains", "Seek & Destroy", "Moth Into Flame", "One", "Sad but True", "Whiskey in the Jar", "The Unforgiven", "For Whom the Bell Tolls", "Creeping Death", "Fade to Black", "Master of Puppets", "Battery", "Nothing Else Matters", "Enter Sandman"]}, {"n": 75, "banda": "IRON MAIDEN", "pais": "🇬🇧 Inglaterra", "data": "27/08/2022", "local": "Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Senjutsu", "Stratego", "The Writing on the Wall", "Revelations", "Blood Brothers", "Sign of the Cross", "Flight of Icarus", "Fear of the Dark", "Hallowed Be Thy Name", "The Number of the Beast", "Iron Maiden", "The Trooper", "The Clansman", "Run to the Hills", "Aces High"]}, {"n": 76, "banda": "ARCTIC MONKEYS", "pais": "🇬🇧 Inglaterra", "data": "08/11/2022", "local": "Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["Sculptures of Anything Goes", "Brainstorm", "Snap Out of It", "Crying Lightning", "Don't Sit Down Cause I've Moved Your Chair", "Why'd You Only Call Me When You're High?", "Body Paint", "Four Out Of Five", "Arabella", "Potion Approaching", "The Car", "Cornerstone", "Do I Wanna Know?", "Tranquility Base Hotel + Casino", "Pretty Visitors", "Do Me a Favour", "From the Ritz to the Rubble", "505", "There'd Better Be a Mirrorball", "I Bet You Look Good on the Dancefloor", "R U Mine?"]}, {"n": 77, "banda": "TRIVIUM", "pais": "🇺🇸 EUA", "data": "18/12/2022", "local": "Knotfest – Sambódromo do Anhembi, São Paulo – SP", "pri": false, "sets": ["In the Court of the Dragon", "Down From the Sky", "The Sin and the Sentence", "A Gunshot to the Head of Trepidation", "The Heart From Your Hate", "Strife", "Pull Harder on the Strings of Your Martyr", "In Waves"]}, {"n": 78, "banda": "PANTERA", "pais": "🇺🇸 EUA", "data": "18/12/2022", "local": "Knotfest – Sambódromo do Anhembi, São Paulo – SP", "pri": false, "sets": ["A New Level", "Mouth for War", "Strength Beyond Strength", "Becoming", "I'm Broken", "5 Minutes Alone", "This Love", "Yesterday Don't Mean Shit", "Fucking Hostile", "Planet Caravan", "Walk", "Domination / Hollow", "Cowboys From Hell"]}, {"n": 79, "banda": "BRING ME THE HORIZON", "pais": "🇬🇧 Inglaterra", "data": "18/12/2022", "local": "Knotfest – Sambódromo do Anhembi, São Paulo – SP", "pri": false, "sets": ["Can You Feel My Heart", "Happy Song", "Teardrops", "Mantra", "Dear Diary", "Parasite Eve", "Strangers", "Shadow Moses", "Kingslayer", "Die4u", "Sleepwalking", "Drown", "Obey", "Throne"]}, {"n": 80, "banda": "SLIPKNOT", "pais": "🇺🇸 EUA", "data": "18/12/2022", "local": "Knotfest – Sambódromo do Anhembi, São Paulo – SP", "pri": false, "sets": ["Disasterpiece", "Wait and Bleed", "All Out Life", "Sulfur", "Before I Forget", "The Dying Song (Time to Sing)", "Dead Memories", "Unsainted", "The Heretic Anthem", "Psychosocial", "Duality", "Custer", "Spit It Out", "People = Shit", "Surfacing"]}, {"n": 81, "banda": "IMAGINE DRAGONS", "pais": "🇺🇸 EUA", "data": "02/03/2023", "local": "Pedreira Paulo Leminski, Curitiba – PR", "pri": true, "sets": ["My Life", "Believer", "It's Time", "I'm So Sorry", "Thunder", "Birds", "Follow You", "Natural", "Next To Me", "Amsterdam", "Wrecked", "I Bet My Life", "Whatever It Takes", "Sharks", "Enemy", "Bad Liar", "Demons", "On Top Of The World", "Bones", "Radioactive", "Walking the Wire"]}, {"n": 82, "banda": "COLDPLAY", "pais": "🇬🇧 Inglaterra", "data": "18/03/2023", "local": "Morumbi, São Paulo – SP", "pri": true, "sets": ["Higher Power", "Adventure of a Lifetime", "Paradise", "The Scientist", "Viva la Vida", "Hymn for the Weekend", "Everglow", "A Head Full of Dreams", "Yellow", "Human Heart", "People of the Pride", "Clocks", "Infinity Sign", "Something Just Like This", "Midnight", "My Universe", "A Sky Full of Stars", "Don't Panic", "Humankind", "Fix You", "Biutyful", "One World"]}, {"n": 83, "banda": "BRUCE DICKINSON — Concerto for Group and Orchestra", "pais": "🇬🇧 Inglaterra", "data": "19/04/2023", "local": "Teatro Positivo, Curitiba – PR", "pri": true, "sets": ["Concerto for Group and Orchestra – 1st Movement: Moderato – Allegro", "Concerto for Group and Orchestra – 2nd Movement: Andante", "Concerto for Group and Orchestra – 3rd Movement: Vivace – Presto", "Tears of the Dragon", "Jerusalem", "Pictures of Home", "When a Blind Man Cries", "Hush", "Perfect Strangers", "Burn", "Smoke on the Water"]}, {"n": 84, "banda": "GARBAGE", "pais": "🇺🇸 EUA", "data": "07/09/2023", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["Supervixen", "The Men Who Rule the World", "Wolves", "Cities in Dust", "I Think I'm Paranoid", "Godhead", "Stupid Girl", "Vow", "Only Happy When It Rains", "Push It"]}, {"n": 85, "banda": "FOO FIGHTERS", "pais": "🇺🇸 EUA", "data": "07/09/2023", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["All My Life", "The Pretender", "Learn to Fly", "No Son of Mine", "Rescued", "Walk", "Times Like These", "Under You", "La Dee Da", "Breakout", "Guitar Solo / Sabotage / Keyboard solo / Blitzkrieg Bop / Whip It / March of the Pigs / Stairway to Heaven", "My Hero", "This Is a Call", "The Sky Is a Neighborhood", "Shame Shame", "Nothing At All", "These Days", "Generator", "The Glass", "Monkey Wrench", "Aurora", "Best Of You", "The Teacher", "Everlong"]}, {"n": 86, "banda": "EVANESCENCE", "pais": "🇺🇸 EUA", "data": "19/10/2023", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["Broken Pieces Shine", "Made of Stone", "Going Under", "Take Cover", "Lose Control / Part of Me / Never Go Back", "Call Me When You're Sober", "Lithium", "Far From Heaven", "Better Without You", "Imaginary", "Wasted on You", "End of the Dream", "Haunted / My Last Breath / Cloud Nine / Everybody's Fool / Weight of the World / Whisper", "Use My Voice", "Blind Belief", "My Immortal", "Bring Me to Life"]}, {"n": 87, "banda": "BLIND GUARDIAN", "pais": "🇩🇪 Alemanha", "data": "21/11/2023", "local": "Ópera de Arame, Curitiba – PR", "pri": true, "sets": ["Imaginations From the Other Side", "Blood of the Elves", "Nightfall", "The Script for My Requiem", "Violent Shadows", "Skalds and Shadows", "Blood Tears", "Secrets of the American Gods", "The Bard's Song – In the Forest", "Majesty", "Traveler in Time", "Sacred Worlds", "Lord of the Rings", "Time Stands Still (At the Iron Hill)", "Valhalla", "Welcome to Dying", "Mirror Mirror"]}, {"n": 88, "banda": "APOCALYPTICA", "pais": "🇫🇮 Finlândia", "data": "17/01/2024", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Ashes of the Modern World", "For Whom the Bell Tolls", "Path", "I'm Not Jesus", "Not Strong Enough", "Grace", "Refuse/Resist", "Rise", "En Route to Mayhem", "Shadowmaker", "I Don't Care", "Nothing Else Matters", "Inquisition Symphony", "Seek & Destroy", "Farewell", "Peikko"]}, {"n": 89, "banda": "PLAIN WHITE T'S", "pais": "🇺🇸 EUA", "data": "03/03/2024", "local": "I Wanna Be Tour – Estádio Couto Pereira, Curitiba – PR", "pri": false, "sets": ["Our Time Now", "Young Tonight", "Fired Up", "Take Me Away", "The Giving Tree", "Natural Disaster", "1 2 3 4", "Would You Even", "Feeling (More Like) Myself", "Hate (I Really Don't Like You)", "Hey There Delilah", "Rhythm of Love"]}, {"n": 90, "banda": "SIMPLE PLAN", "pais": "🇨🇦 Canadá", "data": "03/03/2024", "local": "I Wanna Be Tour – Estádio Couto Pereira, Curitiba – PR", "pri": false, "sets": ["I'd Do Anything", "Shut Up", "Jump", "Jet Lag", "Your Love Is a Lie", "Addicted", "Welcome to My Life", "Iconic", "Summer Paradise", "Take My Hand", "Grow Up / Vacation", "All Star / Sk8er Boi / Mr. Brightside", "What's New Scooby Doo?", "Vira-Vira", "Where I Belong", "Crazy / Perfect World / Save You / This Song Saved My Life", "I'm Just a Kid", "Perfect"]}, {"n": 91, "banda": "BLESSTHEFALL", "pais": "🇺🇸 EUA", "data": "18/05/2024", "local": "Jokers Pub, Curitiba – PR", "pri": false, "sets": ["Exodus", "Cutthroat", "Hollow Bodies", "2.0", "What's Left of Me", "Youngbloods", "Carry On", "Wake The Dead", "Wishful Sinking", "Déjà vu", "40 Days...", "Bottomfeeder", "Guys Like You Make Us Look Bad", "Promised Ones", "You Wear a Crown But You're No King", "Hey Baby Here's That Song You Wanted"]}, {"n": 92, "banda": "INCUBUS", "pais": "🇺🇸 EUA", "data": "08/04/2025", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["Nice to Know You", "Circles", "Wish You Were Here", "Just a Phase", "11am", "Blood on the Ground", "Mexico", "Warning", "Echo", "Have You Ever", "Are You In?", "Under My Umbrella", "Aqueous Transmission", "Anna Molly", "The Warmth", "Sick Sad Little World", "Dig", "Pardon Me", "Drive"]}, {"n": 93, "banda": "DONAVON FRANKENREITER", "pais": "🇺🇸 EUA", "data": "12/04/2025", "local": "White Hall Arena, Curitiba – PR", "pri": false, "sets": ["Move By Yourself", "Dance Like Nobody's Watching", "Heading Home", "What'cha Know About", "Free", "Swing On Down", "Them Blues", "It Don't Matter", "That's Too Bad (Byron Jam)"]}, {"n": 94, "banda": "BEN HARPER", "pais": "🇺🇸 EUA", "data": "12/04/2025", "local": "White Hall Arena, Curitiba – PR", "pri": false, "sets": ["Walk Away", "Below Sea Level", "Diamonds on the Inside", "Burn to Shine", "Don't Take That Attitude to Your Grave", "Mama's Trippin'", "Faded", "Excuse Me Mr.", "Another Lonely Day", "Forever", "Steal My Kisses / Need to Know Basis", "Fly One Time", "Burn One Down", "In The Colors", "Aman Omen / Knockin' on Heaven's Door", "With My Own Two Hands", "Boa Sorte / Good Luck"]}, {"n": 95, "banda": "SYSTEM OF A DOWN", "pais": "🇺🇸 EUA", "data": "06/05/2025", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["Attack", "Suite-Pee", "Prison Song", "Violent Pornography", "Aerials", "Mr. Jack", "I-E-A-I-A-I-O", "Genocidal Humanoidz", "A.D.D", "Needles", "Deer Dance", "Soldier Side – Intro", "Soldier Side", "B.Y.O.B", "Radio/Video", "Bubbles", "Dreaming", "Hypnotize", "ATWA", "Bounce", "Suggestions", "Psycho", "Chop Suey!", "Lost in Hollywood", "Lonely Day", "Streamline", "Forest", "Cigaro", "War?", "Roulette", "Toxicity", "Sugar"]}, {"n": 96, "banda": "TARJA TURUNEN & MARKO HIETALA", "pais": "🇫🇮 Finlândia", "data": "18/05/2025", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Eye of the Storm", "In for a Kill", "Undertaker", "Sing For Me", "Deliverance", "Demons in You", "Victim of Ritual", "Acoustic", "Ovelha Negra", "The Crying Moon / Feel for You / Eagle Eye", "Higher Than Hope", "Left on Mars", "Slaying the Dreamer", "Silent Masquerade", "Wishmaster", "I Walk Alone", "Wish I Had an Angel", "Until My Last Breath"]}, {"n": 97, "banda": "CRADLE OF FILTH", "pais": "🇬🇧 Inglaterra", "data": "22/08/2025", "local": "Tork n' Roll, Curitiba – PR", "pri": false, "sets": ["To Live Deliciously", "The Forest Whispers My Name", "She Is a Fire", "Malignant Perfection", "The Principle of Evil Made Flesh", "Heartbreak and Seance", "Nymphetamine (Fix)", "Born in a Burial Gown", "White Hellebore", "Cruelty Brought Thee Orchids", "Death Magick For Adepts", "Her Ghost in the Fog"]}, {"n": 98, "banda": "FLESHGOD APOCALYPSE", "pais": "🇮🇹 Itália", "data": "07/09/2025", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Ode à Art (de'Sepolcri)", "I Can Never Die", "Minotaur (The Wrath of Poseidon)", "The Fool", "Pendulum", "Sugar", "Morphine Waltz", "No", "Bloodclock", "Epilogue", "The Violation", "Blue (Da Ba Dee)"]}, {"n": 99, "banda": "EPICA", "pais": "🇳🇱 Holanda", "data": "07/09/2025", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Cross the Divide", "Unleashed", "Sensorium", "Apparition", "The Last Crusade", "The Obsessive Devotion", "Fight to Survive", "Arcana", "Unchain Utopia", "Aspiral", "Design Your Universe", "Cry for the Moon", "Beyond the Matrix", "Consign to Oblivion"]}, {"n": 100, "banda": "GREEN DAY", "pais": "🇺🇸 EUA", "data": "12/09/2025", "local": "Arena da Baixada, Curitiba – PR", "pri": false, "sets": ["American Idiot", "Holiday", "Know Your Enemy", "Boulevard of Broken Dreams", "One Eyed Bastard", "Revolution Radio", "Church on Sunday", "Longview", "Welcome to Paradise", "Hitchin a Ride", "Brain Stew", "St. Jimmy", "Dilemma", "21 Guns", "Minority", "Basket Case", "When I Come Around", "Letterbomb", "Wake Me Up When September Ends", "Jesus of Suburbia", "Bobby Sox", "Good Riddance (Time of Your Life)"]}, {"n": 101, "banda": "POPPY", "pais": "🇺🇸 EUA", "data": "05/11/2025", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": false, "sets": ["Have You Had Enough?", "Bloodmoney", "V.A.N", "The Cost of Giving Up", "Anything Like Me", "Crystallized", "Scary Mask", "Concrete", "New Way Out"]}, {"n": 102, "banda": "LINKIN PARK", "pais": "🇺🇸 EUA", "data": "05/11/2025", "local": "Estádio Couto Pereira, Curitiba – PR", "pri": true, "sets": ["Somewhere I Belong", "Crawling", "Up From the Bottom", "New Divide", "The Emptiness Machine", "The Catalyst", "Burn It Down", "Cut the Bridge", "Where'd You Go", "Waiting for the End", "From the Inside", "Two Faced", "Joe Hahn Solo", "When They Come for Me / Remember the Name", "Given Up", "One Step Closer", "Lost", "Over Each Other", "What I've Done", "Overflow", "Numb", "Stained", "In the End", "Faint", "Papercut", "Heavy Is the Crown", "Bleed it Out"]}, {"n": 103, "banda": "DEMON HUNTER", "pais": "🇺🇸 EUA", "data": "09/12/2025", "local": "Tork n' Roll, Curitiba – PR", "pri": false, "sets": ["Sorrow Light the Way", "Heaven Don't Cry", "Collapsing", "The Heart of a Graveyard", "I Will Fail You", "Infected", "Cut to Fit", "Peace", "Dead Flowers", "Cold Winter Sun", "I'm Done", "The Last One Alive", "Storm the Gates of Hell"]}, {"n": 104, "banda": "P.O.D.", "pais": "🇺🇸 EUA", "data": "09/12/2025", "local": "Tork n' Roll, Curitiba – PR", "pri": false, "sets": ["Southtown", "Rock the Party (Off the Hook)", "Boom", "Set it Off", "Sleeping Awake", "Drop", "I Got That", "Soundboy Killa", "Don't Let Me Down", "Murdered Love", "Lost in Forever", "I Won't Bow Down", "Youth of the Nation", "Will You", "Afraid to Die", "Satellite", "Alive"]}, {"n": 105, "banda": "AVENGED SEVENFOLD", "pais": "🇺🇸 EUA", "data": "28/01/2026", "local": "Pedreira Paulo Leminski, Curitiba – PR", "pri": false, "sets": ["Game Over", "Chapter Four", "Afterlife", "Hail to the King", "We Love You", "Buried Alive", "The Stage", "Seize the Day", "So Far Away", "Bat Country", "Nobody", "Nightmare", "Not Ready to Die", "Unholy Confessions", "Save Me", "Cosmic", "A Little Piece of Heaven"]}, {"n": 106, "banda": "JASON MRAZ", "pais": "🇺🇸 EUA", "data": "03/03/2026", "local": "Teatro Positivo, Curitiba – PR", "pri": false, "sets": ["You and I Both", "Long Drive", "Living in the Moment", "Curbside Prophet / The Remedy (I Won't Worry)", "Look for the Good / Life Is Wonderful / Bella Luna", "Lucky", "Make It Mine", "Details in the Fabric", "Wise Woman", "I Feel Like Dancing", "Butterfly", "A Beautiful Mess", "Song for a Friend", "Unfold", "Plane", "Love Someone", "93 Million Miles / Shine", "Always Looking for You / I'm Yours", "Have It All / I Won't Give Up"]}, {"n": 107, "banda": "THE PRETTY RECKLESS", "pais": "🇺🇸 EUA", "data": "04/03/2026", "local": "Morumbi, São Paulo – SP", "pri": true, "sets": ["Death by Rock and Roll", "Since You're Gone", "Follow Me Down", "Only Love Can Save Me Now", "For I Am Death", "Witches Burn", "Make Me Wanna Die", "Going to Hell", "Heaven Knows", "Take Me Down"]}, {"n": 108, "banda": "AC/DC", "pais": "🇦🇺 Austrália", "data": "04/03/2026", "local": "Morumbi, São Paulo – SP", "pri": true, "sets": ["If You Want Blood (You've Got It)", "Back in Black", "Demon Fire", "Shot Down in Flames", "Thunderstruck", "Have a Drink on Me", "Hells Bells", "Shot in the Dark", "Stiff Upper Lip", "Highway to Hell", "Shoot to Thrill", "Sin City", "Jailbreak", "Dirty Deeds Done Dirt Cheap", "High Voltage", "Riff Raff", "You Shook Me All Night Long", "Whole Lotta Rosie", "Let There Be Rock", "T.N.T.", "For Those About to Rock (We Salute You)"]}, {"n": 109, "banda": "HALESTORM", "pais": "🇺🇸 EUA", "data": "08/04/2026", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["Fallen Star", "I Miss the Misery", "Love Bites (So Do I)", "WATCH OUT!", "Mz. Hyde", "Like a Woman Can", "I Get Off (com trecho de Crazy On You – Heart)", "Familiar Taste of Poison", "Rain Your Blood on Me", "Freak Like Me", "Wicked Ways", "I Gave You Everything"]}, {"n": 110, "banda": "EXTREME", "pais": "🇺🇸 EUA", "data": "08/04/2026", "local": "Live Curitiba, Curitiba – PR", "pri": false, "sets": ["It's a Monster", "Decadence Dance", "#REBEL", "Rest in Peace", "Hip Today", "Am I Ever Gonna Change", "Midnight Express (solo instrumental – Nuno Bettencourt)", "More Than Words", "Cupid's Dead", "Get the Funk Out", "Hole Hearted"]}, {"n": 111, "banda": "EVERGREY", "pais": "🇸🇪 Suécia", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Falling From the Sun", "Where August Mourn", "Weightless", "The World Is on Fire", "Eternal Nocturnal", "Call Out the Dark", "King of Errors", "Architects of the New Weave", "Leaving the Emptiness", "OXYGEN!"]}, {"n": 112, "banda": "JINJER", "pais": "🇺🇦 Ucrânia", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Duél", "Green Serpent", "Fast Draw", "Vortex", "Disclosure!", "Tantrum", "Teacher Teacher!", "Hedonist", "Perennial", "Someone's Daughter", "Pisces", "Sit Stay Roll Over"]}, {"n": 113, "banda": "KILLSWITCH ENGAGE", "pais": "🇺🇸 EUA", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Fixation on the Darkness", "In Due Time", "The End of Heartache", "Aftermath", "Rose of Sharyn", "This Is Absolution", "Broken Glass", "Hate by Design", "Forever Aligned", "The Signal Fire", "I Believe", "The Arms of Sorrow", "Strength of the Mind", "This Fire", "My Curse", "My Last Serenade", "Holy Diver"]}, {"n": 114, "banda": "BLACK LABEL SOCIETY", "pais": "🇺🇸 EUA", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Funeral Bell", "Name in Blood", "Destroy & Conquer", "A Love Unreal", "Heart of Darkness", "No More Tears", "In This River", "The Blessed Hellride", "Set You Free", "Fire It Up", "Suicide Messiah", "Ozzy's Song", "Instrumental Jam", "Stillborn"]}, {"n": 115, "banda": "IN FLAMES", "pais": "🇸🇪 Suécia", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Pinball Map", "The Great Deceiver", "Deliver Us", "The Quiet Place", "In the Dark", "Voices", "Cloud Connected", "Trigger", "Only for the Weak", "Meet Your Maker", "State of Slow Decay", "Alias", "The Mirror's Truth", "I Am Above", "Take This Life"]}, {"n": 116, "banda": "ARCH ENEMY", "pais": "🇸🇪 Suécia", "data": "25/04/2026", "local": "Bangers Open Air, São Paulo – SP", "pri": false, "sets": ["Yesterday Is Dead and Gone", "The World Is Yours", "Ravenous", "War Eternal", "Dream Stealer", "To the Last Breath", "Blood Dynasty", "My Apocalypse", "Bury Me an Angel", "The Eagle Flies Alone", "No Gods No Masters", "I Am Legend / Out for Blood", "Dead Bury Their Dead", "Snow Bound", "Nemesis", "Fields of Desolation"]}, {"n": 117, "banda": "IN FLAMES", "pais": "🇸🇪 Suécia", "data": "26/04/2026", "local": "Ópera de Arame, Curitiba – PR", "pri": false, "sets": ["Pinball Map", "The Great Deceiver", "Deliver Us", "The Quiet Place", "In the Dark", "Voices", "Cloud Connected", "Artifacts of the Black Rain", "Trigger", "Only for the Weak", "Meet Your Maker", "State of Slow Decay", "Alias", "The Mirror's Truth", "I Am Above", "Take This Life"]}, {"n": 118, "banda": "AS I LAY DYING", "pais": "🇺🇸 EUA", "data": "04/05/2026", "local": "Tork n' Roll, Curitiba – PR", "pri": false, "sets": ["Blinded", "94 Hours", "Burden", "Echoes", "A Greater Foundation", "Parallels", "Meaning in Tragedy", "Confined", "Losing Sight", "The Darkest Nights", "Empty Hearts", "Reflection", "Repeating Yesterday", "Through Struggle", "Nothing Left", "The Sound of Truth", "My Own Grave"]}, {"n": 119, "banda": "SEVEN HOURS AFTER VIOLET", "pais": "🇺🇸 EUA", "data": "16/05/2026", "local": "Allianz Parque, São Paulo – SP", "pri": true, "sets": ["Abandon", "Radiance", "Alive", "Go!", "Float", "Gloom", "Paradise", "Glink", "Graves", "Sunrise"]}, {"n": 120, "banda": "SPIRITBOX", "pais": "🇨🇦 Canadá", "data": "16/05/2026", "local": "Allianz Parque, São Paulo – SP", "pri": true, "sets": ["Cellar Door", "Black Rainbow", "Perfect Soul", "Keep Sweet", "Jaded", "The Void", "Hurt You", "Yellowjacket", "Circle With Me", "Rotoscope", "Holy Roller", "Soft Spine"]}, {"n": 121, "banda": "KORN", "pais": "🇺🇸 EUA", "data": "16/05/2026", "local": "Allianz Parque, São Paulo – SP", "pri": true, "sets": ["Blind", "Twist", "Here to Stay", "Got the Life", "Clown", "Did My Time", "Shoots and Ladders", "Coming Undone", "Reward the Scars", "Cold", "Twisted Transistor", "Dirty", "Somebody Someone", "Ball Tongue", "Y'All Want a Single", "4 U", "Falling Away From Me", "A.D.I.D.A.S.", "Freak on a Leash"]}];
+const ANOS = {"2007": 3, "2008": 0, "2009": 4, "2010": 5, "2011": 10, "2012": 3, "2013": 7, "2014": 3, "2015": 7, "2016": 13, "2017": 9, "2018": 3, "2019": 4, "2020": 0, "2021": 0, "2022": 9, "2023": 7, "2024": 4, "2025": 13, "2026": 17};
+const PAISES = {"Alemanha": 3, "Austrália": 2, "Canadá": 2, "EUA": 77, "Finlândia": 3, "Grécia": 1, "Holanda": 1, "Inglaterra": 22, "Irlanda do Norte": 1, "Itália": 1, "Nova Zelândia": 1, "Suécia": 5, "Suíça": 1, "Ucrânia": 1};
+const PAISES_MAP = {"Alemanha": "🇩🇪", "Austrália": "🇦🇺", "Canadá": "🇨🇦", "EUA": "🇺🇸", "Finlândia": "🇫🇮", "Grécia": "🇬🇷", "Holanda": "🇳🇱", "Inglaterra": "🇬🇧", "Irlanda do Norte": "🇬🇧", "Itália": "🇮🇹", "Nova Zelândia": "🇳🇿", "Suécia": "🇸🇪", "Suíça": "🇨🇭", "Ucrânia": "🇺🇦"};
+const MAP_DATA = {"DEU": 3, "AUS": 2, "CAN": 2, "USA": 77, "FIN": 3, "GRC": 1, "NLD": 1, "GBR": 23, "ITA": 1, "NZL": 1, "SWE": 5, "CHE": 1, "UKR": 1};
+const CIDADES = {"Balneário Camboriú, SC": 1, "Curitiba, PR": 56, "Florianópolis, SC": 2, "Guaratuba, PR": 1, "Itu, SP": 4, "Pinhais, PR": 2, "Rio de Janeiro, RJ": 23, "São Paulo, SP": 32};
+const RANKING = {"3": [{"banda": "Donavon Frankenreiter", "anos": "2007, 2009, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Foo Fighters", "anos": "2015, 2018, 2023", "pais": "🇺🇸 EUA"}, {"banda": "In Flames", "anos": "2017, 2026, 2026", "pais": "🇸🇪 Suécia"}, {"banda": "Iron Maiden", "anos": "2011, 2016, 2022", "pais": "🇬🇧 Inglaterra"}, {"banda": "Korn", "anos": "2013, 2017, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Slipknot", "anos": "2011, 2013, 2022", "pais": "🇺🇸 EUA"}], "2": [{"banda": "Ben Harper", "anos": "2007, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Black Label Society", "anos": "2019, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Coldplay", "anos": "2016, 2023", "pais": "🇬🇧 Inglaterra"}, {"banda": "Fatboy Slim", "anos": "2007, 2013", "pais": "🇬🇧 Inglaterra"}, {"banda": "Green Day", "anos": "2017, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Halestorm", "anos": "2016, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Incubus", "anos": "2010, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Jason Mraz", "anos": "2009, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Killswitch Engage", "anos": "2013, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Linkin Park", "anos": "2010, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Motörhead", "anos": "2011, 2015", "pais": "🇬🇧 Inglaterra"}, {"banda": "Ozzy Osbourne", "anos": "2015, 2018", "pais": "🇬🇧 Inglaterra"}, {"banda": "P.O.D.", "anos": "2014, 2025", "pais": "🇺🇸 EUA"}, {"banda": "Queens of the Stone Age", "anos": "2010, 2018", "pais": "🇺🇸 EUA"}, {"banda": "Red Hot Chili Peppers", "anos": "2011, 2017", "pais": "🇺🇸 EUA"}, {"banda": "System of a Down", "anos": "2011, 2025", "pais": "🇺🇸 EUA"}, {"banda": "The Offspring", "anos": "2017, 2019", "pais": "🇺🇸 EUA"}], "1": [{"banda": "AC/DC", "anos": "2026", "pais": "🇦🇺 Austrália"}, {"banda": "Aerosmith", "anos": "2013", "pais": "🇺🇸 EUA"}, {"banda": "Alter Bridge", "anos": "2017", "pais": "🇺🇸 EUA"}, {"banda": "Apocalyptica", "anos": "2024", "pais": "🇫🇮 Finlândia"}, {"banda": "Arch Enemy", "anos": "2026", "pais": "🇸🇪 Suécia"}, {"banda": "Arctic Monkeys", "anos": "2022", "pais": "🇬🇧 Inglaterra"}, {"banda": "As I Lay Dying", "anos": "2026", "pais": "🇺🇸 EUA"}, {"banda": "Bad Religion", "anos": "2019", "pais": "🇺🇸 EUA"}, {"banda": "Black Stone Cherry", "anos": "2016", "pais": "🇺🇸 EUA"}, {"banda": "Blessthefall", "anos": "2024", "pais": "🇺🇸 EUA"}, {"banda": "Blind Guardian", "anos": "2023", "pais": "🇩🇪 Alemanha"}, {"banda": "Bon Jovi", "anos": "2017", "pais": "🇺🇸 EUA"}, {"banda": "Bring Me The Horizon", "anos": "2022", "pais": "🇬🇧 Inglaterra"}, {"banda": "Bruce Dickinson", "anos": "2023", "pais": "🇬🇧 Inglaterra"}, {"banda": "Chris Cornell", "anos": "2016", "pais": "🇺🇸 EUA"}, {"banda": "Cradle of Filth", "anos": "2025", "pais": "🇬🇧 Inglaterra"}, {"banda": "David Garrett", "anos": "2015", "pais": "🇩🇪 Alemanha"}, {"banda": "Demon Hunter", "anos": "2025", "pais": "🇺🇸 EUA"}, {"banda": "Disturbed", "anos": "2016", "pais": "🇺🇸 EUA"}, {"banda": "Eluveitie", "anos": "2015", "pais": "🇨🇭 Suíça"}, {"banda": "Epica", "anos": "2025", "pais": "🇳🇱 Holanda"}, {"banda": "Evanescence", "anos": "2023", "pais": "🇺🇸 EUA"}, {"banda": "Evergrey", "anos": "2026", "pais": "🇸🇪 Suécia"}, {"banda": "Extreme", "anos": "2026", "pais": "🇺🇸 EUA"}, {"banda": "Fleshgod Apocalypse", "anos": "2025", "pais": "🇮🇹 Itália"}, {"banda": "Florence & The Machine", "anos": "2016", "pais": "🇬🇧 Inglaterra"}, {"banda": "Garbage", "anos": "2023", "pais": "🇺🇸 EUA"}, {"banda": "Greta Van Fleet", "anos": "2022", "pais": "🇺🇸 EUA"}, {"banda": "Ill Niño", "anos": "2009", "pais": "🇺🇸 EUA"}, {"banda": "Imagine Dragons", "anos": "2023", "pais": "🇺🇸 EUA"}, {"banda": "Jack Johnson", "anos": "2017", "pais": "🇺🇸 EUA"}, {"banda": "Jinjer", "anos": "2026", "pais": "🇺🇦 Ucrânia"}, {"banda": "John Mayer", "anos": "2017", "pais": "🇺🇸 EUA"}, {"banda": "Judas Priest", "anos": "2015", "pais": "🇬🇧 Inglaterra"}, {"banda": "Kaiser Chiefs", "anos": "2015", "pais": "🇬🇧 Inglaterra"}, {"banda": "Katchafire", "anos": "2012", "pais": "🇳🇿 Nova Zelândia"}, {"banda": "KISS", "anos": "2022", "pais": "🇺🇸 EUA"}, {"banda": "Limp Bizkit", "anos": "2013", "pais": "🇺🇸 EUA"}, {"banda": "Marilyn Manson", "anos": "2016", "pais": "🇺🇸 EUA"}, {"banda": "Mumford & Sons", "anos": "2016", "pais": "🇬🇧 Inglaterra"}, {"banda": "Oasis", "anos": "2009", "pais": "🇬🇧 Inglaterra"}, {"banda": "Pantera", "anos": "2022", "pais": "🇺🇸 EUA"}, {"banda": "Pearl Jam", "anos": "2011", "pais": "🇺🇸 EUA"}, {"banda": "Plain White T's", "anos": "2024", "pais": "🇺🇸 EUA"}, {"banda": "Poppy", "anos": "2025", "pais": "🇺🇸 EUA"}, {"banda": "Rammstein", "anos": "2016", "pais": "🇩🇪 Alemanha"}, {"banda": "Rolling Stones", "anos": "2016", "pais": "🇬🇧 Inglaterra"}, {"banda": "Seven Hours After Violet", "anos": "2026", "pais": "🇺🇸 EUA"}, {"banda": "Shinedown", "anos": "2016", "pais": "🇺🇸 EUA"}, {"banda": "Simple Plan", "anos": "2024", "pais": "🇨🇦 Canadá"}, {"banda": "Slash", "anos": "2019", "pais": "🇺🇸 EUA"}, {"banda": "Snow Patrol", "anos": "2011", "pais": "🇬🇧 Irlanda do Norte"}, {"banda": "Spiritbox", "anos": "2026", "pais": "🇨🇦 Canadá"}, {"banda": "Steve 'n' Seagulls", "anos": "2016", "pais": "🇫🇮 Finlândia"}, {"banda": "Stone Sour", "anos": "2011", "pais": "🇺🇸 EUA"}, {"banda": "Tarja Turunen & Marko Hietala", "anos": "2025", "pais": "🇫🇮 Finlândia"}, {"banda": "The Beautiful Girls", "anos": "2012", "pais": "🇦🇺 Austrália"}, {"banda": "The Pretty Reckless", "anos": "2026", "pais": "🇺🇸 EUA"}, {"banda": "Trivium", "anos": "2022", "pais": "🇺🇸 EUA"}, {"banda": "Whitesnake", "anos": "2013", "pais": "🇬🇧 Inglaterra"}, {"banda": "Yanni", "anos": "2012", "pais": "🇬🇷 Grécia"}], "4": [{"banda": "Avenged Sevenfold", "anos": "2010, 2011, 2014, 2026", "pais": "🇺🇸 EUA"}, {"banda": "Metallica", "anos": "2010, 2011, 2014, 2022", "pais": "🇺🇸 EUA"}]};
+const FESTIVAIS = [{"nome": "Lupaluna", "info": "2009 — Curitiba, PR"}, {"nome": "SWU", "info": "2010 — Itu, SP"}, {"nome": "Rock in Rio", "info": "2011 — Rio de Janeiro, RJ"}, {"nome": "Monsters of Rock", "info": "2013 — São Paulo, SP"}, {"nome": "Maximus Festival", "info": "2016 — São Paulo, SP"}, {"nome": "Rock in Rio", "info": "2017 — Rio de Janeiro, RJ"}, {"nome": "Knotfest", "info": "2022 — São Paulo, SP"}, {"nome": "I Wanna Be Tour", "info": "2024 — Curitiba, PR"}, {"nome": "Bangers Open Air", "info": "2026 — São Paulo, SP"}];
+const ESTILOS = [
+  {"genero": "Heritage Hard Rock & Classic Metal", "pct": "29%", "desc": "O núcleo do gosto musical: riffs pesados, guitarras duplas e shows grandiosamente produzidos. Rock clássico e metal de arena em sua forma mais pura.", "bandas": "AC/DC · Aerosmith · Alter Bridge · Avenged Sevenfold · Black Label Society · Black Stone Cherry · Bon Jovi · Extreme · Greta Van Fleet · Halestorm · Iron Maiden · Judas Priest · KISS · Metallica · Motörhead · Ozzy Osbourne · Pantera · Rolling Stones · Shinedown · Slash · The Pretty Reckless · Trivium · Whitesnake"},
+  {"genero": "Nu-Metal, Metalcore & Metal Alternativo", "pct": "24%", "desc": "A geração pós-grunge que misturou metal com rap, eletrônico e punk. Vai do nu-metal dos anos 2000 à nova onda de metalcore e djent.", "bandas": "As I Lay Dying · Blessthefall · Bring Me The Horizon · Demon Hunter · Disturbed · Evanescence · Ill Niño · Jinjer · Killswitch Engage · Korn · Limp Bizkit · Linkin Park · Marilyn Manson · P.O.D. · Poppy · Rammstein · Seven Hours After Violet · Slipknot · Spiritbox · Stone Sour · System of a Down"},
+  {"genero": "Alt-Rock & Post-Grunge", "pct": "13%", "desc": "Rock alternativo de grande apelo emocional. Bandas que moldaram o rock nas décadas de 1990 e 2000, com sonoridade que vai do melódico ao áspero.", "bandas": "Arctic Monkeys · Chris Cornell · Foo Fighters · Garbage · Incubus · Kaiser Chiefs · Oasis · Pearl Jam · Queens of the Stone Age · Red Hot Chili Peppers · Snow Patrol"},
+  {"genero": "Roots, Folk & Acoustic", "pct": "10%", "desc": "A veia mais intimista e melódica da coleção. Violões, letras poéticas e influências do blues, reggae e soul em shows de atmosfera única.", "bandas": "Ben Harper · Donavon Frankenreiter · Jack Johnson · Jason Mraz · John Mayer · Katchafire · Mumford & Sons · The Beautiful Girls"},
+  {"genero": "Punk & Skate Punk", "pct": "6%", "desc": "Energia crua, refrões rápidos e letras sem filtro. Herdeiros do punk dos anos 1970 com roupagem mais acessível e melodias afiadas.", "bandas": "Bad Religion · Green Day · Plain White T's · Simple Plan · The Offspring"},
+  {"genero": "Clássico, Crossover & Eletrônico", "pct": "5%", "desc": "A diversidade fora do rock: big beat eletrônico, crossover clássico com violino e cello, e um concerto sinfônico único.", "bandas": "Apocalyptica · Bruce Dickinson · David Garrett · Fatboy Slim · Yanni"},
+  {"genero": "Melodic Death & Progressive Metal", "pct": "5%", "desc": "Metal escandinavo de alta técnica e melodia intensa. Riffs agressivos coexistem com passagens melódicas elaboradas e vocais limpos ou guturais.", "bandas": "Arch Enemy · Cradle of Filth · Evergrey · In Flames"},
+  {"genero": "Symphonic & Power Metal", "pct": "3%", "desc": "Grandiosidade orquestral e épica medievalesca. Arranjos cinematográficos, coros operísticos e letras inspiradas em fantasia e mitologia.", "bandas": "Blind Guardian · Epica · Fleshgod Apocalypse · Tarja Turunen & Marko Hietala"},
+  {"genero": "Pop-Rock & Arena", "pct": "3%", "desc": "Rock de grande espetáculo visual e refrões antológicos. Shows com produção impecável, luzes e uma conexão emocional intensa com o público.", "bandas": "Coldplay · Florence & The Machine · Imagine Dragons"},
+  {"genero": "Folk Metal & Celta", "pct": "2%", "desc": "Nicho singular: instrumentos tradicionais como gaita de foles e violino sobre base pesada. Raízes celtas e folk rural ressignificados pelo metal.", "bandas": "Eluveitie · Steve 'n' Seagulls"}
+];
+const OUTROS = [{"ano": "2010", "nome": "Stomp", "desc": "Espetáculo de percussão corporal e ritmo com objetos cotidianos, origem britânica."}, {"ano": "2011", "nome": "Blue Man Group", "desc": "Performance multissensorial de percussão, arte visual e comédia do grupo americano."}, {"ano": "2012", "nome": "Celtic Legends", "desc": "Espetáculo de dança e música celta, com inspiração em Riverdance e Lord of the Dance."}, {"ano": "2012", "nome": "Cirque Du Soleil — Varekai", "desc": "Inspirado na mitologia grega, conta a jornada de Ícaro após sua queda."}, {"ano": "2013", "nome": "Cirque Du Soleil — Corteo", "desc": "Cortejo poético que mistura teatro, circo e comédia."}, {"ano": "2013", "nome": "Game Show", "desc": "Espetáculo interativo ao vivo com dinâmicas de programa de televisão."}, {"ano": "2013", "nome": "UFC — Belfort x Rockhold", "desc": "UFC Fight Night 32. Vitor Belfort venceu Luke Rockhold por nocaute técnico no 1º round."}, {"ano": "2017", "nome": "Rodrigo y Gabriela", "desc": "Duo mexicano de guitarra acústica que mistura flamenco, metal e world music."}, {"ano": "2017", "nome": "UFC 212 — Aldo x Holloway", "desc": "Jeunesse Arena, Rio de Janeiro. Max Holloway venceu José Aldo por nocaute técnico no 3º round."}, {"ano": "2018", "nome": "Cirque Du Soleil — Amaluna", "desc": "Inspirado em A Tempestade de Shakespeare, celebra feminilidade, amor e renascimento."}, {"ano": "2023", "nome": "Candlelight Concert", "desc": "Série de concertos à luz de velas em locais históricos."}, {"ano": "2023", "nome": "Cordas do Iguaçu", "desc": "Conjunto de câmara paranaense com repertório entre o clássico e a música popular brasileira."}, {"ano": "2023", "nome": "Queen In Concert", "desc": "Tributo sinfônico ao Queen com orquestra ao vivo."}, {"ano": "2023", "nome": "Rodrigo Teaser — Tributo ao Rei do Pop", "desc": "Espetáculo de tributo a Michael Jackson com dança, vocais e efeitos ao vivo."}, {"ano": "2024", "nome": "Clássicos do Cinema — Orquestra Sinfônica de Curitiba", "desc": "Concerto com trilhas sonoras de filmes clássicos do cinema mundial."}, {"ano": "2024", "nome": "Mirage Circus", "desc": "Espetáculo circense contemporâneo com acrobacia, ilusionismo e artes cênicas."}, {"ano": "2026", "nome": "Cirque Du Soleil — Alegria", "desc": "Relançamento do icônico espetáculo de 1994."}, {"ano": "2026", "nome": "Rodrigo Teaser — Tributo ao Rei do Pop", "desc": "Esta edição conta com a participação especial de 3 músicos da banda original de Michael Jackson."}];
+
+const ACCENT = '#e87722';
+const NAVY = '#1a1a2e';
+const PRI_COLOR = '#e87722';
+
+// ═══ NAV ═══
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══ BAR ANOS ═══
+function buildBarAnos() {
+  const el = document.getElementById('bar-anos');
+  const entries = Object.entries(ANOS).sort((a,b) => a[0]-b[0]);
+  const max = Math.max(...entries.map(e => e[1]));
+  el.innerHTML = entries.map(([yr, n]) => {
+    const pct = n === 0 ? 0 : Math.max(2, Math.round((n/max)*100));
+    const col = n === 0 ? '#e5e7eb' : ACCENT;
+    const shortYr = yr.slice(2);
+    return `<div class="bar-col">
+      <span class="bar-num">${n > 0 ? n : ''}</span>
+      <div class="bar" style="height:${pct}%;background:${col}" title="${yr}: ${n} shows"></div>
+      <span class="bar-yr">${shortYr}</span>
+    </div>`;
+  }).join('');
+}
+
+// ═══ HBARS ═══
+function buildHBar(containerId, data) {
+  const el = document.getElementById(containerId);
+  const entries = Object.entries(data);
+  const max = Math.max(...entries.map(e => e[1]));
+  el.innerHTML = entries.map(([label, n]) => {
+    const pct = Math.round((n/max)*100);
+    const col = ACCENT;
+    const flag = PAISES_MAP[label] ? PAISES_MAP[label] + ' ' : '';
+    return `<div class="hbar-row">
+      <div class="hbar-label">${flag}${label}</div>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${Math.max(pct,3)}%;background:${col}">
+          <span>${n}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══ FESTIVAIS ═══
+function buildFestivais() {
+  document.getElementById('festivais-list').innerHTML = FESTIVAIS.map(f =>
+    `<div class="fest-row"><span class="fest-name">🎪 ${f.nome}</span><span class="fest-info">${f.info}</span></div>`
+  ).join('');
+}
+
+// ═══ SETLISTS ═══
+let filteredShows = [...SHOWS];
+
+function buildFilters() {
+  const anos = [...new Set(SHOWS.map(s => s.data.split('/')[2]))].sort();
+  const selAno = document.getElementById('filter-ano');
+  anos.forEach(a => selAno.innerHTML += `<option value="${a}">${a}</option>`);
+  const paises = [...new Set(SHOWS.map(s => s.pais.split(' ').slice(1).join(' ')))].sort();
+  const selPais = document.getElementById('filter-pais');
+  paises.forEach(p => selPais.innerHTML += `<option value="${p}">${p}</option>`);
+  document.getElementById('search-input').addEventListener('input', filterShows);
+  selAno.addEventListener('change', filterShows);
+  selPais.addEventListener('change', filterShows);
+  document.getElementById('filter-pri').addEventListener('change', filterShows);
+}
+
+function filterShows() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const ano = document.getElementById('filter-ano').value;
+  const pais = document.getElementById('filter-pais').value;
+  const pri = document.getElementById('filter-pri').value;
+  filteredShows = SHOWS.filter(s => {
+    const matchQ = !q || s.banda.toLowerCase().includes(q);
+    const matchAno = !ano || s.data.endsWith('/' + ano);
+    const matchPais = !pais || s.pais.includes(pais);
+    const matchPri = !pri || (pri==='pri' && s.pri) || (pri==='nao' && !s.pri);
+    return matchQ && matchAno && matchPais && matchPri;
+  });
+  renderShows();
+}
+
+function estimaDuracao(n) {
+  const mins = n * 4;
+  return `~${Math.floor(mins/60)}h${mins%60 > 0 ? (mins%60)+'min' : ''}`;
+}
+
+function renderShows() {
+  const grid = document.getElementById('show-grid');
+  document.getElementById('shows-count').textContent = `${filteredShows.length} show(s) encontrado(s)`;
+  grid.innerHTML = filteredShows.map(s => `
+    <div class="show-card" onclick="this.classList.toggle('expanded')">
+      <div class="sc-head">
+        <span class="sc-num">#${String(s.n).padStart(3,'0')}</span>
+        ${s.pri ? '<span class="badge-pri">*Pri</span>' : ''}
+      </div>
+      <div class="sc-band">${s.pais.split(' ')[0]} ${s.banda}</div>
+      <div class="sc-meta">${s.data} · ${s.local}</div>
+      <div class="sc-dur">🎵 ${s.sets.length} músicas · ${estimaDuracao(s.sets.length)}</div>
+      <div class="sc-sets">
+        <ul class="sc-songs">${s.sets.map((m,i) => `<li data-n="${i+1}">${m}</li>`).join('')}</ul>
+      </div>
+    </div>`).join('');
+}
+
+// ═══ BUSCA POR MÚSICA ═══
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('musica-input');
+  if (inp) inp.addEventListener('input', buscaMusica);
+});
+
+function buscaMusica() {
+  const q = document.getElementById('musica-input').value.toLowerCase().trim();
+  const result = document.getElementById('musica-result');
+  const count = document.getElementById('musica-count');
+  if (q.length < 2) { result.innerHTML = ''; count.textContent = ''; return; }
+
+  const hits = [];
+  SHOWS.forEach(s => {
+    s.sets.forEach((m, i) => {
+      if (m.toLowerCase().includes(q)) {
+        hits.push({ show: s, musica: m, pos: i+1 });
+      }
+    });
+  });
+
+  count.textContent = hits.length === 0 ? 'Nenhum resultado encontrado.' : `Encontrado em ${hits.length} show(s):`;
+  result.innerHTML = hits.map(h => `
+    <div class="musica-card">
+      <div class="mc-band">${h.show.pais.split(' ')[0]} ${h.show.banda}</div>
+      <div class="mc-meta">${h.show.data} · ${h.show.local}</div>
+      <div class="mc-song">🎵 ${h.musica}</div>
+      <div class="mc-pos">Posição #${h.pos} no setlist · #${String(h.show.n).padStart(3,'0')}</div>
+    </div>`).join('');
+}
+
+// ═══ COMPARAÇÃO ═══
+const COMP_GRUPOS = [
+  {"label": "4 Shows", "color": "#e87722", "bandas": ["AVENGED SEVENFOLD", "METALLICA"]},
+  {"label": "3 Shows", "color": "#d4611a", "bandas": ["DONAVON FRANKENREITER", "FOO FIGHTERS", "IN FLAMES", "IRON MAIDEN", "KORN", "SLIPKNOT"]},
+  {"label": "2 Shows", "color": "#9ca3af", "bandas": ["BEN HARPER", "BLACK LABEL SOCIETY", "COLDPLAY", "FATBOY SLIM", "GREEN DAY", "HALESTORM", "INCUBUS", "JASON MRAZ", "KILLSWITCH ENGAGE", "LINKIN PARK", "MOTÖRHEAD", "OZZY OSBOURNE", "P.O.D.", "QUEENS OF THE STONE AGE", "RED HOT CHILI PEPPERS", "SYSTEM OF A DOWN", "THE OFFSPRING"]},
+];
+
+function buildCompButtons() {
+  const el = document.getElementById('comp-buttons');
+  el.innerHTML = COMP_GRUPOS.map(g => `
+    <div class="comp-group">
+      <div class="comp-group-label" style="color:${g.color}">${g.label}</div>
+      <div class="comp-group-buttons">
+        ${g.bandas.map(b => {
+          const nome = b === 'P.O.D.' ? 'P.O.D.' : b.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+          return `<button class="comp-btn" onclick="runComparacaoBanda('${b}', this)">${nome}</button>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function runComparacaoBanda(bandaBase, btn) {
+  // Toggle active button
+  document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Find all shows of this band in chronological order
+  const selected = SHOWS.filter(s => {
+    const base = s.banda.replace(/\s+(II|III|IV|V)$/, '').trim();
+    return base === bandaBase;
+  });
+
+  // Build "seen before" sets: for each show index, which songs appeared in ANY previous show
+  const seenBefore = selected.map((s, idx) => {
+    const prevSongs = new Set();
+    for (let i = 0; i < idx; i++) {
+      selected[i].sets.forEach(m => prevSongs.add(m.toLowerCase().trim()));
+    }
+    return prevSongs;
+  });
+
+  // Total distinct songs across all shows of this band
+  const allDistinct = new Set(selected.flatMap(s => s.sets.map(m => m.toLowerCase().trim()))).size;
+  const nomeBanda = bandaBase === 'P.O.D.' ? 'P.O.D.' : bandaBase.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+  const summary = document.getElementById('comp-summary');
+  summary.style.display = 'block';
+  summary.textContent = `${allDistinct} músicas distintas ouvidas de ${nomeBanda}`;
+
+  // Cards — each show in a single column, songs that were played before highlighted orange
+  const result = document.getElementById('comp-result');
+  result.style.cssText = `display:grid;grid-template-columns:repeat(${Math.min(selected.length, 4)},1fr);gap:1rem;margin-top:0`;
+  result.innerHTML = selected.map((s, idx) => {
+    const seen = seenBefore[idx];
+    const songs = s.sets.map((m, i) => {
+      const wasPlayedBefore = seen.has(m.toLowerCase().trim());
+      const style = wasPlayedBefore
+        ? 'color:var(--accent);font-weight:bold;background:#fff3e0;border-radius:3px;padding:1px 4px;'
+        : 'color:var(--text);';
+      return `<div style="font-size:0.72rem;padding:2px 0;${style}">${i+1}. ${m}</div>`;
+    }).join('');
+    return `<div class="comp-card">
+      <h3>${s.pais.split(' ')[0]} ${s.banda}</h3>
+      <div class="comp-meta">${s.data} · ${s.local}<br>🎵 ${s.sets.length} músicas · ${estimaDuracao(s.sets.length)}${s.pri ? ' · <span style="color:'+PRI_COLOR+';font-weight:bold">*Pri</span>' : ''}</div>
+      <div style="margin-top:0.5rem;border-top:1px solid var(--border);padding-top:0.5rem">${songs}</div>
+    </div>`;
+  }).join('');
+
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ═══ RANKING ═══
+function buildRanking() {
+  const groups = [
+    {key:'4', label:'4 Shows', color: ACCENT},
+    {key:'3', label:'3 Shows', color:'#d4611a'},
+    {key:'2', label:'2 Shows', color:'#f0a060'},
+    {key:'1', label:'1 Show',  color:'#9ca3af'},
+  ];
+  // Fixed column widths: 45% banda, 35% anos, 20% país
+  document.getElementById('ranking-content').innerHTML = groups.map(g => {
+    const bandas = RANKING[g.key]||[];
+    if(!bandas.length) return '';
+    return `<div class="rank-group">
+      <div class="rank-label" style="background:${g.color}20;border:1px solid ${g.color};color:${g.color}">${g.label}</div>
+      <table class="tbl" style="table-layout:fixed;width:100%">
+        <colgroup><col style="width:45%"><col style="width:35%"><col style="width:20%"></colgroup>
+        <thead><tr><th>Banda</th><th>Anos</th><th>País</th></tr></thead>
+        <tbody>${bandas.map(b=>`<tr><td style="font-weight:bold;color:${NAVY}">${b.banda}</td><td style="color:#6b7280">${b.anos}</td><td>${b.pais}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+}
+
+// ═══ ESTILOS ═══
+function buildEstilos() {
+  document.getElementById('estilos-content').innerHTML = ESTILOS.map(e => `
+    <div class="estilo-row">
+      <div class="estilo-top"><span class="estilo-name">${e.genero}</span><span class="estilo-pct">${e.pct}</span></div>
+      <div class="estilo-bar-bg"><div class="estilo-bar-fill" style="width:${e.pct}"></div></div>
+      <div class="estilo-desc">${e.desc}</div>
+      <div class="estilo-bands">${e.bandas}</div>
+    </div>`).join('');
+}
+
+// ═══ OUTROS ═══
+function buildOutros() {
+  const byYear = {};
+  OUTROS.forEach(o => { if(!byYear[o.ano]) byYear[o.ano]=[]; byYear[o.ano].push(o); });
+  document.getElementById('outros-content').innerHTML = Object.entries(byYear).sort().map(([yr, evs]) => `
+    <div class="outros-year">
+      <h3>${yr}</h3>
+      ${evs.map(e=>`<div class="evento-card"><div class="ev-nome">${e.nome}</div><div class="ev-desc">${e.desc}</div></div>`).join('')}
+    </div>`).join('');
+}
+
+// ═══ INIT ═══
+
+buildBarAnos();
+buildHBar('hbar-cidades', CIDADES);
+requestAnimationFrame(() => {
+  const anos = document.getElementById('bar-anos');
+  const cidades = document.getElementById('hbar-cidades');
+  if (anos && cidades && cidades.offsetHeight > 0) anos.style.height = cidades.offsetHeight + 'px';
+});
+buildHBar('hbar-paises', PAISES);
+buildFestivais();
+buildFilters();
+renderShows();
+buildCompButtons();
+buildRanking();
+buildEstilos();
+buildOutros();
+
+// Musica search listener
+document.getElementById('musica-input').addEventListener('input', buscaMusica);
+</script>
+</body>
+</html>
