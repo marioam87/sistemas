@@ -368,3 +368,5 @@ pacientes de terceiros (contratantes) — atenção redobrada.
   recriado quando necessário.
 - `pessoal/eu-fui/gerar_eu_fui.js` (gerador DOCX) ainda não foi integrado à
   automação do `eu_fui_master.json`.
+- Claude Code testado e funcionando em 03/07/2026, lendo corretamente os
+  CLAUDE.md das subpastas.
