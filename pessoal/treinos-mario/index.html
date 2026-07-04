@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atividade Física</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f3f2ef;
+    --border: #e2e0da;
+    --accent: #c17d2e;
+    --accent-dim: #f6e6cd;
+    --done: #3f7d5a;
+    --done-dim: #e2f0e8;
+    --locked: #e2e0da;
+    --text: #1c1b18;
+    --text-muted: #6b6a63;
+    --text-faint: #a7a49a;
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 60px;}
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:0.02em;
+    margin:0 0 24px;
+  }
+
+  /* progress bar */
+  .progress-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .progress-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .progress-num{font-family:'JetBrains Mono', monospace;font-size:22px;font-weight:600;color:var(--accent);}
+  .progress-num span{color:var(--text-faint);font-size:14px;}
+  .progress-label{font-size:13px;color:var(--text-muted);}
+  .progress-track{
+    height:8px;
+    background:var(--surface-2);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--done), var(--accent));
+    border-radius:99px;
+    transition:width .4s ease;
+  }
+
+  /* trilha */
+  .trilha-scroll{
+    overflow-x:auto;
+    padding:6px 2px 14px;
+    margin-bottom:24px;
+  }
+  .trilha{display:flex;gap:6px;align-items:flex-start;min-width:max-content;}
+  .wave-group{display:flex;flex-direction:column;align-items:center;}
+  .wave-title{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    margin-bottom:8px;
+    white-space:nowrap;
+  }
+  .wave-nodes{display:flex;gap:6px;}
+  .wave-divider{width:1px;background:var(--border);align-self:stretch;margin:26px 4px 0;}
+  .node{
+    width:34px;height:34px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    border:2px solid transparent;
+    position:relative;
+    flex-shrink:0;
+    transition:transform .15s ease;
+  }
+  .node:hover{transform:scale(1.08);}
+  .node.locked{background:var(--surface-2);color:var(--text-faint);cursor:not-allowed;}
+  .node.locked:hover{transform:none;}
+  .node.done{background:var(--done-dim);color:var(--done);border-color:var(--done);}
+  .node.active{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px rgba(193,125,46,0.18);}
+  .node.selected{outline:2px solid var(--text);outline-offset:2px;}
+
+  /* session card */
+  .session-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .session-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;}
+  .session-name{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:19px;}
+  .session-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    background:var(--surface-2);
+    padding:3px 9px;
+    border-radius:99px;
+    white-space:nowrap;
+  }
+  .session-meta{color:var(--text-muted);font-size:13px;margin-bottom:18px;}
+  .locked-msg{
+    text-align:center;padding:30px 10px;color:var(--text-muted);font-size:14px;
+  }
+  .locked-msg .lock-icon{font-size:26px;display:block;margin-bottom:10px;}
+
+  .ex-row{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 0;
+    border-top:1px solid var(--border);
+  }
+  .ex-row:first-of-type{border-top:none;}
+  .ex-check{
+    width:22px;height:22px;
+    border-radius:6px;
+    border:2px solid var(--text-faint);
+    flex-shrink:0;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:.15s;
+  }
+  .ex-check.checked{background:var(--done);border-color:var(--done);}
+  .ex-check.checked::after{content:"✓";color:var(--bg);font-size:14px;font-weight:700;}
+  .ex-info{flex:1;min-width:0;}
+  .ex-name{font-size:14.5px;font-weight:500;line-height:1.3;}
+  .ex-name.checked-text{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+  .ex-group{font-size:11.5px;color:var(--accent);margin-top:2px;}
+  .ex-specs{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:4px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    color:var(--text-muted);
+    text-align:right;
+    white-space:nowrap;
+    margin-left:6px;
+  }
+  .ex-reps{padding-top:2px;}
+  .ex-weight-input{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--accent);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:4px 7px;
+    width:92px;
+    text-align:right;
+  }
+  .ex-weight-input:focus{outline:none;border-color:var(--accent);}
+  .ex-video{
+    flex-shrink:0;
+    color:var(--text-faint);
+    text-decoration:none;
+    font-size:16px;
+    padding:4px;
+    border-radius:6px;
+    transition:.15s;
+  }
+  .ex-video:hover{color:var(--accent);background:var(--surface-2);}
+
+  .finish-btn{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    border-radius:10px;
+    border:none;
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:.15s;
+  }
+  .finish-btn.ready{background:var(--accent);color:#ffffff;}
+  .finish-btn.ready:hover{filter:brightness(1.08);}
+  .finish-btn.waiting{background:var(--surface-2);color:var(--text-faint);cursor:not-allowed;}
+  .finish-btn.done-state{background:var(--done-dim);color:var(--done);cursor:default;}
+
+  .wave-note{
+    font-size:12.5px;
+    color:var(--text-muted);
+    background:var(--surface-2);
+    border-radius:9px;
+    padding:10px 13px;
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+  .loading{text-align:center;color:var(--text-muted);padding:60px 0;font-size:14px;}
+
+  /* calendário */
+  .cal-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    margin-bottom:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .cal-title{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:17px;text-transform:capitalize;}
+  .cal-nav{display:flex;gap:6px;}
+  .cal-nav-btn{
+    width:30px;height:30px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+    cursor:pointer;
+    font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cal-nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-daylabel{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    text-align:center;
+    padding-bottom:4px;
+    text-transform:uppercase;
+  }
+  .cal-cell{
+    min-height:64px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    padding:5px 4px;
+    background:var(--surface);
+  }
+  .cal-cell.empty{border:none;background:transparent;}
+  .cal-cell.today{border-color:var(--accent);border-width:2px;}
+  .cal-daynum{font-family:'JetBrains Mono', monospace;font-size:11px;color:var(--text-muted);margin-bottom:3px;}
+  .activity-pill{
+    display:flex;align-items:center;gap:3px;
+    font-size:9.5px;
+    line-height:1.5;
+    padding:1px 5px;
+    border-radius:99px;
+    margin-bottom:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    position:relative;
+  }
+  .activity-pill.fullbody{background:var(--accent-dim);color:#8a5a1c;}
+  .activity-pill.boxe{background:#fde3da;color:#a8431c;}
+  .activity-pill.bike{background:#dcefe9;color:#1f6e5a;}
+  .activity-pill.tabata{background:#efe0f7;color:#6b3fa0;}
+  .activity-pill.esteira{background:#dbe7f7;color:#2058a3;}
+  .activity-remove{
+    cursor:pointer;
+    margin-left:auto;
+    font-weight:700;
+    opacity:.6;
+  }
+  .activity-remove:hover{opacity:1;}
+  .cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
+  .legend-dot{width:9px;height:9px;border-radius:50%;}
+  .legend-dot.fullbody{background:var(--accent);}
+  .legend-dot.boxe{background:#c9552b;}
+  .legend-dot.bike{background:#2c8a70;}
+  .legend-dot.tabata{background:#8547b8;}
+  .legend-dot.esteira{background:#3068b8;}
+
+  .cal-form{
+    display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+  .cal-form label{font-size:12px;color:var(--text-muted);margin-right:2px;}
+  .cal-input, .cal-select{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+  }
+  .cal-input.km{width:90px;}
+  .cal-add-btn{
+    padding:8px 16px;
+    border-radius:8px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-weight:600;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .cal-add-btn:hover{filter:brightness(1.08);}
+
+
+  /* backup */
+  .backup-bar{display:flex;gap:8px;justify-content:flex-end;margin-bottom:14px;}
+  .backup-btn{
+    font-family:'Inter', sans-serif;
+    font-size:11.5px;
+    font-weight:500;
+    color:var(--text-muted);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:6px 11px;
+    cursor:pointer;
+  }
+  .backup-btn:hover{color:var(--accent);border-color:var(--accent);}
+
+  .save-error-banner{
+    background:#fde3da;
+    color:#a8431c;
+    border:1px solid #e8a58c;
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:12.5px;
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+
+  /* abas */
+  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tab-btn{
+    flex:1;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text-muted);
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  /* dashboard */
+  .dash-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    margin-bottom:22px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .dash-title{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:17px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
+  .stat-box{
+    background:var(--surface-2);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat-num{font-family:'JetBrains Mono', monospace;font-weight:600;font-size:20px;color:var(--text);}
+  .stat-label{font-size:10.5px;color:var(--text-muted);margin-top:4px;line-height:1.3;}
+  .stat-box.musc .stat-num{color:var(--accent);}
+  .stat-box.boxe .stat-num{color:#c9552b;}
+  .stat-box.bike .stat-num{color:#2c8a70;}
+  .stat-box.tabata .stat-num{color:#8547b8;}
+  .stat-box.esteira .stat-num{color:#3068b8;}
+
+  .chart-wrap{display:flex;justify-content:space-between;align-items:flex-end;height:110px;gap:3px;padding:0 2px;}
+  .chart-month{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;justify-content:flex-end;}
+  .chart-bars{display:flex;align-items:flex-end;gap:1.5px;height:86px;}
+  .chart-bar{width:4px;border-radius:3px 3px 0 0;min-height:2px;}
+  .chart-bar.musc{background:var(--accent);}
+  .chart-bar.boxe{background:#c9552b;}
+  .chart-bar.bike{background:#2c8a70;}
+  .chart-bar.tabata{background:#8547b8;}
+  .chart-bar.esteira{background:#3068b8;}
+  .chart-mlabel{font-family:'JetBrains Mono', monospace;font-size:9px;color:var(--text-faint);margin-top:6px;text-transform:uppercase;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Carregando sua trilha de treino…</div>
+</div>
+
+<script>
+const EXO = (nome, series, reps, carga, grupo) => ({nome, series, reps, carga, grupo});
+
+const WAVES = [
+  {
+    id: 0,
+    label: "Ciclo 1 · Semanas 1–4",
+    note: "Base do ciclo: cargas de referência retiradas do seu histórico recente. Ajuste os pesos livremente — o que importa é sentir as últimas 2–3 repetições difíceis.",
+    templates: {
+      A: { nome: "Treino A · Peito, Tríceps e Quadríceps", exercicios: [
+        EXO("Agachamento Livre com Halteres","3","12","12kg","Quadríceps"),
+        EXO("Supino Reto com Halteres","3","10","12kg","Peito"),
+        EXO("Cadeira Extensora","3","12","9kg","Quadríceps"),
+        EXO("Supino Inclinado com Halteres","3","12","10kg","Peito"),
+        EXO("Leg Press 45","3","12","20kg","Quadríceps"),
+        EXO("Tríceps na Polia com Corda","3","12","4kg","Tríceps"),
+        EXO("Abdominal Supra Solo","3","15","0kg","Core"),
+      ]},
+      B: { nome: "Treino B · Costas, Bíceps e Posterior", exercicios: [
+        EXO("Levantamento Terra","3","10","15kg cada lado","Posterior"),
+        EXO("Puxada Aberta Barra Reta","3","12","9kg","Costas"),
+        EXO("Mesa Flexora","3","12","6kg","Posterior"),
+        EXO("Remada Unilateral Halteres (Serrote)","3","10 cada","12kg","Costas"),
+        EXO("Elevação de Quadril","3","12","15kg","Glúteo"),
+        EXO("Rosca Martelo com Halteres","3","12","7kg","Bíceps"),
+        EXO("Prancha Dinâmica","3","10 cada lado","0kg","Core"),
+      ]},
+    }
+  },
+  {
+    id: 1,
+    label: "Ciclo 2 · Semanas 5–8",
+    note: "Progressão de carga: mesmos padrões de movimento, exercícios trocados pra não enjoar. Suba peso se as séries do ciclo 1 ficaram fáceis nas últimas semanas.",
+    templates: {
+      A: { nome: "Treino A · Peito, Tríceps e Quadríceps", exercicios: [
+        EXO("Agachamento Sumô","3","12","14kg","Quadríceps/Glúteo"),
+        EXO("Supino Reto com Barra Reta","3","10","15kg","Peito"),
+        EXO("Cadeira Extensora Unilateral","3","10 cada","8kg","Quadríceps"),
+        EXO("Crucifixo Inclinado com Halteres","3","12","8kg","Peito"),
+        EXO("Leg Press 45","4","10","24kg","Quadríceps"),
+        EXO("Tríceps Francês com Anilha","3","12","10kg","Tríceps"),
+        EXO("Abdominal Bicicleta","4","20","0kg","Core"),
+      ]},
+      B: { nome: "Treino B · Costas, Bíceps e Posterior", exercicios: [
+        EXO("Sti com Halteres","3","12","8kg","Posterior"),
+        EXO("Puxada Fechada Barra Reta","3","12","9kg","Costas"),
+        EXO("Mesa Flexora","4","10","8kg","Posterior"),
+        EXO("Remada Baixa Triângulo","3","12","10kg","Costas"),
+        EXO("Elevação de Quadril Unilateral","3","10 cada","15kg","Glúteo"),
+        EXO("Rosca Direta com Halteres","3","12","8kg","Bíceps"),
+        EXO("Corda Naval","4","30''","0kg","Core"),
+      ]},
+    }
+  },
+  {
+    id: 2,
+    label: "Ciclo 3 · Semanas 9–12",
+    note: "Intensificação: mais uma rodada de variação e leve aumento de volume (algumas séries passam de 3 para 4). Você fecha o trimestre aqui.",
+    templates: {
+      A: { nome: "Treino A · Peito, Tríceps e Quadríceps", exercicios: [
+        EXO("Agachamento com Halter na Frente","3","12","12kg","Quadríceps"),
+        EXO("Supino Inclinado com Barra Reta","3","10","10kg","Peito"),
+        EXO("Cadeira Extensora","4","10","11kg","Quadríceps"),
+        EXO("Fly Reto","3","12","12kg","Peito"),
+        EXO("Leg Press 45","4","10","28kg","Quadríceps"),
+        EXO("Tríceps Testa com Halteres","3","12","15kg","Tríceps"),
+        EXO("Abdominal Infra Bola Suíça","3","10","0kg","Core"),
+      ]},
+      B: { nome: "Treino B · Costas, Bíceps e Posterior", exercicios: [
+        EXO("Levantamento Terra","4","10","18kg cada lado","Posterior"),
+        EXO("Puxada Aberta Barra Reta","3","12–15","10kg","Costas"),
+        EXO("Mesa Flexora","4","10","9kg","Posterior"),
+        EXO("Remada Curvada com Barra Reta","3","10","10kg","Costas"),
+        EXO("Elevação de Quadril com Barra","4","12","18kg","Glúteo"),
+        EXO("Rosca Scott Unilateral com Halteres","4","10","8kg","Bíceps"),
+        EXO("Prancha Cruzada","3","20","0kg","Core"),
+      ]},
+    }
+  },
+];
+
+// Build flat list of 24 sessions: A,B,A,B... x4 per wave
+const SESSIONS = [];
+WAVES.forEach(wave => {
+  for(let i=0;i<4;i++){
+    ['A','B'].forEach(letter=>{
+      SESSIONS.push({
+        waveId: wave.id,
+        waveLabel: wave.label,
+        waveNote: wave.note,
+        letter,
+        template: wave.templates[letter],
+        repeatIndex: i+1,
+      });
+    });
+  }
+});
+const TOTAL = SESSIONS.length;
+
+const STORAGE_KEY = 'mfit-trilha-progresso';
+let state = {
+  completed: Array(TOTAL).fill(false),
+  checks: Array(TOTAL).fill(null).map(()=>Array(7).fill(false)),
+  selected: 0,
+  weights: {}, // nome do exercício -> carga atual (editada pelo usuário)
+  activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira', label, km}]
+  seededVersion: 0, // controla quais rodadas de histórico importado já foram mescladas
+};
+
+const CURRENT_SEED_VERSION = 3; // v1 = histórico 2026, v2 = + histórico 2025 (mar-dez), v3 = + jan/fev 2025
+
+const today = new Date();
+let calView = { year: today.getFullYear(), month: today.getMonth() };
+let dashYear = today.getFullYear();
+let dashMonthIndex = today.getMonth();
+let activeTab = 'calendario';
+
+function setTab(tab){
+  activeTab = tab;
+  render();
+}
+
+function changeDashYear(delta){
+  dashYear += delta;
+  render();
+}
+
+function changeDashMonth(delta){
+  dashMonthIndex += delta;
+  if(dashMonthIndex < 0){ dashMonthIndex = 11; dashYear--; }
+  if(dashMonthIndex > 11){ dashMonthIndex = 0; dashYear++; }
+  render();
+}
+
+function toKey(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+// Histórico importado do calendário do iPhone (Janeiro a Junho de 2026)
+const SEED_ACTIVITIES = {
+  "2026-01-01": [{type:"bike", km:15}],
+  "2026-01-02": [{type:"bike", km:15}],
+  "2026-01-04": [{type:"bike", km:30}],
+  "2026-01-05": [{type:"bike", km:15}],
+  "2026-01-06": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-07": [{type:"bike", km:15}],
+  "2026-01-08": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-09": [{type:"boxe"}],
+  "2026-01-10": [{type:"bike", km:15}],
+  "2026-01-12": [{type:"bike", km:15}],
+  "2026-01-13": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-18": [{type:"bike", km:15}],
+  "2026-01-19": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-20": [{type:"bike", km:15},{type:"bike", km:15}],
+  "2026-01-21": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-22": [{type:"boxe"}],
+  "2026-01-25": [{type:"bike", km:20}],
+  "2026-01-26": [{type:"bike", km:15}],
+  "2026-01-27": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-29": [{type:"fullbody", label:"Musculação"}],
+  "2026-01-30": [{type:"boxe"}],
+
+  "2026-02-02": [{type:"bike", km:15}],
+  "2026-02-03": [{type:"bike", km:15}],
+  "2026-02-05": [{type:"boxe"}],
+  "2026-02-06": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-07": [{type:"bike", km:15}],
+  "2026-02-08": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-09": [{type:"bike", km:15}],
+  "2026-02-10": [{type:"boxe"}],
+  "2026-02-11": [{type:"bike", km:10}],
+  "2026-02-12": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-13": [{type:"bike", km:19}],
+  "2026-02-15": [{type:"bike", km:15}],
+  "2026-02-16": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-17": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-18": [{type:"bike", km:18}],
+  "2026-02-19": [{type:"boxe"}],
+  "2026-02-20": [{type:"bike", km:15}],
+  "2026-02-21": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-23": [{type:"bike", km:15}],
+  "2026-02-24": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-25": [{type:"boxe"}],
+  "2026-02-26": [{type:"fullbody", label:"Musculação"}],
+  "2026-02-27": [{type:"bike", km:15},{type:"bike", km:15}],
+
+  "2026-03-09": [{type:"bike", km:10}],
+  "2026-03-10": [{type:"fullbody", label:"Musculação"}],
+  "2026-03-11": [{type:"fullbody", label:"Musculação"}],
+  "2026-03-12": [{type:"boxe"}],
+  "2026-03-13": [{type:"bike", km:15}],
+  "2026-03-16": [{type:"bike", km:20}],
+  "2026-03-17": [{type:"fullbody", label:"Musculação"}],
+  "2026-03-18": [{type:"boxe"}],
+  "2026-03-22": [{type:"fullbody", label:"Musculação"}],
+  "2026-03-23": [{type:"fullbody", label:"Musculação"}],
+  "2026-03-24": [{type:"bike", km:15}],
+  "2026-03-26": [{type:"bike", km:20}],
+  "2026-03-27": [{type:"boxe"}],
+  "2026-03-28": [{type:"bike", km:22}],
+  "2026-03-29": [{type:"bike", km:10}],
+  "2026-03-31": [{type:"bike", km:33}],
+
+  "2026-04-02": [{type:"boxe"}],
+  "2026-04-06": [{type:"fullbody", label:"Musculação"}],
+  "2026-04-21": [{type:"bike", km:10}],
+  "2026-04-22": [{type:"bike", km:10}],
+  "2026-04-27": [{type:"fullbody", label:"Musculação"}],
+  "2026-04-29": [{type:"fullbody", label:"Musculação"}],
+
+  "2026-05-04": [{type:"bike", km:12}],
+  "2026-05-11": [{type:"bike", km:16}],
+  "2026-05-14": [{type:"boxe"}],
+  "2026-05-18": [{type:"bike", km:22}],
+  "2026-05-19": [{type:"bike", km:16}],
+  "2026-05-20": [{type:"bike", km:15}],
+  "2026-05-22": [{type:"boxe"}],
+  "2026-05-25": [{type:"bike", km:16}],
+  "2026-05-28": [{type:"bike", km:16}],
+
+  "2026-06-19": [{type:"boxe"}],
+  "2026-06-28": [{type:"bike", km:24}],
+
+  // Histórico importado do calendário do iPhone (Março a Dezembro de 2025)
+  "2025-01-05": [{type:"tabata"}],
+  "2025-01-09": [{type:"tabata"}],
+  "2025-01-11": [{type:"tabata"}],
+  "2025-01-13": [{type:"tabata"}],
+  "2025-01-14": [{type:"tabata"}],
+  "2025-01-19": [{type:"fullbody", label:"Musculação"}],
+  "2025-01-20": [{type:"fullbody", label:"Musculação"}],
+  "2025-01-22": [{type:"boxe"}],
+  "2025-01-23": [{type:"fullbody", label:"Musculação"}],
+  "2025-01-27": [{type:"fullbody", label:"Musculação"}],
+  "2025-01-28": [{type:"fullbody", label:"Musculação"}],
+  "2025-01-29": [{type:"boxe"}],
+
+  "2025-02-04": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-05": [{type:"boxe"}],
+  "2025-02-06": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-07": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-10": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-11": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-12": [{type:"boxe"}],
+  "2025-02-13": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-14": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-15": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-16": [{type:"fullbody", label:"Musculação"}],
+  "2025-02-17": [{type:"esteira", km:null}],
+  "2025-02-18": [{type:"bike", km:10}],
+  "2025-02-19": [{type:"esteira", km:5}],
+  "2025-02-20": [{type:"boxe"}],
+  "2025-02-24": [{type:"fullbody", label:"Musculação"}],
+
+  "2025-03-05": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-06": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-08": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-09": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-10": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-20": [{type:"fullbody", label:"Musculação"}],
+  "2025-03-27": [{type:"fullbody", label:"Musculação"}],
+
+  "2025-04-15": [{type:"bike", km:10}],
+  "2025-04-16": [{type:"bike", km:10}],
+  "2025-04-17": [{type:"bike", km:10}],
+  "2025-04-23": [{type:"bike", km:10}],
+  "2025-04-24": [{type:"bike", km:10}],
+  "2025-04-25": [{type:"bike", km:10}],
+  "2025-04-28": [{type:"bike", km:10}],
+  "2025-04-29": [{type:"bike", km:10}],
+
+  "2025-05-05": [{type:"bike", km:10}],
+  "2025-05-06": [{type:"bike", km:10}],
+  "2025-05-07": [{type:"bike", km:10}],
+
+  "2025-06-01": [{type:"fullbody", label:"Musculação"}],
+  "2025-06-02": [{type:"fullbody", label:"Musculação"}],
+  "2025-06-08": [{type:"fullbody", label:"Musculação"}],
+  "2025-06-09": [{type:"fullbody", label:"Musculação"}],
+  "2025-06-10": [{type:"fullbody", label:"Musculação"}],
+
+  "2025-07-07": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-08": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-09": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-11": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-14": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-15": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-22": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-27": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-28": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-29": [{type:"fullbody", label:"Musculação"}],
+  "2025-07-30": [{type:"fullbody", label:"Musculação"}],
+
+  "2025-08-03": [{type:"fullbody", label:"Musculação"}],
+  "2025-08-04": [{type:"fullbody", label:"Musculação"}],
+  "2025-08-06": [{type:"fullbody", label:"Musculação"}],
+  "2025-08-09": [{type:"bike", km:10}],
+  "2025-08-10": [{type:"bike", km:15},{type:"bike", km:19}],
+  "2025-08-11": [{type:"bike", km:12}],
+  "2025-08-12": [{type:"bike", km:15}],
+  "2025-08-13": [{type:"bike", km:14}],
+  "2025-08-14": [{type:"bike", km:16}],
+  "2025-08-15": [{type:"bike", km:14}],
+  "2025-08-18": [{type:"fullbody", label:"Musculação"}],
+  "2025-08-19": [{type:"bike", km:18},{type:"fullbody", label:"Musculação"}],
+  "2025-08-20": [{type:"fullbody", label:"Musculação"},{type:"bike", km:23}],
+  "2025-08-25": [{type:"bike", km:20}],
+  "2025-08-26": [{type:"bike", km:18}],
+  "2025-08-27": [{type:"bike", km:19}],
+  "2025-08-28": [{type:"bike", km:16}],
+
+  "2025-09-02": [{type:"fullbody", label:"Musculação"}],
+  "2025-09-05": [{type:"fullbody", label:"Musculação"}],
+  "2025-09-07": [{type:"fullbody", label:"Musculação"}],
+  "2025-09-08": [{type:"fullbody", label:"Musculação"},{type:"bike", km:12}],
+  "2025-09-10": [{type:"bike", km:22},{type:"bike", km:25}],
+  "2025-09-15": [{type:"bike", km:26}],
+  "2025-09-16": [{type:"bike", km:25}],
+  "2025-09-17": [{type:"bike", km:24},{type:"bike", km:24}],
+  "2025-09-20": [{type:"fullbody", label:"Musculação"}],
+  "2025-09-22": [{type:"fullbody", label:"Musculação"},{type:"bike", km:24}],
+  "2025-09-24": [{type:"fullbody", label:"Musculação"},{type:"bike", km:24}],
+  "2025-09-27": [{type:"bike", km:25}],
+  "2025-09-28": [{type:"bike", km:24}],
+  "2025-09-29": [{type:"bike", km:23}],
+  "2025-09-30": [{type:"bike", km:15}],
+
+  "2025-10-01": [{type:"bike", km:25}],
+  "2025-10-02": [{type:"bike", km:25}],
+  "2025-10-07": [{type:"bike", km:18}],
+  "2025-10-08": [{type:"bike", km:20}],
+  "2025-10-13": [{type:"bike", km:20}],
+  "2025-10-15": [{type:"bike", km:20}],
+  "2025-10-16": [{type:"bike", km:20}],
+
+  "2025-11-04": [{type:"bike", km:17}],
+  "2025-11-05": [{type:"bike", km:16}],
+  "2025-11-07": [{type:"fullbody", label:"Musculação"}],
+  "2025-11-09": [{type:"fullbody", label:"Musculação"},{type:"bike", km:18}],
+  "2025-11-11": [{type:"bike", km:10}],
+  "2025-11-12": [{type:"bike", km:17},{type:"fullbody", label:"Musculação"}],
+  "2025-11-14": [{type:"bike", km:16}],
+  "2025-11-17": [{type:"fullbody", label:"Musculação"}],
+  "2025-11-18": [{type:"bike", km:10}],
+  "2025-11-24": [{type:"fullbody", label:"Musculação"}],
+  "2025-11-25": [{type:"fullbody", label:"Musculação"},{type:"bike", km:10}],
+
+  "2025-12-01": [{type:"fullbody", label:"Musculação"}],
+  "2025-12-02": [{type:"bike", km:15}],
+  "2025-12-03": [{type:"bike", km:15}],
+  "2025-12-15": [{type:"fullbody", label:"Musculação"}],
+  "2025-12-16": [{type:"bike", km:15}],
+  "2025-12-25": [{type:"bike", km:30}],
+  "2025-12-31": [{type:"bike", km:30}],
+};
+
+function youtubeLink(nome){
+  const q = encodeURIComponent(nome + " execução exercício");
+  return "https://www.youtube.com/results?search_query=" + q;
+}
+
+function changeMonth(delta){
+  calView.month += delta;
+  if(calView.month < 0){ calView.month = 11; calView.year--; }
+  if(calView.month > 11){ calView.month = 0; calView.year++; }
+  render();
+}
+
+function toggleKmField(){
+  const type = document.getElementById('act-type').value;
+  document.getElementById('act-km-wrap').style.display = (type === 'bike' || type === 'esteira') ? 'flex' : 'none';
+}
+
+function submitActivity(){
+  const dateVal = document.getElementById('act-date').value;
+  const type = document.getElementById('act-type').value;
+  if(!dateVal) return;
+  const entry = { type };
+  if(type === 'bike' || type === 'esteira'){
+    const km = document.getElementById('act-km').value;
+    entry.km = km ? parseFloat(km) : null;
+  }
+  if(!state.activities[dateVal]) state.activities[dateVal] = [];
+  state.activities[dateVal].push(entry);
+  saveState();
+  render();
+}
+
+function removeActivity(key, idx){
+  state.activities[key].splice(idx,1);
+  if(state.activities[key].length === 0) delete state.activities[key];
+  saveState();
+  render();
+}
+
+const MONTH_NAMES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const DAY_LABELS = ["dom","seg","ter","qua","qui","sex","sáb"];
+
+function renderCalendar(){
+  const y = calView.year, m = calView.month;
+  const firstWeekday = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayKey = toKey(today.getFullYear(), today.getMonth(), today.getDate());
+
+  let cells = '';
+  for(let i=0;i<firstWeekday;i++){
+    cells += `<div class="cal-cell empty"></div>`;
+  }
+  for(let d=1; d<=daysInMonth; d++){
+    const key = toKey(y,m,d);
+    const isToday = key === todayKey;
+    const acts = state.activities[key] || [];
+    const pills = acts.map((a, idx) => {
+      if(a.type === 'fullbody'){
+        return `<div class="activity-pill fullbody">🏋 ${a.label || 'Musculação'}</div>`;
+      } else if(a.type === 'boxe'){
+        return `<div class="activity-pill boxe">🥊 Boxe<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      } else if(a.type === 'bike'){
+        return `<div class="activity-pill bike">🚴 ${a.km ? a.km+'km' : 'Bike'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      } else if(a.type === 'tabata'){
+        return `<div class="activity-pill tabata">🔥 Tabata<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      } else {
+        return `<div class="activity-pill esteira">🏃 ${a.km ? a.km+'km' : 'Esteira'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      }
+    }).join('');
+    cells += `<div class="cal-cell ${isToday?'today':''}"><div class="cal-daynum">${d}</div>${pills}</div>`;
+  }
+
+  return `
+    <div class="cal-header">
+      <div class="cal-title">${MONTH_NAMES[m]} de ${y}</div>
+      <div class="cal-nav">
+        <div class="cal-nav-btn" onclick="changeMonth(-1)">‹</div>
+        <div class="cal-nav-btn" onclick="changeMonth(1)">›</div>
+      </div>
+    </div>
+    <div class="cal-grid">
+      ${DAY_LABELS.map(l=>`<div class="cal-daylabel">${l}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-dot fullbody"></div>Musculação (automático)</div>
+      <div class="legend-item"><div class="legend-dot boxe"></div>Boxe</div>
+      <div class="legend-item"><div class="legend-dot bike"></div>Bike</div>
+      <div class="legend-item"><div class="legend-dot tabata"></div>Tabata</div>
+      <div class="legend-item"><div class="legend-dot esteira"></div>Esteira</div>
+    </div>
+    <div class="cal-form">
+      <label>Data</label>
+      <input class="cal-input" type="date" id="act-date" value="${todayKey}">
+      <label>Atividade</label>
+      <select class="cal-select" id="act-type" onchange="toggleKmField()">
+        <option value="boxe">Boxe</option>
+        <option value="bike">Bike</option>
+        <option value="tabata">Tabata</option>
+        <option value="esteira">Esteira</option>
+      </select>
+      <div id="act-km-wrap" style="display:none;align-items:center;gap:6px;">
+        <label>Km</label>
+        <input class="cal-input km" type="number" step="0.1" id="act-km" placeholder="15">
+      </div>
+      <button class="cal-add-btn" onclick="submitActivity()">Registrar</button>
+    </div>
+  `;
+}
+
+async function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const res = raw ? {value: raw} : null;
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      if(Array.isArray(parsed.completed) && parsed.completed.length > 0){
+        // Migração seguro: se o número de sessões (TOTAL) mudou desde o último salvamento
+        // (ex: rodada nova de treinos adicionada), estende os arrays em vez de descartar
+        // o progresso salvo.
+        if(parsed.completed.length < TOTAL){
+          const missing = TOTAL - parsed.completed.length;
+          parsed.completed = parsed.completed.concat(Array(missing).fill(false));
+          const emptyChecks = Array(missing).fill(null).map(() => Array(7).fill(false));
+          parsed.checks = (parsed.checks || []).concat(emptyChecks);
+        } else if(parsed.completed.length > TOTAL){
+          // TOTAL diminuiu (não deveria acontecer normalmente) — trunca com segurança
+          parsed.completed = parsed.completed.slice(0, TOTAL);
+          parsed.checks = (parsed.checks || []).slice(0, TOTAL);
+        }
+        if(!parsed.weights) parsed.weights = {};
+        if(!parsed.activities) parsed.activities = {};
+        if(!parsed.seededVersion) parsed.seededVersion = 0;
+        state = parsed;
+      }
+    }
+  }catch(e){
+    // nada salvo ainda, segue com os valores padrão
+  }
+
+  if(state.seededVersion < CURRENT_SEED_VERSION){
+    Object.keys(SEED_ACTIVITIES).forEach(key => {
+      if(!state.activities[key]){
+        state.activities[key] = JSON.parse(JSON.stringify(SEED_ACTIVITIES[key]));
+      }
+    });
+    state.seededVersion = CURRENT_SEED_VERSION;
+    await saveState();
+  }
+
+  render();
+}
+
+let saveErrorFlag = false;
+
+async function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if(saveErrorFlag){
+      saveErrorFlag = false;
+      render();
+    }
+  }catch(e){
+    console.error('Falha ao salvar progresso', e);
+    saveErrorFlag = true;
+    render();
+  }
+}
+
+function firstUnlockedIndex(){
+  for(let i=0;i<TOTAL;i++){
+    if(!state.completed[i]) return i;
+  }
+  return TOTAL-1;
+}
+
+function isUnlocked(i){
+  if(i===0) return true;
+  return state.completed[i-1];
+}
+
+function selectSession(i){
+  if(!isUnlocked(i)) return;
+  state.selected = i;
+  render();
+}
+
+function toggleCheck(sessionIdx, exIdx){
+  if(!isUnlocked(sessionIdx)) return;
+  state.checks[sessionIdx][exIdx] = !state.checks[sessionIdx][exIdx];
+  render();
+  saveState();
+}
+
+function updateWeight(nome, value){
+  state.weights[nome] = value;
+  saveState();
+}
+
+function completeSession(i){
+  const allChecked = state.checks[i].every(Boolean);
+  if(!allChecked) return;
+  state.completed[i] = true;
+  const now = new Date();
+  const key = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+  if(!state.activities[key]) state.activities[key] = [];
+  state.activities[key].push({type:'fullbody', label: SESSIONS[i].template.nome.replace(/^Treino [AB] · /,'')});
+  if(i+1 < TOTAL) state.selected = i+1;
+  render();
+  saveState();
+}
+
+const MONTH_ABBR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+function computeMonthStats(year, month){
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0;
+
+  Object.keys(state.activities).forEach(key => {
+    const [y,m] = key.split('-').map(Number);
+    if(y !== year || (m-1) !== month) return;
+    (state.activities[key] || []).forEach(a => {
+      if(a.type === 'fullbody'){ musc++; }
+      else if(a.type === 'boxe'){ boxe++; }
+      else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); }
+      else if(a.type === 'tabata'){ tabata++; }
+      else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); }
+    });
+  });
+
+  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm};
+}
+
+function renderMonthStats(){
+  const s = computeMonthStats(dashYear, dashMonthIndex);
+  const boxes = `
+    ${s.musc > 0 ? `<div class="stat-box musc"><div class="stat-num">${s.musc}</div><div class="stat-label">Musculação</div></div>` : ''}
+    ${s.boxe > 0 ? `<div class="stat-box boxe"><div class="stat-num">${s.boxe}</div><div class="stat-label">Boxe</div></div>` : ''}
+    ${s.bikeCount > 0 ? `<div class="stat-box bike"><div class="stat-num">${s.bikeCount}</div><div class="stat-label">Pedaladas</div></div>` : ''}
+    ${s.bikeCount > 0 ? `<div class="stat-box bike"><div class="stat-num">${s.bikeKm}</div><div class="stat-label">Km na bike</div></div>` : ''}
+    ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
+    ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
+    ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+  `;
+  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount) > 0;
+
+  return `
+    <div class="cal-header" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">
+      <div class="dash-title" style="text-transform:capitalize;">${MONTH_NAMES[dashMonthIndex]} de ${dashYear}</div>
+      <div class="cal-nav">
+        <div class="cal-nav-btn" onclick="changeDashMonth(-1)">‹</div>
+        <div class="cal-nav-btn" onclick="changeDashMonth(1)">›</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      ${hasAny ? boxes : `<div style="grid-column:1/-1;text-align:center;color:var(--text-faint);font-size:12.5px;padding:10px 0;">Nenhuma atividade registrada neste mês</div>`}
+    </div>
+  `;
+}
+
+function computeStats(year){
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0;
+  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0}));
+
+  Object.keys(state.activities).forEach(key => {
+    const [y,m] = key.split('-').map(Number);
+    if(y !== year) return;
+    const mi = m-1;
+    (state.activities[key] || []).forEach(a => {
+      if(a.type === 'fullbody'){ musc++; monthly[mi].musc++; }
+      else if(a.type === 'boxe'){ boxe++; monthly[mi].boxe++; }
+      else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); monthly[mi].bike++; }
+      else if(a.type === 'tabata'){ tabata++; monthly[mi].tabata++; }
+      else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); monthly[mi].esteira++; }
+    });
+  });
+
+  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, monthly};
+}
+
+function renderDashboard(){
+  const s = computeStats(dashYear);
+
+  const CATS = [
+    {key:'musc', total: s.musc, legendClass:'fullbody', label:'Musculação'},
+    {key:'boxe', total: s.boxe, legendClass:'boxe', label:'Boxe'},
+    {key:'bike', total: s.bikeCount, legendClass:'bike', label:'Bike'},
+    {key:'tabata', total: s.tabata, legendClass:'tabata', label:'Tabata'},
+    {key:'esteira', total: s.esteiraCount, legendClass:'esteira', label:'Esteira'},
+  ];
+  const activeCats = CATS.filter(c => c.total > 0);
+
+  const statBoxesHtml = `
+    ${s.musc > 0 ? `<div class="stat-box musc"><div class="stat-num">${s.musc}</div><div class="stat-label">Musculação</div></div>` : ''}
+    ${s.boxe > 0 ? `<div class="stat-box boxe"><div class="stat-num">${s.boxe}</div><div class="stat-label">Boxe</div></div>` : ''}
+    ${s.bikeCount > 0 ? `<div class="stat-box bike"><div class="stat-num">${s.bikeCount}</div><div class="stat-label">Pedaladas</div></div>` : ''}
+    ${s.bikeCount > 0 ? `<div class="stat-box bike"><div class="stat-num">${s.bikeKm}</div><div class="stat-label">Km na bike</div></div>` : ''}
+    ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
+    ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
+    ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+  `;
+
+  const legendHtml = activeCats.length === 0 ? '' : activeCats.map(c =>
+    `<div class="legend-item"><div class="legend-dot ${c.legendClass}"></div>${c.label}</div>`
+  ).join('');
+
+  return `
+    <div class="dash-card">
+      <div class="cal-header">
+        <div class="dash-title">Resumo de ${s.year}</div>
+        <div class="cal-nav">
+          <div class="cal-nav-btn" onclick="changeDashYear(-1)">‹</div>
+          <div class="cal-nav-btn" onclick="changeDashYear(1)">›</div>
+        </div>
+      </div>
+      <div class="stat-grid">${statBoxesHtml}</div>
+      <div class="cal-legend">${legendHtml}</div>
+      ${renderMonthStats()}
+    </div>
+  `;
+}
+
+
+function downloadBackup(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = toKey(today.getFullYear(), today.getMonth(), today.getDate());
+  a.href = url;
+  a.download = `atividade-fisica-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function triggerRestore(){
+  document.getElementById('restore-file-input').click();
+}
+
+function handleRestoreFile(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!Array.isArray(parsed.completed) || parsed.completed.length === 0){
+        alert('Esse arquivo não parece ser um backup válido deste app.');
+        return;
+      }
+      if(parsed.completed.length < TOTAL){
+        const missing = TOTAL - parsed.completed.length;
+        parsed.completed = parsed.completed.concat(Array(missing).fill(false));
+        const emptyChecks = Array(missing).fill(null).map(() => Array(7).fill(false));
+        parsed.checks = (parsed.checks || []).concat(emptyChecks);
+      } else if(parsed.completed.length > TOTAL){
+        parsed.completed = parsed.completed.slice(0, TOTAL);
+        parsed.checks = (parsed.checks || []).slice(0, TOTAL);
+      }
+      if(!parsed.weights) parsed.weights = {};
+      if(!parsed.activities) parsed.activities = {};
+      if(!parsed.seededVersion) parsed.seededVersion = 0;
+      state = parsed;
+      await saveState();
+      render();
+      alert('Backup restaurado com sucesso!');
+    }catch(err){
+      alert('Não consegui ler esse arquivo. Confira se é o JSON de backup certo.');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  const doneCount = state.completed.filter(Boolean).length;
+  const pct = Math.round((doneCount/TOTAL)*100);
+  const sel = state.selected;
+  const session = SESSIONS[sel];
+  const unlocked = isUnlocked(sel);
+  const checks = state.checks[sel];
+  const allChecked = checks.every(Boolean);
+
+  let trilhaHtml = '<div class="trilha">';
+  WAVES.forEach((wave, wi) => {
+    trilhaHtml += `<div class="wave-group"><div class="wave-title">Ciclo ${wi+1}</div><div class="wave-nodes">`;
+    SESSIONS.forEach((s, i) => {
+      if(s.waveId !== wave.id) return;
+      const unl = isUnlocked(i);
+      const done = state.completed[i];
+      const isSelected = i === sel;
+      let cls = 'node';
+      if(!unl) cls += ' locked';
+      else if(done) cls += ' done';
+      else cls += ' active';
+      if(isSelected) cls += ' selected';
+      const label = done ? '✓' : (i+1);
+      trilhaHtml += `<div class="${cls}" onclick="selectSession(${i})" title="Sessão ${i+1}${!unl?' (bloqueada)':''}">${unl ? label : '🔒'}</div>`;
+    });
+    trilhaHtml += `</div></div>`;
+    if(wi < WAVES.length-1) trilhaHtml += `<div class="wave-divider"></div>`;
+  });
+  trilhaHtml += '</div>';
+
+  let bodyHtml;
+  if(!unlocked){
+    bodyHtml = `
+      <div class="session-head">
+        <div class="session-name">Sessão ${sel+1}</div>
+        <div class="session-tag">bloqueada</div>
+      </div>
+      <div class="locked-msg">
+        <span class="lock-icon">🔒</span>
+        Termine a sessão anterior pra desbloquear esta aqui.
+      </div>
+    `;
+  } else {
+    const exRows = session.template.exercicios.map((ex, ei) => {
+      const currentWeight = state.weights[ex.nome] !== undefined ? state.weights[ex.nome] : ex.carga;
+      return `
+      <div class="ex-row">
+        <div class="ex-check ${checks[ei]?'checked':''}" onclick="toggleCheck(${sel},${ei})"></div>
+        <div class="ex-info">
+          <div class="ex-name ${checks[ei]?'checked-text':''}">${ex.nome}</div>
+          <div class="ex-group">${ex.grupo}</div>
+        </div>
+        <div class="ex-specs">
+          <div class="ex-reps">${ex.series}x${ex.reps}</div>
+          <input class="ex-weight-input" type="text" value="${currentWeight.replace(/"/g,'&quot;')}"
+            onchange="updateWeight('${ex.nome.replace(/'/g,"\\'")}', this.value)" />
+        </div>
+        <a class="ex-video" href="${youtubeLink(ex.nome)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
+      </div>
+    `;
+    }).join('');
+
+    let btnHtml;
+    if(state.completed[sel]){
+      btnHtml = `<button class="finish-btn done-state" disabled>✓ Treino concluído</button>`;
+    } else if(allChecked){
+      btnHtml = `<button class="finish-btn ready" onclick="completeSession(${sel})">Concluir treino e desbloquear próximo</button>`;
+    } else {
+      btnHtml = `<button class="finish-btn waiting" disabled>Marque todos os exercícios pra concluir</button>`;
+    }
+
+    bodyHtml = `
+      <div class="session-head">
+        <div class="session-name">${session.template.nome}</div>
+        <div class="session-tag">Sessão ${sel+1} de ${TOTAL}</div>
+      </div>
+      <div class="session-meta">${session.waveLabel} · repetição ${session.repeatIndex} de 4</div>
+      ${session.repeatIndex === 1 ? `<div class="wave-note">${session.waveNote}</div>` : ''}
+      ${exRows}
+      ${btnHtml}
+    `;
+  }
+
+  app.innerHTML = `
+    <div class="backup-bar">
+      <button class="backup-btn" onclick="downloadBackup()">⬇ Baixar backup</button>
+      <button class="backup-btn" onclick="triggerRestore()">⬆ Restaurar backup</button>
+      <input type="file" id="restore-file-input" accept="application/json" style="display:none;" onchange="handleRestoreFile(this)">
+    </div>
+    ${saveErrorFlag ? `<div class="save-error-banner">⚠ Não consegui salvar essa alteração agora (falha no armazenamento). Baixe um backup pra não perder nada, e tente recarregar a página.</div>` : ''}
+    <h1>ATIVIDADE FÍSICA</h1>
+
+    <div class="tabs">
+      <button class="tab-btn ${activeTab==='calendario'?'active':''}" onclick="setTab('calendario')">Calendário</button>
+      <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
+    </div>
+
+    ${activeTab === 'calendario' ? `
+      ${renderDashboard()}
+      <div class="cal-card">${renderCalendar()}</div>
+    ` : `
+      <div class="progress-card">
+        <div class="progress-top">
+          <div class="progress-num">${doneCount}<span> / ${TOTAL} treinos</span></div>
+          <div class="progress-label">${pct}% do trimestre</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+
+      <div class="trilha-scroll">${trilhaHtml}</div>
+
+      <div class="session-card">${bodyHtml}</div>
+    `}
+  `;
+}
+
+loadState();
+</script>
+</body>
+</html>
