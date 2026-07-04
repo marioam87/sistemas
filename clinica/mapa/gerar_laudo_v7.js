@@ -346,9 +346,11 @@ function blocoRecalc() {
 }
 
 // ─── RITMO CIRCADIANO ─────────────────────────────────────────────────────────
-function blocoRitmo() {
+function blocoRitmo(temArtefatos) {
   const blocks = [];
-  blocks.push(new Paragraph({ children: [new PageBreak()] }));
+  if (!temArtefatos) {
+    blocks.push(new Paragraph({ children: [new PageBreak()] }));
+  }
   blocks.push(
     new Paragraph({
       children: [r(`Ritmo circadiano > variação da pressão entre ${T.ritmo}`, { bold: true, size: 24 })],
@@ -544,7 +546,7 @@ function gerarDocxParaPDF() {
     tabelaCargas(),
     sidebar("Admite-se como anormais valores superiores à 50%."),
     blank(20),
-    ...blocoRitmo(),
+    ...blocoRitmo(temArtefatos),
     blank(),
     ...blocoConc(),
     ...blocoFinal(),
@@ -594,7 +596,7 @@ function gerarDocx() {
     ...resultados,
     ...cargas,
     ...blocoRecalc(),
-    ...blocoRitmo(),
+    ...blocoRitmo(temArtefatos),
     blank(),
     ...blocoConc(),
     ...blocoFinal(),

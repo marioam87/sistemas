@@ -361,7 +361,7 @@ NextRow:
     Application.Calculation = calcPrev
     Application.EnableEvents = True
     Application.ScreenUpdating = True
-    MsgBox "Dashboard gerado para " & m & "!" & Chr(10) & _
+    MsgBox "Dashboard gerado para " & m & "!" & ChrW(10) & _
            nRec & " receitas | " & nDesp & " despesas | " & nCart & " cartao", vbInformation
 End Sub
 
@@ -761,7 +761,7 @@ NextRow:
     r = r + 2
 
     ' ================= SALDO DO MES =================
-    wsAnual.Cells(r, 2).Value = "Saldo do M?s"
+    wsAnual.Cells(r, 2).Value = "Saldo do Mes"
     For mes = 1 To 12
         wsAnual.Cells(r, 2 + mes).Value = totRec(mes) - totDesp(mes)
     Next mes
