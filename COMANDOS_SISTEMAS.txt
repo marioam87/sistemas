@@ -8,6 +8,27 @@ Fluxo normal de todo dia:
 
 
 ----------------------------------------
+USAR O CLAUDE CODE  (o assistente que mexe nos arquivos por você)
+----------------------------------------
+1) Abrir o Terminal
+2) Entrar na pasta:
+     cd ~/sistemas
+3) Chamar o assistente:
+     claude
+4) Digitar o pedido em português, em linguagem normal. Exemplos:
+     - "atualize o CLAUDE.md da farmácia com as novas regras de dosagem"
+     - "cria um arquivo .bas em VBA que soma os valores da coluna B"
+     - "veja o que está pendente no git e explique o que mudou"
+     - "faz o commit dessas alterações"
+5) Para sair do Claude Code:
+     /exit
+
+  - Pode conversar normalmente, sem precisar saber comandos técnicos.
+  - Se pedir para "fazer o commit", ele mesmo roda os comandos de git.
+  - Fechar o Terminal também sai do Claude Code, mas o /exit é mais educado.
+
+
+----------------------------------------
 ENTRAR NA PASTA (sempre antes de qualquer comando)
 ----------------------------------------
 cd ~/sistemas
