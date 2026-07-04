@@ -30,3 +30,4 @@ O Claude Code lê o `REGRAS.md` daquela pasta + o `CLAUDE.md` da raiz automatica
 ## Convenções globais
 
 Estão em `CLAUDE.md` (raiz). Valem para todos os subsistemas.
+<!-- rebuild trigger: 2026-07-04 18:40:33 -->
