@@ -19,6 +19,7 @@ Fonte única de verdade. Se uma regra ou script vive aqui, esta é a versão ofi
 | `financeiro/milhas/` | Fluxo de caixa do negócio de milhas (.xlsm) + VBA |
 | `plataforma-exames/` | Plataforma web para receber exames e devolver laudos (LGPD) |
 | `pessoal/eu-fui/` | Histórico de shows internacionais (DOCX + dashboard) |
+| `pessoal/treinos-mario/` | App de treino e atividade física (HTML + localStorage, hospedado via GitHub Pages) |
 
 ## Como usar com o Claude Code
 
