@@ -368,3 +368,38 @@ pacientes de terceiros (contratantes) — atenção redobrada.
   recriado quando necessário.
 - `pessoal/eu-fui/gerar_eu_fui.js` (gerador DOCX) ainda não foi integrado à
   automação do `eu_fui_master.json`.
+
+## Achados da auditoria de código — 03/07/2026
+
+Revisão de todas as pastas (clínica, financeiro, pessoal) em busca de erros.
+Já corrigidos: quebra de página incondicional no `gerar_laudo_v7.js` e os dois
+bugs de VBA (`Chr(10)` → `ChrW(10)`, "Saldo do M?s" → "Saldo do Mes") no
+`Modulo_Principal.bas` — commit `f060f7a`. Números do `eu-fui` conferidos e
+batendo com o documentado. Ainda pendente:
+
+- [ ] `clinica/farmacias/farmapreco_cwb_v2.html`: a estratégia de "busca em
+  camadas" (Camada 1 sempre; Camada 2 só se Camada 1 retornar <3 preços) não
+  está implementada no prompt embutido — a palavra "camada" não aparece no
+  arquivo. Nissei também está mais permissiva no prompt do que a regra
+  ("consultar no app" apenas). Levotiroxina na lista monitorada não traz
+  quantidade (as outras entradas trazem, ex. "— 30cp").
+- [ ] `clinica/receituario/REGRAS.md` desatualizado: descreve 2 abas, a
+  ferramenta real tem 4 (Cardio/PA/IMC/Contatos). Array `PA` embutido no HTML
+  está em ordem diferente de `pa.json` (mesmo conteúdo, fontes fora de sync).
+  Typos em `medicamentos.json`: "CLOPIDOGRL" → CLOPIDOGREL, "BRUPROPIONA" →
+  BUPROPIONA.
+- [ ] `financeiro/milhas/create_milhas.py`: lista `TITS` com nomes reais de
+  familiares hardcoded num arquivo versionado — mover para fora do Git.
+  `VALOR BRUTO` não é forçado positivo no script (só pego depois pela
+  validação VBA `ValidarDados`).
+- [ ] `financeiro/orcamento/CLAUDE.md` (~linha 240) se contradiz sobre os
+  índices de coluna Responsavel/Status da aba Recorrente (diz `Cells(1,10)`/
+  `Cells(1,11)`, mas o código certo — e a tabela no mesmo arquivo — usa
+  11/12). Corrigir o texto para não induzir erro futuro.
+- [ ] `pessoal/eu-fui/validar_eu_fui.py` não valida RANKING nem COMP_GRUPOS
+  (confirmado injetando uma inconsistência real no HTML gerado — o validador
+  não pegou). `gerar_eu_fui_html.py`: `base_name()` só normaliza sufixo
+  romano até V; banda que chegar ao 6º show (VI) vai fragmentar estatísticas
+  silenciosamente. Também: um `.replace('\\','\\\\')` no mesmo script é
+  código morto hoje mas duplica escapes se algum título/local vier a ter
+  aspas ou barra invertida.
