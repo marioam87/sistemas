@@ -26,6 +26,10 @@
     --radius: 14px;
   }
   *{box-sizing:border-box;}
+  html, body{
+    max-width:100%;
+    overflow-x:hidden;
+  }
   body{
     margin:0;
     background:var(--bg);
@@ -249,7 +253,7 @@
     display:flex;align-items:center;justify-content:center;
   }
   .cal-nav-btn:hover{border-color:var(--accent);color:var(--accent);}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;}
   .cal-daylabel{
     font-family:'JetBrains Mono', monospace;
     font-size:10px;
@@ -260,6 +264,8 @@
   }
   .cal-cell{
     min-height:64px;
+    min-width:0;
+    overflow:hidden;
     border-radius:8px;
     border:1px solid var(--border);
     padding:5px 4px;
@@ -270,6 +276,7 @@
   .cal-daynum{font-family:'JetBrains Mono', monospace;font-size:11px;color:var(--text-muted);margin-bottom:3px;}
   .activity-pill{
     display:flex;align-items:center;gap:3px;
+    max-width:100%;
     font-size:9.5px;
     line-height:1.5;
     padding:1px 5px;
@@ -977,7 +984,7 @@ function completeSession(i){
   const now = new Date();
   const key = toKey(now.getFullYear(), now.getMonth(), now.getDate());
   if(!state.activities[key]) state.activities[key] = [];
-  state.activities[key].push({type:'fullbody', label: SESSIONS[i].template.nome.replace(/^Treino [AB] · /,'')});
+  state.activities[key].push({type:'fullbody', label: 'Musculação'});
   if(i+1 < TOTAL) state.selected = i+1;
   render();
   saveState();
