@@ -94,6 +94,11 @@ Sub GerarDashboard()
     If wsDados Is Nothing Then MsgBox "Aba Dados nao encontrada!", vbCritical: Exit Sub
     If wsMensal Is Nothing Then MsgBox "Aba Mensal nao encontrada!", vbCritical: Exit Sub
 
+    ' garante que a coluna N (auxiliar) da Recorrente esteja alinhada com o
+    ' tamanho atual da tabela antes de calcular qualquer coisa que dependa
+    ' dela (tabela Prestacoes em Mensal!P:Q usa 'Recorrente'!N2:N48)
+    Call SincronizarColunaN
+
     Dim m As String
     m = InputBox("Digite o mes no formato YYYY-MM (ex: 2025-06):", "Gerar Dashboard", Format(Now(), "YYYY-MM"))
     If m = "" Then Exit Sub
@@ -461,6 +466,59 @@ Private Function RenderCart(ws As Worksheet, rIni As Long, banner As String, tot
 
     RenderCart = r + 2
 End Function
+
+' ============================================================
+' SINCRONIZAR COLUNA N - resincroniza a coluna auxiliar N da aba
+' Recorrente com o tamanho atual da tabela.
+'
+' PROBLEMA QUE ISSO RESOLVE:
+'   A coluna N (indice de mes/ano serial usado por Mensal!S2 e pela
+'   tabela Prestacoes em Mensal!P:Q) fica FORA do ListObject
+'   "Recorrente". Quando uma linha e excluida de dentro da tabela,
+'   o Excel desloca as formulas de N para cima, mas a ULTIMA linha
+'   de N fica orfa (aponta para a linha que foi excluida, virando
+'   #REF!) e as demais ficam uma linha "atrasadas" (N(r) passa a
+'   referenciar I(r-1)/J(r-1) em vez de I(r)/J(r)).
+'
+' O QUE A MACRO FAZ:
+'   Reescreve a formula de N em TODA linha de dados da tabela mais
+'   1 linha de buffer logo abaixo (a tabela Prestacoes soma ate esse
+'   buffer), sempre auto-referenciada (N(r) usa I(r) e J(r) da mesma
+'   linha). Tambem apaga sobras de linhas antigas abaixo do buffer.
+'
+' QUANDO RODAR:
+'   Roda automaticamente no inicio de GerarDashboard. Pode tambem
+'   ser rodada manualmente (botao na aba Recorrente) apos excluir ou
+'   inserir linhas na tabela Recorrente, antes de conferir a Mensal.
+' ============================================================
+Sub SincronizarColunaN()
+    Dim wsR As Worksheet, loR As ListObject
+    Set wsR = ThisWorkbook.Sheets("Recorrente")
+    Set loR = wsR.ListObjects("Recorrente")
+
+    If loR.DataBodyRange Is Nothing Then Exit Sub
+
+    Dim firstRow As Long, lastRow As Long, bufferRow As Long
+    firstRow = loR.DataBodyRange.Row
+    lastRow = loR.DataBodyRange.Row + loR.DataBodyRange.Rows.Count - 1
+    bufferRow = lastRow + 1   ' 1 linha extra alem do fim da tabela
+
+    ' apaga sobras de formulas antigas de N abaixo do buffer (heranca de
+    ' quando a tabela era maior)
+    Dim lastNRow As Long
+    lastNRow = wsR.Cells(wsR.Rows.Count, 14).End(xlUp).Row   ' coluna N = 14
+    If lastNRow > bufferRow Then
+        wsR.Range(wsR.Cells(bufferRow + 1, 14), wsR.Cells(lastNRow, 14)).ClearContents
+    End If
+
+    ' reescreve a formula em cada linha, sempre auto-referenciada
+    Dim r As Long
+    For r = firstRow To bufferRow
+        wsR.Cells(r, 14).FormulaR1C1 = _
+            "=IF(AND(RC[-5]=""Parcela"",RC[-4]<>""""),(2000+VALUE(RIGHT(RC[-4],2)))*12+" & _
+            "MATCH(LEFT(RC[-4],3),{""jan"";""fev"";""mar"";""abr"";""mai"";""jun"";""jul"";""ago"";""set"";""out"";""nov"";""dez""},0),"""")"
+    Next r
+End Sub
 
 ' ---- limpa os filtros da tabela da aba ativa (Dados ou Recorrente) ----
 Sub LimparFiltros()
@@ -1382,6 +1440,7 @@ Sub CriarBotoes()
     Call AddBtnAt(ws, lastR + 2, 13, "Limpar Filtros", "LimparFiltros")
     Call AddBtnAt(ws, lastR + 4, 13, "Ordenar Dados", "OrdenarDados")
     Call AddBtnAt(ws, lastR + 6, 13, "Validar Dados", "ValidarDados")
+    Call AddBtnAt(ws, lastR + 8, 13, "Sincronizar Coluna N", "SincronizarColunaN")
 
     ' ------- PLANTOES: botoes na coluna G, a partir da ultima linha da tabela -------
     Set ws = ThisWorkbook.Sheets("Plantoes")

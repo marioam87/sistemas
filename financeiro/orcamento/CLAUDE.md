@@ -128,7 +128,8 @@ Macros principais:
 
 | Macro | Descricao |
 |---|---|
-| GerarDashboard | Gera dashboard mensal na aba Mensal. Pergunta mes (YYYY-MM). Limpa A8:N(fim) — nunca colunas P em diante (preserva tabela Prestacoes em P:Q e auxiliar em S). Chama AtualizarImoveis ao final. |
+| GerarDashboard | Gera dashboard mensal na aba Mensal. Pergunta mes (YYYY-MM). Limpa A8:N(fim) — nunca colunas P em diante (preserva tabela Prestacoes em P:Q e auxiliar em S). Chama SincronizarColunaN no inicio e AtualizarImoveis ao final. |
+| SincronizarColunaN | Resincroniza a coluna auxiliar N (indice mes/ano) da aba Recorrente com o tamanho atual da tabela — exclusao de linha na tabela deixa a formula da ultima linha orfa (#REF!) e as demais desalinhadas em 1 linha. Reescreve a formula em toda linha + 1 buffer, sempre auto-referenciada. Roda automatica no inicio de GerarDashboard; tambem tem botao proprio na aba Recorrente. |
 | GerarDashboardAnual | Gera/regenera bloco anual na aba Anual. Cria backup em Anual_bkp antes de alterar. Blocos em ordem decrescente. Botao "Gerar Anual" recriado free-floating em O3. |
 | LancarRecorrentes | Copia tabela Recorrente para Dados no mes informado. Colunas Prestacao/Termino nao sao exportadas. Responsavel e Status vem das colunas 11 e 12 da Recorrente (nao 9 e 10). |
 | OrdenarDados | Ordena tabela da aba ativa por Data crescente. |

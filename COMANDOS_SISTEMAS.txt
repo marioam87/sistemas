@@ -37,13 +37,21 @@ cd ~/sistemas
 
 
 ----------------------------------------
-SALVAR  (o comando que serve para tudo)
+SALVAR E ENVIAR PRO GITHUB  (o comando que serve para tudo)
 ----------------------------------------
-cd ~/sistemas && git add -A && git commit -m "comandos sistemas"
+cd ~/sistemas && git add -A && git commit -m "atualizacao $(date '+%Y-%m-%d %H:%M')"; git push
 
-  - Use SEMPRE este.
-  - O "-A" pega tudo: arquivos novos, alterados E apagados.
-  - Troque o texto entre aspas pela descrição do que você fez.
+  - Use SEMPRE este. Funciona mesmo se não tiver nada novo pra commitar
+    (só avisa "nothing to commit" e continua pro push).
+  - Guarda a alteração no computador (commit) E manda pro GitHub (push)
+    numa tacada só.
+  - Se aparecer erro no "push" (em vez de só um aviso), NÃO insista —
+    cola a mensagem de erro pro Claude Code resolver.
+
+  Se preferir escrever você mesmo a descrição do que mudou, troque o
+  comando acima por dois passos:
+    cd ~/sistemas && git add -A && git commit -m "sua descrição aqui"
+    git push
 
 
 ----------------------------------------
