@@ -1,6 +1,7 @@
 # ==== NUNCA versionar dados sensíveis ====
 # Dados de paciente, exames, laudos gerados, qualquer PII
 *.pdf
+!site/referencias/**/*.pdf
 laudos/
 exames/
 outputs/
