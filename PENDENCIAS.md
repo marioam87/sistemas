@@ -87,6 +87,20 @@ uma urgência operacional. Isso muda como vamos trabalhar:
 Contexto: hoje Mario paga um sistema de terceiros que faz este fluxo. A ideia
 é construir um substituto próprio (`~/sistemas/site/`).
 
+### Tipos de exame futuros (planejado em 05/07/2026)
+
+Além do escopo inicial (ECG, MAPA, Holter), dois novos tipos de exame estão
+planejados para o site, sem data definida — entram na fila depois do escopo
+inicial:
+- **Ecocardiograma transtorácico (ECOTT)**
+- **Doppler de carótidas e vertebrais (DCV)**
+
+Modelos de referência de estrutura de laudo já adicionados à gaveta (sem
+dado de paciente), para uso futuro no desenho do template de cada laudo
+(mesmo padrão JSON → template → PDF já usado no MAPA):
+- `site/referencias/ecott/ecott - modelo laudo.docx`
+- `site/referencias/dcv/dcv - modelo laudo.pdf`
+
 ### Como o sistema atual funciona (referência a replicar)
 
 1. Recebe PDF de eletrocardiograma
