@@ -19,7 +19,8 @@ Fluxo Node.js + `docx`, com saída dupla PDF/DOCX via LibreOffice.
 
 ## Seção Ritmo Circadiano — quebra de página condicional
 
-- **Sem artefatos:** a seção abre a **página 2** sem sobras, usando `pageBreakBefore`.
+- **Sem artefatos:** a seção abre a **página 2** sem sobras, inserindo um
+  `Paragraph` isolado com `new PageBreak()` (não a propriedade `pageBreakBefore`).
 - **Com artefatos:** a seção segue o fluxo normal do documento (sem quebra forçada).
 
 ## Saída

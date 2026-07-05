@@ -172,6 +172,15 @@ _TITS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'titular
 with open(_TITS_CONFIG, encoding='utf-8') as f:
     TITS = json.load(f)['titulares']
 
+# Layout da aba estoque reserva linhas 2-10 (9 titulares) e usa a linha 11
+# fixa como "TOTAL DE MILHAS" — um 10o titular seria sobrescrito em silencio.
+if len(TITS) > 9:
+    raise ValueError(
+        f"titulares_config.json tem {len(TITS)} titulares, mas o layout da aba "
+        "estoque so suporta 9 (linhas 2-10). Ajustar o layout antes de adicionar "
+        "mais titulares."
+    )
+
 # Row 1: cabecalhos
 cel_h(ws_estq, 1, 1, 'TITULAR', bg=AZ_MED)
 for ci, p in enumerate(PRGS, 2):

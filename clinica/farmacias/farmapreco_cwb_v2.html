@@ -299,6 +299,18 @@ let isBusy = false;
 let totalTokens = 0;
 let _apiKey = '';
 
+// Registro de dados dos cards, indexado por id numerico. Evita embutir
+// strings arbitrarias (nome digitado pelo usuario, notas da API) dentro de
+// atributos onclick — aspas nesses textos quebrariam o HTML se fossem
+// serializadas direto no atributo.
+const _cardStore = new Map();
+let _cardSeq = 0;
+function registrarCard(nomeOrig, data) {
+  const id = ++_cardSeq;
+  _cardStore.set(id, { nomeOrig, data });
+  return id;
+}
+
 // ─── API KEY ──────────────────────────────────────────────────────────────────
 function getApiKey() { return _apiKey; }
 
@@ -431,7 +443,12 @@ async function chamarAPI(medicamento) {
         "Abra o Console (F12) para ver o erro técnico completo."
       );
     }
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      const httpErr = new Error(e.error?.message || `HTTP ${res.status}`);
+      httpErr.status = res.status;
+      throw httpErr;
+    }
     const data = await res.json();
     if (data.usage) {
       totalTokens += (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0);
@@ -474,8 +491,11 @@ function filtrarNulos(data) {
 }
 
 // ─── RETRY AUTOMÁTICO ─────────────────────────────────────────────────────────
-function erroNaoRecuperavel(msg) {
-  return /Nenhuma API key inserida|não parece válida/.test(msg || '');
+function erroNaoRecuperavel(e) {
+  // 401 = chave ausente/invalida/sem permissao — a API sempre vai recusar de
+  // novo, retry so atrasa o erro. "nao parece valida" e o pre-check local
+  // (ainda antes de chamar a API) para chave com formato obviamente errado.
+  return (e && e.status === 401) || /não parece válida/.test((e && e.message) || '');
 }
 async function chamarAPIComRetry(medicamento, maxTentativas = 2) {
   let lastError;
@@ -487,7 +507,7 @@ async function chamarAPIComRetry(medicamento, maxTentativas = 2) {
       return { data: await chamarAPI(medicamento), tentativa: t };
     } catch (e) {
       lastError = e;
-      if (erroNaoRecuperavel(e.message)) break; // não adianta tentar de novo sem chave válida
+      if (erroNaoRecuperavel(e)) break; // não adianta tentar de novo sem chave válida
     }
   }
   throw lastError;
@@ -649,10 +669,11 @@ function mkCardLoading(nome) {
 function mkCardResultado(data, nomeOrig, fromCache, ts, tentativa) {
   const d = document.createElement('div'); d.className = 'card';
 
-  // Serializar data para o botão copiar
-  const dataJSON = JSON.stringify(data).replace(/'/g, "\\'");
-  const ref = `<button class="btn-ref" onclick="pesquisarUm(${JSON.stringify(nomeOrig)},true)">↺ Atualizar</button>`;
-  const cpBtn = `<button class="btn-copy" onclick='copiarTabela(${dataJSON})'>📋 Copiar</button>`;
+  // ID numerico seguro para reencontrar nomeOrig/data no registro _cardStore
+  // (nunca embutir os textos em si dentro do atributo onclick — ver acima).
+  const cardId = registrarCard(nomeOrig, data);
+  const ref = `<button class="btn-ref" onclick="pesquisarUm(_cardStore.get(${cardId}).nomeOrig,true)">↺ Atualizar</button>`;
+  const cpBtn = `<button class="btn-copy" onclick="copiarTabela(_cardStore.get(${cardId}).data)">📋 Copiar</button>`;
 
   if (data._raw) {
     d.innerHTML = `<div class="card-hdr"><div style="flex:1"><div class="card-title">${esc(data.nome || nomeOrig)}</div></div>
