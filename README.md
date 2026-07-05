@@ -17,9 +17,9 @@ Fonte única de verdade. Se uma regra ou script vive aqui, esta é a versão ofi
 | `clinica/farmacias/` | Prompt de comparação de preços entre farmácias de Curitiba |
 | `financeiro/orcamento/` | Planilha de orçamento pessoal (.xlsm) + VBA |
 | `financeiro/milhas/` | Fluxo de caixa do negócio de milhas (.xlsm) + VBA |
-| `plataforma-exames/` | Plataforma web para receber exames e devolver laudos (LGPD) |
+| `site/` | Plataforma web para receber exames e devolver laudos (LGPD) |
 | `pessoal/eu-fui/` | Histórico de shows internacionais (DOCX + dashboard) |
-| `pessoal/treinos-mario/` | App de treino e atividade física (HTML + localStorage, hospedado via GitHub Pages) |
+| `pessoal/academia/` | App de treino e atividade física (HTML + localStorage, hospedado via GitHub Pages) |
 
 ## Como usar com o Claude Code
 

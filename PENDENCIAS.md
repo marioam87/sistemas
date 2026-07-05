@@ -85,7 +85,7 @@ uma urgência operacional. Isso muda como vamos trabalhar:
 ## Plataforma de exames — escopo inicial (levantado em 03/07/2026)
 
 Contexto: hoje Mario paga um sistema de terceiros que faz este fluxo. A ideia
-é construir um substituto próprio (`~/sistemas/plataforma-exames/`).
+é construir um substituto próprio (`~/sistemas/site/`).
 
 ### Como o sistema atual funciona (referência a replicar)
 
@@ -451,7 +451,7 @@ para testes.
 ### Lembrete de sempre
 
 LGPD é requisito desde o início, não ajuste posterior (já registrado no
-`plataforma-exames/CLAUDE.md`). Este projeto lida com dado de saúde de
+`site/CLAUDE.md`). Este projeto lida com dado de saúde de
 pacientes de terceiros (parceiros) — atenção redobrada.
 
 ### Descartado (já discutido — não propor de novo)

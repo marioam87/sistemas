@@ -1,17 +1,21 @@
-# Contexto: app "Atividade Física" (treinos_mario.html)
+# Contexto: app "Atividade Física" (academia/index.html)
 
 Documento de handoff para o Claude Code. Este arquivo é um app pessoal de treino/atividade física do Mario, feito como um único arquivo HTML autocontido (HTML+CSS+JS vanilla, sem build, sem dependências externas). Ele foi desenvolvido ao longo de uma conversa longa no Claude.ai e agora está migrando pra manutenção via Claude Code + GitHub Pages.
 
-## Onde colocar
+> Pasta renomeada de `treinos-mario/` para `academia/` em 04/07/2026 —
+> puramente cosmético, sem mudança de código ou de dados. A URL do GitHub
+> Pages mudou junto (ver aviso na seção "iPhone" abaixo).
 
-Sugestão: `~/sistemas/treinos-mario/index.html` (nome `index.html` é importante pro GitHub Pages servir na raiz do site).
+## Onde está
+
+`~/sistemas/pessoal/academia/index.html` (nome `index.html` é importante pro GitHub Pages servir na raiz da pasta).
 
 ## Deploy (GitHub Pages)
 
-1. Dentro do repo `~/sistemas`, criar a pasta `treinos-mario/` com o `index.html` dentro.
-2. `git add treinos-mario/index.html && git commit -m "..." && git push`
-3. No GitHub: Settings → Pages → Source: escolher a branch (main) e a pasta (`/treinos-mario` ou usar um repo dedicado só pra isso, com Pages servindo da raiz — mais simples).
-4. A URL gerada (tipo `usuario.github.io/treinos-mario/`) é o link fixo que o Mario abre no Safari do iPhone e adiciona à Tela de Início.
+1. Dentro do repo `~/sistemas`, a pasta é `pessoal/academia/` com o `index.html` dentro.
+2. `git add pessoal/academia/index.html && git commit -m "..." && git push`
+3. GitHub Pages já está configurado para servir a partir da branch `main`, raiz do repo — não precisa reconfigurar nada ao editar este app.
+4. A URL gerada (`marioam87.github.io/sistemas/pessoal/academia/`) é o link fixo que o Mario abre no Safari do iPhone e adiciona à Tela de Início.
 
 ## Estrutura do app
 
@@ -72,7 +76,14 @@ Isso preserva: sessões já concluídas, cargas editadas (`weights`), e o calend
 
 ## iPhone — como o usuário usa isso no dia a dia
 
-Abre a URL do GitHub Pages no Safari → "Adicionar à Tela de Início" → abre em tela cheia como um app. Continua funcionando assim mesmo depois de atualizações no código (o localStorage sobrevive a atualizações de conteúdo da mesma origem/URL).
+Abre a URL do GitHub Pages no Safari → "Adicionar à Tela de Início" → abre em tela cheia como um app. Continua funcionando assim mesmo depois de atualizações no código (o localStorage sobrevive a atualizações de conteúdo da mesma origem/URL — a origem `marioam87.github.io` não muda).
+
+**Atenção:** o *caminho* da URL mudou de `.../treinos-mario/` para
+`.../academia/` quando a pasta foi renomeada (04/07/2026). O atalho antigo na
+Tela de Início do iPhone aponta pra URL antiga (que agora dá 404) — o Mario
+precisa remover o atalho velho e adicionar um novo a partir da URL nova. O
+localStorage em si não é afetado (mesma origem), só o atalho salvo aponta
+pro lugar errado.
 
 ## Preferências de estilo do usuário (Mario)
 
