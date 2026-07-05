@@ -2,6 +2,17 @@
 
 Lista viva do que ficou para depois. Sem prazo; revisitar quando fizer sentido.
 
+## Pessoas envolvidas (glossário — atualizado em 03/07/2026)
+
+- **Mario** — o próprio, cardiologista, dono da MP Serviços Médicos.
+  **Administrador** e **Médico** (laudo ECG e MAPA).
+- **Léo** — amigo cardiologista. **Não é usuário do sistema de Mario** —
+  está construindo sua própria plataforma de laudos em paralelo, e manda
+  ideias/soluções que já funcionam no sistema dele. Suas referências
+  técnicas (WhatsApp Business Platform, geração de PDF, PAdES/ICP-Brasil)
+  estão registradas neste documento como "referência do amigo cardiologista".
+- **Gi (Dra. Gislaini)** — **Médica**, laudo apenas exames de Holter.
+
 ## Estratégia de execução da plataforma de exames (consolidado em 03/07/2026)
 
 **Contexto:** sem pressa. O sistema atual (LaudoSyn) atende a demanda hoje —
@@ -52,18 +63,24 @@ uma urgência operacional. Isso muda como vamos trabalhar:
 
 ## Identidade visual
 
-- [ ] **Criar um logo para a empresa MP Serviços Médicos.** Vai ser usado na
-  etiqueta/cabeçalho dos laudos (hoje a etiqueta usa só texto — CNPJ,
-  endereço, contato — sem marca visual).
-- [ ] **Pensar e comprar um domínio** para a plataforma. Opções sugeridas
-  em 03/07/2026 (nenhuma escolhida ainda):
-  1. `mpservicosmedicos.com.br` — nome direto da empresa
-  2. `mpsaude.com.br` — curto, fácil de lembrar
-  3. `laudosmp.com.br` — reforça a função (laudos)
-  4. `mpcardio.com.br` — foco na especialidade
-  5. `mariomariano.med.br` — extensão `.med.br`, exclusiva para médicos
-     registrados no CFM (exige comprovar CRM); passa mais credibilidade
-     institucional
+- [ ] **Escolher um nome fantasia.** Decidido em 04/07/2026: o site, a
+  logomarca e a comunicação dos laudos vão usar um **nome fantasia**,
+  diferente da razão social "MP Serviços Médicos" (a esposa de Mario não
+  gostou do nome para essa finalidade). A empresa continua sendo "MP
+  Serviços Médicos S/S" no CNPJ/documentos oficiais — só o nome voltado ao
+  público muda. Nome ainda não escolhido.
+  → Nota técnica: para usar oficialmente vinculado ao CNPJ (recomendado,
+  evita alguém registrar o mesmo nome depois), formalizar como nome
+  fantasia na Junta Comercial — passo simples, normalmente resolvido pelo
+  contador.
+- [ ] **Criar um logo** para o nome fantasia (que ainda será escolhido).
+  Vai ser usado na etiqueta/cabeçalho dos laudos (hoje a etiqueta usa só
+  texto — CNPJ, endereço, contato — sem marca visual).
+- [ ] **Comprar o domínio.** As opções sugeridas anteriormente (baseadas em
+  "MP Serviços Médicos") ficam **em suspenso** até o nome fantasia ser
+  definido — o domínio deve seguir o nome fantasia escolhido, não a razão
+  social. `mpservicosmedicos.com.br` segue confirmado como disponível, mas
+  provavelmente não será o escolhido.
 
 ## Plataforma de exames — escopo inicial (levantado em 03/07/2026)
 
@@ -77,7 +94,7 @@ Contexto: hoje Mario paga um sistema de terceiros que faz este fluxo. A ideia
 3. Recebe arquivo `.dat` do Holter Contec (ECG bruto do exame)
 4. Mario baixa o `.dat`, faz o laudo do Holter à parte
 5. Envia o laudo em PDF de volta ao sistema
-6. Contratantes (clínicas/parceiros) baixam o exame já laudado
+6. Parceiros (clínicas) baixam o exame já laudado
 7. Backup de todos os exames na nuvem (AWS)
 
 ### O que o sistema novo precisa ter, no mínimo
@@ -88,7 +105,7 @@ Contexto: hoje Mario paga um sistema de terceiros que faz este fluxo. A ideia
       tem relação com Mac/Windows usados em casa).
 - [ ] Upload de PDF (ECG e MAPA) e de arquivo `.dat` (Holter Contec)
 - [ ] Área para baixar o `.dat` do Holter e subir o laudo em PDF
-- [ ] Área de download para os contratantes baixarem o exame laudado
+- [ ] Área de download para os parceiros baixarem o exame laudado
 - [ ] Backup automático dos exames na nuvem (AWS, como já é feito hoje)
 - [ ] **Novidade em relação ao sistema atual:** área para laudar
       eletrocardiogramas diretamente no site (hoje isso não existe lá)
@@ -164,11 +181,11 @@ página 1, mas o restante do fluxo é diferente:
 ```
 Pág 1:    Etiqueta da empresa + identificação do paciente + QR code
           (igual ao MAPA)
-Pág 2:    Texto do laudo — Gislaini escreve no Word e COLA na caixa de
+Pág 2:    Texto do laudo — Gi escreve no Word e COLA na caixa de
           texto livre da plataforma (mesmo padrão que Mario usa hoje no
           sistema atual para o MAPA). Termina com CARIMBO CENTRALIZADO
           (sem assinatura digital ao lado, ver abaixo).
-Pág 3+:   PDF enviado pelo campo de upload — Gislaini baixa o .dat do
+Pág 3+:   PDF enviado pelo campo de upload — Gi baixa o .dat do
           Holter, monta ELA MESMA um PDF com as informações do exame e
           exemplos de trechos de traçado alterados, e sobe esse PDF
           pronto. O texto da página 2 é lançado JUNTO com os gráficos
@@ -181,40 +198,53 @@ Diferenças importantes em relação ao MAPA:
   (decisão inicial — pode mudar no futuro).
 - O laudo é **texto colado na caixa livre da plataforma** (escrito primeiro
   no Word), não um PDF anexado como no MAPA.
-- **Quem laudo o Holter é a Dra. Gislaini**, não o Mario — então o carimbo
+- **Quem laudo o Holter é a Gi**, não o Mario — então o carimbo
   usado aqui é o dela, **não** o `carimbo.png` de Mario que já está em
   `clinica/mapa/assets/`.
 
-**Pendência:** Mario vai enviar o arquivo do carimbo da Dra. Gislaini para
+**Pendência:** Mario vai enviar o arquivo do carimbo da Gi para
 guardar (local sugerido quando existir: uma pasta própria do Holter, ainda
 não criada na gaveta — criar `clinica/holter/` quando for organizar isso).
 
-### Estrutura de acesso — três áreas do sistema (definido em 03/07/2026)
+### Estrutura de acesso — três sistemas (definido em 03/07/2026)
 
-O sistema não é uma coisa só: são **três áreas com acessos diferentes**.
+Não é uma coisa só: são **três sistemas com acessos diferentes**, chamados
+de **Sistema Parceiros**, **Sistema Laudos** e **Sistema Administrador**
+(nomenclatura padronizada — ver também seção "Tela de login").
 
-**1. Área do Contratante** (empresas que enviam exames)
-Contratantes atuais: **Idealprev**, **Policlínica Sítio Cercado**,
-**Policlínica Tatuquara**, **Rio Azul**. Cada contratante só enxerga os
+**1. Sistema Parceiros** (empresas que enviam exames)
+Parceiros atuais: **Idealprev**, **Policlínica Sítio Cercado**,
+**Policlínica Tatuquara**, **Rio Azul**. Cada parceiro só enxerga os
 próprios exames: envia exames para laudo e baixa os laudos prontos. Não vê
-nada dos outros contratantes nem da área de laudo/administrativa.
+nada dos outros parceiros nem dos outros sistemas.
 
-**2. Área de Laudo** (Mario + Dra. Gislaini)
-É a área que estamos desenhando nas seções acima deste documento — onde os
-exames são laudados (MAPA, Holter, ECG).
+**2. Sistema Laudos** (Mario + Gi)
+É o sistema que estamos desenhando nas seções acima deste documento — onde
+os exames são laudados (MAPA, Holter, ECG).
 
-**3. Área Administrativa** (só Mario, como dono/administrador da empresa)
+**3. Sistema Administrador** (só Mario, como dono/administrador da empresa)
 Inclui:
-- Cadastro de novos contratantes
-- Ajuste de horários de envio de exames
-- Ajuste de horário de trabalho dos colaboradores (ex.: Gislaini)
+- Cadastro de novos parceiros
+- ~~Ajuste de horários de envio de exames~~ (removido — ver decisão de não
+  limitar horário de envio/recebimento, mais abaixo)
+- Ajuste de horário de trabalho dos colaboradores (ex.: Gi)
 - Fluxo de caixa dos exames: feito / pago / pagamento pendente
 - Informações de acesso da AWS (Amazon, backup)
 
-**Notificação ao contratante (decisão em 03/07/2026 — muda em relação ao
+**Notificação ao parceiro (decisão em 03/07/2026 — muda em relação ao
 sistema atual):** em vez de e-mail, notificar por **WhatsApp**. Combinar
 com cada clínica **um número de WhatsApp de destino** (o número que a
 clínica usa para receber a notificação de laudo pronto).
+
+**Notificação ao médico de novo pedido recebido (definido em 04/07/2026):**
+quando um parceiro envia um pedido de exame, o médico responsável recebe
+um aviso por WhatsApp na hora, segmentado por tipo de exame:
+- **ECG ou MAPA** → avisa **Mario**, no número **+55 41 99908-4472**
+- **Holter** → avisa **Gi**, no número **+55 41 99995-1121**
+
+Isso é notificação de ENTRADA (pedido novo chegando), complementar à
+notificação de SAÍDA já registrada acima (parceiro avisado quando o laudo
+fica pronto).
 
 **Arquitetura de WhatsApp — referência do amigo cardiologista (03/07/2026):**
 usar a **WhatsApp Business Platform oficial da Meta** (não bibliotecas
@@ -231,7 +261,8 @@ Limitações a considerar no desenho:
 - **Janela de 24h:** só é possível mandar mensagem de texto livre a quem
   escreveu nas últimas 24h; fora disso, só com template pré-aprovado
 - **Templates de mensagem:** iniciar uma notificação (ex.: "seu laudo está
-  pronto") exige um modelo pré-aprovado pela Meta, não texto livre
+  pronto", ou "novo pedido recebido") exige um modelo pré-aprovado pela
+  Meta, não texto livre
 - **Aprovação de templates:** cada modelo passa por revisão da Meta antes
   de poder ser usado (horas a poucos dias)
 
@@ -242,8 +273,64 @@ envio/recebimento de exames** (o sistema atual tem esse controle no painel
 administrador — Mario decidiu não replicar essa limitação).
 
 **Pendência:** Mario vai enviar prints da organização atual desses "3 sites"
-(provavelmente as 3 áreas acima, ou os 3 portais dos contratantes — verificar
+(provavelmente os 3 sistemas acima, ou os 3 portais dos parceiros — verificar
 quando os prints chegarem).
+
+### Tela de login (definida em 03/07/2026)
+
+Layout, de cima para baixo:
+1. Logo da empresa (MP Serviços Médicos) — depende da pendência de criar o
+   logo, ver seção "Identidade visual"
+2. Campo de texto: **Usuário**
+3. Campo de texto: **Senha**
+4. Botão **Entrar**
+5. Botão **Esqueci a senha**
+
+**Regra de senha:** 6 a 8 caracteres, com letras e números, pelo menos
+1 letra maiúscula e 1 caractere especial.
+
+**Fluxo de "Esqueci a senha" (ajustado por questão de segurança em
+03/07/2026):** a senha nunca é armazenada de forma legível nem visível para
+o administrador (prática de segurança padrão — senhas ficam guardadas de
+forma criptografada e irreversível, o chamado "hash"). Em vez de o
+administrador "ver a senha nova", o fluxo é:
+- O usuário esquece a senha → recebe um link/código para **criar uma senha
+  nova**, sem ninguém (nem o admin) ver qual ele escolheu.
+- Se o administrador (Mario) precisar destravar alguém manualmente, ele
+  **atribui uma senha temporária** para a pessoa (não vê a senha que ela
+  escolheria) — e ela troca no primeiro acesso seguinte.
+
+Isso preserva a necessidade prática de Mario (poder ajudar alguém travado
+sem acesso), sem guardar senhas de forma exposta — importante porque a
+plataforma lida com dado de saúde de terceiros (ver lembrete de LGPD já
+registrado).
+
+**Login único, acesso roteado por perfil (definido em 03/07/2026):** a
+mesma tela de login serve para os três sistemas — não são sites
+separados, é um único ponto de entrada que direciona para o sistema certo
+conforme o usuário/senha usados. Nomenclatura padronizada (ver também
+"Estrutura de acesso — três sistemas", mais abaixo):
+
+- **Sistema Administrador** — só Mario. Um único login.
+- **Sistema Laudos** — onde os exames são laudados. Dois médicos
+  habilitados por enquanto: Mario e Gi, **cada um com seu próprio login**.
+- **Sistema Parceiros** — uma clínica envia exames e recebe laudos por
+  aqui. **Cada clínica tem seu próprio login** (Idealprev, Policlínica
+  Sítio Cercado, Policlínica Tatuquara, Rio Azul).
+
+Resumo de contas previstas no lançamento: 1 login de Sistema Administrador
+(Mario), 2 logins de Sistema Laudos (Mario + Gi), 4 logins de Sistema
+Parceiros (um por clínica).
+
+**Divisão de exames dentro do Sistema Laudos (definida em 03/07/2026):**
+apesar de os dois terem login no mesmo sistema, cada um só recebe e laudo
+um tipo de exame:
+- **Gi:** apenas **Holter**
+- **Mario:** **ECG** (eletrocardiograma) e **MAPA**
+
+Ou seja, a fila de exames a laudar deve ser filtrada por usuário logado —
+Gi não vê exames de ECG/MAPA na fila dela, e Mario não vê exames de Holter
+na dele.
 
 ### Layout da tela de laudo — Eletrocardiograma (definido em 03/07/2026)
 
@@ -280,12 +367,13 @@ laudo de ECG.
 foi explícito: quer usar como ponto de partida para pensar o sistema novo,
 mas não quer reproduzir o mesmo design.
 
-**Painel Administrador** — mais seções do que já tínhamos registrado:
-Dashboard (cards: exames não laudados / laudados por tipo em gráfico de rosca
-— Eletrocardiograma, Holter, Mapa / exames repetidos, com filtro de período),
-Cadastros, **Configurações**, Financeiro, **Modelos**, **Relatórios**, Sistema.
+**Sistema Administrador (referência do sistema atual)** — mais seções do
+que já tínhamos registrado: Dashboard (cards: exames não laudados / laudados
+por tipo em gráfico de rosca — Eletrocardiograma, Holter, Mapa / exames
+repetidos, com filtro de período), Cadastros, **Configurações**, Financeiro,
+**Modelos**, **Relatórios**, Sistema.
 
-**Painel do Contratante:**
+**Sistema Parceiros (referência do sistema atual):**
 - Tela "Pedidos" (envio de exame): campos Exame, Convênio, Nome do Paciente,
   CPF, Data de Nascimento, Data/Hora de instalação do exame, **Marcapasso**
   (Sim/Não), **Tipo do Pedido** (ex.: "Normal" — outros tipos a confirmar,
@@ -296,13 +384,13 @@ Cadastros, **Configurações**, Financeiro, **Modelos**, **Relatórios**, Sistem
   — é só visual, não dispara nada de fato. No sistema novo, WhatsApp real
   substitui o e-mail (ver decisão de notificação acima).
 
-**Painel Profissional (Mario/Gislaini):**
+**Sistema Laudos (Mario/Gi) — referência do sistema atual:**
 - Tela "Laudar" (fila de trabalho): o sistema atual divide em "Dentro do
   horário de trabalho" / "Fora do horário de trabalho". **Não será replicado**
   — Mario decidiu não limitar horário de envio/recebimento no sistema novo
   (ver simplificação acima). Fica só como fila única de exames a laudar.
 - Tela "Laudos Finalizados": mesma lista, com ações extras de editar/excluir
-  (que o contratante não tem).
+  (que o parceiro não tem).
 - Tela "Laudos Repetir": lista dos exames marcados para repetição.
 
 **Campo novo identificado:** cada exame carrega um flag de **Marcapasso**
@@ -315,11 +403,16 @@ Cadastros, **Configurações**, Financeiro, **Modelos**, **Relatórios**, Sistem
       **Infinnitum Tecnologia** (Curitiba, desde 2006).
       Contato: contato@infinnitum.com.br · (41) 9 9648-1623
       → Perguntar diretamente: exportação em CSV/JSON, ou API disponível?
-- [ ] Modelo de autenticação dos contratantes (login/senha, link único, etc.)
 - [ ] Formato de entrega do `.dat` do Holter — se precisa de visualizador
       embutido ou só download
 - [ ] Bird ID tem API/integração para assinar programaticamente, ou é um
       processo manual (assinar fora e depois subir o PDF já assinado)?
+      **Detalhe técnico de referência (amigo cardiologista, 03/07/2026):**
+      o padrão correto de assinatura digital em PDF no Brasil é **PAdES**
+      (PDF Advanced Electronic Signatures) com **cadeia ICP-Brasil** — não
+      é só "colar uma imagem de assinatura", é uma assinatura
+      criptográfica com validade jurídica de verdade. Confirmar se o
+      Bird ID gera assinatura nesse formato.
 - [ ] QR Code: gerar em cima do link de download do exame, ou embutir o PDF
       direto no QR? (limite de dados de um QR pode não comportar o PDF inteiro
       — provavelmente o caminho é link)
@@ -329,18 +422,37 @@ Cadastros, **Configurações**, Financeiro, **Modelos**, **Relatórios**, Sistem
       lista.
 - [ ] **Botões "Enviar laudo" e "Repetir exame"** em todas as páginas de
       laudo (ECG, MAPA, Holter). Se "Repetir exame" for acionado, o exame
-      **volta para a empresa que enviou a solicitação** e fica pendente até
-      que seja reajustado/reenviado por ela.
+      **volta para o parceiro que enviou a solicitação** e fica pendente até
+      que seja reajustado/reenviado por ele.
       → Pergunta em aberto: fica registrado algum motivo da repetição (campo
       de observação), ou é só um botão sem justificativa?
-      (a dúvida sobre aviso ao contratante já foi resolvida — vai ser por
+      (a dúvida sobre aviso ao parceiro já foi resolvida — vai ser por
       WhatsApp, ver seção de notificação acima)
+
+### Método de validação da assinatura digital — referência do amigo
+cardiologista (03/07/2026)
+
+Quando chegar a hora de testar a assinatura digital de verdade, este é o
+roteiro de validação em três etapas que o amigo de Mario usou:
+
+1. **Assinar um PDF de teste no VPS** e conferir a assinatura **PAdES** +
+   cadeia **ICP-Brasil** diretamente (verificação técnica).
+2. **Validação oficial:** levar esse PDF ao site
+   [validar.iti.gov.br](https://validar.iti.gov.br) — validador **oficial
+   do governo brasileiro** para assinaturas digitais — para confirmar que
+   a assinatura é reconhecida como válida.
+3. **Teste final "de ponta a ponta":** pelo celular, direto no domínio da
+   plataforma, laudar um ECG e um MAPA de teste, e conferir se o PDF final
+   sai assinado, com timbre e fontes corretas, na hora.
+
+Guardar este roteiro para quando a integração de assinatura estiver pronta
+para testes.
 
 ### Lembrete de sempre
 
 LGPD é requisito desde o início, não ajuste posterior (já registrado no
 `plataforma-exames/CLAUDE.md`). Este projeto lida com dado de saúde de
-pacientes de terceiros (contratantes) — atenção redobrada.
+pacientes de terceiros (parceiros) — atenção redobrada.
 
 ### Descartado (já discutido — não propor de novo)
 
@@ -355,6 +467,8 @@ pacientes de terceiros (contratantes) — atenção redobrada.
 
 ## Notas técnicas soltas (para quando rodar local no Claude Code)
 
+- Claude Code testado e funcionando em 03/07/2026, lendo corretamente os
+  CLAUDE.md das subpastas.
 - **Autenticação do Claude Code (decidido em 03/07/2026):** usar login
   normal da assinatura Pro/Max (o mesmo do claude.ai), rodando o Claude Code
   no Mac de Mario — não a API Console (`console.anthropic.com`, cobrança por
@@ -368,38 +482,3 @@ pacientes de terceiros (contratantes) — atenção redobrada.
   recriado quando necessário.
 - `pessoal/eu-fui/gerar_eu_fui.js` (gerador DOCX) ainda não foi integrado à
   automação do `eu_fui_master.json`.
-
-## Achados da auditoria de código — 03/07/2026
-
-Revisão de todas as pastas (clínica, financeiro, pessoal) em busca de erros.
-Já corrigidos: quebra de página incondicional no `gerar_laudo_v7.js` e os dois
-bugs de VBA (`Chr(10)` → `ChrW(10)`, "Saldo do M?s" → "Saldo do Mes") no
-`Modulo_Principal.bas` — commit `f060f7a`. Números do `eu-fui` conferidos e
-batendo com o documentado. Ainda pendente:
-
-- [ ] `clinica/farmacias/farmapreco_cwb_v2.html`: a estratégia de "busca em
-  camadas" (Camada 1 sempre; Camada 2 só se Camada 1 retornar <3 preços) não
-  está implementada no prompt embutido — a palavra "camada" não aparece no
-  arquivo. Nissei também está mais permissiva no prompt do que a regra
-  ("consultar no app" apenas). Levotiroxina na lista monitorada não traz
-  quantidade (as outras entradas trazem, ex. "— 30cp").
-- [ ] `clinica/receituario/REGRAS.md` desatualizado: descreve 2 abas, a
-  ferramenta real tem 4 (Cardio/PA/IMC/Contatos). Array `PA` embutido no HTML
-  está em ordem diferente de `pa.json` (mesmo conteúdo, fontes fora de sync).
-  Typos em `medicamentos.json`: "CLOPIDOGRL" → CLOPIDOGREL, "BRUPROPIONA" →
-  BUPROPIONA.
-- [ ] `financeiro/milhas/create_milhas.py`: lista `TITS` com nomes reais de
-  familiares hardcoded num arquivo versionado — mover para fora do Git.
-  `VALOR BRUTO` não é forçado positivo no script (só pego depois pela
-  validação VBA `ValidarDados`).
-- [ ] `financeiro/orcamento/CLAUDE.md` (~linha 240) se contradiz sobre os
-  índices de coluna Responsavel/Status da aba Recorrente (diz `Cells(1,10)`/
-  `Cells(1,11)`, mas o código certo — e a tabela no mesmo arquivo — usa
-  11/12). Corrigir o texto para não induzir erro futuro.
-- [ ] `pessoal/eu-fui/validar_eu_fui.py` não valida RANKING nem COMP_GRUPOS
-  (confirmado injetando uma inconsistência real no HTML gerado — o validador
-  não pegou). `gerar_eu_fui_html.py`: `base_name()` só normaliza sufixo
-  romano até V; banda que chegar ao 6º show (VI) vai fragmentar estatísticas
-  silenciosamente. Também: um `.replace('\\','\\\\')` no mesmo script é
-  código morto hoje mas duplica escapes se algum título/local vier a ter
-  aspas ou barra invertida.
