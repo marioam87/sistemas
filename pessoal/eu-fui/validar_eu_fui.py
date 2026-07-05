@@ -21,14 +21,26 @@ def extract_const(content, name):
     m = re.search(rf'const {name} = (\[.*?\]|\{{.*?\}});', content, re.S)
     if not m:
         return None
+    raw = m.group(1)
+    # COMP_GRUPOS é gerado com vírgula pendente antes do fechamento (ver
+    # gerar_eu_fui_html.py) — JS aceita, JSON não. Remover antes de parsear.
+    raw = re.sub(r',\s*([\]}])', r'\1', raw)
     try:
-        return json.loads(m.group(1))
+        return json.loads(raw)
     except json.JSONDecodeError:
-        return None  # ex.: COMP_GRUPOS usa sintaxe JS, não JSON puro
+        return None
+
+
+_ROMAN_SUFFIX_RE = re.compile(r'^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$')
 
 
 def base_name(banda):
-    return re.sub(r'\s+(II|III|IV|V)$', '', banda).strip()
+    """Mesma regra de gerar_eu_fui_html.py: remove sufixo de numeral romano
+    (II, III, IV, V, VI, ...) para agrupar shows repetidos da mesma banda."""
+    partes = banda.rsplit(' ', 1)
+    if len(partes) == 2 and partes[1] != 'I' and _ROMAN_SUFFIX_RE.fullmatch(partes[1]):
+        return partes[0].strip()
+    return banda.strip()
 
 
 def main():
@@ -91,6 +103,36 @@ def main():
         soma = sum(cidades_const.values())
         if soma != total_shows:
             problemas.append(f"soma de CIDADES ({soma}) != total de shows ({total_shows}).")
+
+    # ── RANKING (soma bate com o total de shows, agrupado por base_name) ──
+    ranking_const = extract_const(html, 'RANKING')
+    if ranking_const is not None:
+        soma_ranking = sum(len(v) * int(k) for k, v in ranking_const.items())
+        if soma_ranking != total_shows:
+            problemas.append(f"soma de RANKING ({soma_ranking}) != total de shows ({total_shows}).")
+
+    # ── COMP_GRUPOS (bandas com >=2 shows, agrupadas por contagem) ──
+    comp_grupos_const = extract_const(html, 'COMP_GRUPOS')
+    if comp_grupos_const is not None:
+        contagem_real = defaultdict(int)
+        for bn in bandas:
+            c = sum(1 for s in shows if base_name(s['banda']) == bn)
+            if c >= 2:
+                contagem_real[c] += 1
+        for grupo in comp_grupos_const:
+            label = grupo.get('label', '')
+            m = re.match(r'(\d+) Shows', label)
+            if not m:
+                avisos.append(f"COMP_GRUPOS: label '{label}' não bate com o padrão 'N Shows'.")
+                continue
+            count = int(m.group(1))
+            qtd_bandas = len(grupo.get('bandas', []))
+            if contagem_real.get(count, 0) != qtd_bandas:
+                problemas.append(
+                    f"COMP_GRUPOS['{label}'] tem {qtd_bandas} banda(s), mas SHOWS indica "
+                    f"{contagem_real.get(count, 0)} banda(s) com {count} shows.")
+    else:
+        avisos.append("COMP_GRUPOS não encontrado ou não parseável no HTML — não validado.")
 
     # ── ESTILOS (soma dos percentuais) ──
     estilos = extract_const(html, 'ESTILOS')

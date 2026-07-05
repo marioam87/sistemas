@@ -8,6 +8,8 @@ NOTA: Named ranges NAO sao definidos aqui — o Excel Mac rejeita o arquivo
       quando o openpyxl gera XML de named ranges com formulas INDEX/COUNTA.
       O VBA os define em runtime via DefinirNamedRanges() chamado por Setup.
 """
+import json
+import os
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -69,6 +71,16 @@ def clean_tipo(v):
     if v is None: return None
     s = str(v).strip().upper()
     return 'SAIDA' if 'SA' in s else ('ENTRADA' if 'ENT' in s else v)
+
+# VALOR BRUTO deve ser sempre positivo (ver CLAUDE.md desta pasta).
+# Falha cedo em vez de deixar a validacao VBA (ValidarDados) pegar depois.
+_val_brutos_invalidos = [
+    (i + 2, row[2]) for i, row in enumerate(src_rows)
+    if row[2] is not None and row[2] <= 0
+]
+if _val_brutos_invalidos:
+    linhas = ', '.join(f'linha {r} (valor={v})' for r, v in _val_brutos_invalidos)
+    raise ValueError(f"VALOR BRUTO deve ser sempre positivo. Corrija na origem: {linhas}")
 
 # ── Novo workbook ─────────────────────────────────────────────────────────────
 wb       = Workbook()
@@ -153,8 +165,12 @@ print("Construindo aba estoque...")
 
 PRGS = ['azul','latam','smiles','british','copa','iberia',
         'qatar','tap','c6','esfera','livelo']
-TITS = ['alda','zeca','mario','ana luisa','ana maria',
-        'joselia','lucas','rogerio','valeria']
+
+# Nomes reais de familiares ficam fora do Git — ver titulares_config.json
+# (listado no .gitignore) e financeiro/milhas/CLAUDE.md.
+_TITS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'titulares_config.json')
+with open(_TITS_CONFIG, encoding='utf-8') as f:
+    TITS = json.load(f)['titulares']
 
 # Row 1: cabecalhos
 cel_h(ws_estq, 1, 1, 'TITULAR', bg=AZ_MED)

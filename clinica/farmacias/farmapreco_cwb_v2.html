@@ -290,7 +290,7 @@ let lista = [
   "Sacubitril-valsartana 200mg (Entresto / Neparvis) — 60cp",
   "Sertralina 50mg — 30cp",
   "Sertralina 100mg — 30cp",
-  "Levotiroxina 88mcg Euthyrox",
+  "Levotiroxina 88mcg Euthyrox — 42cp",
   "Rosuvastatina 20mg comprimidos — 30cp",
   "Rosuvastatina + Ezetimiba 20/10mg comprimidos — 30cp",
   "Rosuvastatina + Ezetimiba 40/10mg comprimidos — 30cp"
@@ -347,10 +347,11 @@ function atualizarPillCache() {
 // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 const SYS = `Você é especialista em pesquisa de preços de medicamentos no Brasil. Use busca na web para obter preços REAIS e ATUAIS em Curitiba-PR. Pesquise por nome comercial, nome genérico e laboratório.
 
-FARMÁCIAS (todas atuam em Curitiba-PR):
-Nissei (farmaciasnissei.com.br), Droga Raia (drogaraia.com.br), Pague Menos (paguemenos.com.br), Panvel (panvel.com), Morifarma (morifarma.com.br), Preço Popular (precopopular.com.br), Drogaria Catarinense (drogariacatarinense.com.br), Unipreço (farmaciasunipreco.com.br), Callfarma (callfarma.com.br).
+FARMÁCIAS (todas atuam em Curitiba-PR) — BUSCA EM CAMADAS:
+• CAMADA 1 (buscar sempre): Droga Raia (drogaraia.com.br), Callfarma (callfarma.com.br), Panvel (panvel.com), Pague Menos (paguemenos.com.br), Drogaria Catarinense (drogariacatarinense.com.br).
+• CAMADA 2 (buscar SOMENTE se a Camada 1 retornar menos de 3 preços): Morifarma (morifarma.com.br), Preço Popular (precopopular.com.br), Unipreço (farmaciasunipreco.com.br).
 • Fontes mais confiáveis para preço exato: URLs diretas de produto da Droga Raia e da Callfarma (retornam preço em meta tags).
-• Nissei: a loja online exige login/CPF. Se não houver preço público confirmado, NÃO invente — registre em "notas": "Nissei: consultar no app".
+• Nissei: NÃO pesquisar online (a loja exige login/CPF, sem preço público confiável). Sempre registrar em "notas": "Nissei: consultar no app" — nunca inclua Nissei em "precos".
 • NÃO usar Consulta Remédios como fonte de preço (carrega via JavaScript, não confiável).
 • Máximo ~3 buscas por medicamento; inclua preço apenas com fonte de URL direta do produto.
 

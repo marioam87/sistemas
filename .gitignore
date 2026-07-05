@@ -15,6 +15,9 @@ saidas/
 *.key
 credentials*
 
+# Nomes reais de familiares (fora do Git)
+financeiro/milhas/titulares_config.json
+
 # Sistema / editores
 .DS_Store
 node_modules/

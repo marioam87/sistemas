@@ -66,11 +66,19 @@ DISPLAY_NAME_OVERRIDES = {
 }
 
 
+_ROMAN_SUFFIX_RE = re.compile(r'^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$')
+
+
 def base_name(banda):
-    """Remove sufixo de numeral romano (II, III, IV, V) usado para shows
-    repetidos da mesma banda em anos diferentes, agrupando-os como uma
-    única banda nas estatísticas."""
-    return re.sub(r'\s+(II|III|IV|V)$', '', banda).strip()
+    """Remove sufixo de numeral romano (II, III, IV, V, VI, ...) usado para
+    shows repetidos da mesma banda em anos diferentes, agrupando-os como uma
+    única banda nas estatísticas. Aceita qualquer numeral romano válido
+    (menos "I" sozinho, para não confundir com nome de banda) — não trava
+    mais em V como limite."""
+    partes = banda.rsplit(' ', 1)
+    if len(partes) == 2 and partes[1] != 'I' and _ROMAN_SUFFIX_RE.fullmatch(partes[1]):
+        return partes[0].strip()
+    return banda.strip()
 
 
 def title_case(raw):
@@ -310,7 +318,7 @@ def render_html(template, master, derived):
         pattern = re.compile(rf'const {name} = (\[.*?\]|\{{.*?\}});', re.S)
         if not pattern.search(html):
             sys.exit(f"ERRO: não encontrei 'const {name} = ...' no template para substituir.")
-        html = pattern.sub(lambda m: new_block.replace('\\', '\\\\'), html, count=1)
+        html = pattern.sub(lambda m: new_block, html, count=1)
 
     replace_const('SHOWS', master['shows'])
     replace_const('ANOS', derived['ANOS'])

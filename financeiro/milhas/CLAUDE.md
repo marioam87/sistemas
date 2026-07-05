@@ -4,9 +4,11 @@ Fluxo de caixa do negócio de trading de milhas. Excel (.xlsm) separado do orça
 
 ## Arquivos desta pasta
 
+- `create_milhas.py` — gera a planilha nova (abas dados/estoque)
 - `vba/mod_milhas.bas` — módulo VBA **(colar aqui a versão oficial)**
+- `titulares_config.json` — nomes reais dos titulares (fora do Git, ver `.gitignore`)
 - a planilha `.xlsm` fica fora do Git se contiver dados sensíveis
-- `REGRAS.md` — este arquivo
+- `CLAUDE.md` — este arquivo
 
 ## Abas
 

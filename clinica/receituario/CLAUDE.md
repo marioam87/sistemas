@@ -8,10 +8,10 @@ copiar todos de uma vez, formatados, para colar no prontuário do paciente.
 ## Arquivos desta pasta
 
 - `receituario.html` — a ferramenta (HTML + CSS + JS num único arquivo, offline)
-- `medicamentos.json` — lista de categorias e medicamentos (aba "Medicamentos")
-- `contatos.json` — especialistas/encaminhamentos (aba "Contatos / Encaminhamentos")
-- `pa.json` — medicamentos usados no pronto atendimento
-- `REGRAS.md` — este arquivo
+- `medicamentos.json` — lista de categorias e medicamentos (aba "Cardio")
+- `pa.json` — medicamentos usados no pronto atendimento (aba "PA")
+- `contatos.json` — especialistas/encaminhamentos (aba "Contatos")
+- `CLAUDE.md` — este arquivo
 
 Trate os `.json` e o `.html` como a fonte de verdade. A cada alteração
 (adicionar, remover, editar medicamento, categoria ou contato), editar a
@@ -44,7 +44,9 @@ Cada categoria segue este formato:
 2. **Preservar o design e a funcionalidade existentes**, a menos que haja
    pedido explícito para mudar:
    - Cabeçalho com nome e CRM do Dr. Mario
-   - Duas abas: "Medicamentos" e "Contatos / Encaminhamentos"
+   - Quatro abas: "Cardio" (medicamentos.json), "PA" (pa.json), "IMC"
+     (calculadora embutida, sem fonte de dados externa) e "Contatos"
+     (contatos.json)
    - Busca em tempo real (ignorando acentos), categorias expansíveis/recolhíveis
    - Seleção múltipla entre categorias, mantendo a ordem de clique
    - Painel lateral "Receita em montagem" com cabeçalho fixo **USO CONTÍNUO**,

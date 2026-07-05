@@ -130,7 +130,7 @@ Macros principais:
 |---|---|
 | GerarDashboard | Gera dashboard mensal na aba Mensal. Pergunta mes (YYYY-MM). Limpa A8:N(fim) — nunca colunas P em diante (preserva tabela Prestacoes em P:Q e auxiliar em S). Chama AtualizarImoveis ao final. |
 | GerarDashboardAnual | Gera/regenera bloco anual na aba Anual. Cria backup em Anual_bkp antes de alterar. Blocos em ordem decrescente. Botao "Gerar Anual" recriado free-floating em O3. |
-| LancarRecorrentes | Copia tabela Recorrente para Dados no mes informado. Colunas Prestacao/Termino nao sao exportadas. Responsavel e Status vem das colunas 10 e 11 da Recorrente (nao 9 e 10). |
+| LancarRecorrentes | Copia tabela Recorrente para Dados no mes informado. Colunas Prestacao/Termino nao sao exportadas. Responsavel e Status vem das colunas 11 e 12 da Recorrente (nao 9 e 10). |
 | OrdenarDados | Ordena tabela da aba ativa por Data crescente. |
 | LimparFiltros | Limpa filtros e reexibe todas as linhas. |
 | ValidarDados | Varre ControleFinanceiro e aponta ate 25 inconsistencias (Ano/Mes x Data, ordem, Tipo, sinal Valor, Categoria fora de lista). |
@@ -237,7 +237,7 @@ Obs: Nubank/Pri ficam intencionalmente vazios ate julho (inicio de uso).
 | `CDbl` em celula vazia | Type error | Usar `Val(cell & "")` |
 | Clear destroi Prestacoes | Full-row clear apaga P:Q | Limpar so `A8:N(fim)` |
 | Botao Anual sumindo | Insert/Delete de linhas move botao ancorado | Usar `xlFreeFloating` |
-| Tabela Recorrente: 12 colunas | Prestacao e Termino existem entre Pagamento e Responsavel | Responsavel = col 11, Status = col 12; no LancarRecorrentes: `src.Cells(1,10)` = Responsavel, `src.Cells(1,11)` = Status |
+| Tabela Recorrente: 12 colunas | Prestacao e Termino existem entre Pagamento e Responsavel | Responsavel = col 11, Status = col 12; no LancarRecorrentes: `src.Cells(1,11)` = Responsavel, `src.Cells(1,12)` = Status |
 | `Scripting.Dictionary` | So existe no Windows | Usar `Collection` + `ColIndex()` helper |
 | openpyxl strips VBA | Save normal reescreve o zip | Sempre usar zip surgery para edits VBA-safe |
 | LibreOffice reseta largura de colunas | Recalc padroniza tudo | Reaplicar larguras apos recalc sem novo recalc |
