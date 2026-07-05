@@ -13,7 +13,7 @@ Lista viva do que ficou para depois. Sem prazo; revisitar quando fizer sentido.
   estão registradas neste documento como "referência do amigo cardiologista".
 - **Gi (Dra. Gislaini)** — **Médica**, laudo apenas exames de Holter.
 
-## Estratégia de execução da plataforma de exames (consolidado em 03/07/2026)
+## Estratégia de execução do site (consolidado em 03/07/2026)
 
 **Contexto:** sem pressa. O sistema atual (LaudoSyn) atende a demanda hoje —
 este projeto é para ganhar personalização e se livrar da mensalidade, não
@@ -82,7 +82,7 @@ uma urgência operacional. Isso muda como vamos trabalhar:
   social. `mpservicosmedicos.com.br` segue confirmado como disponível, mas
   provavelmente não será o escolhido.
 
-## Plataforma de exames — escopo inicial (levantado em 03/07/2026)
+## Site — escopo inicial (levantado em 03/07/2026)
 
 Contexto: hoje Mario paga um sistema de terceiros que faz este fluxo. A ideia
 é construir um substituto próprio (`~/sistemas/site/`).
@@ -160,7 +160,7 @@ Pág 4+:   Exame completo bruto (arquivo original do aparelho — Contec ou
 Pendente de ajuste quando o sistema estiver pronto: o fluxo de geração do
 laudo (`gerar_laudo_v7.js` e equivalentes) passa a entregar o PDF já
 iniciando com o nome/tipo do exame, antes do corpo do laudo — esse é o
-arquivo que Mario vai anexar na plataforma como "laudo bruto".
+arquivo que Mario vai anexar no site como "laudo bruto".
 
 Nome do exame a usar no cabeçalho (MAPA): **MONITORIZAÇÃO AMBULATORIAL DA
 PRESSÃO ARTERIAL** (por extenso, não a sigla).
@@ -182,7 +182,7 @@ página 1, mas o restante do fluxo é diferente:
 Pág 1:    Etiqueta da empresa + identificação do paciente + QR code
           (igual ao MAPA)
 Pág 2:    Texto do laudo — Gi escreve no Word e COLA na caixa de
-          texto livre da plataforma (mesmo padrão que Mario usa hoje no
+          texto livre do site (mesmo padrão que Mario usa hoje no
           sistema atual para o MAPA). Termina com CARIMBO CENTRALIZADO
           (sem assinatura digital ao lado, ver abaixo).
 Pág 3+:   PDF enviado pelo campo de upload — Gi baixa o .dat do
@@ -196,7 +196,7 @@ Pág 3+:   PDF enviado pelo campo de upload — Gi baixa o .dat do
 Diferenças importantes em relação ao MAPA:
 - **Sem autenticação/assinatura digital** nos laudos de Holter, por enquanto
   (decisão inicial — pode mudar no futuro).
-- O laudo é **texto colado na caixa livre da plataforma** (escrito primeiro
+- O laudo é **texto colado na caixa livre do site** (escrito primeiro
   no Word), não um PDF anexado como no MAPA.
 - **Quem laudo o Holter é a Gi**, não o Mario — então o carimbo
   usado aqui é o dela, **não** o `carimbo.png` de Mario que já está em
@@ -301,8 +301,8 @@ administrador "ver a senha nova", o fluxo é:
   escolheria) — e ela troca no primeiro acesso seguinte.
 
 Isso preserva a necessidade prática de Mario (poder ajudar alguém travado
-sem acesso), sem guardar senhas de forma exposta — importante porque a
-plataforma lida com dado de saúde de terceiros (ver lembrete de LGPD já
+sem acesso), sem guardar senhas de forma exposta — importante porque o
+site lida com dado de saúde de terceiros (ver lembrete de LGPD já
 registrado).
 
 **Login único, acesso roteado por perfil (definido em 03/07/2026):** a
@@ -441,8 +441,8 @@ roteiro de validação em três etapas que o amigo de Mario usou:
    [validar.iti.gov.br](https://validar.iti.gov.br) — validador **oficial
    do governo brasileiro** para assinaturas digitais — para confirmar que
    a assinatura é reconhecida como válida.
-3. **Teste final "de ponta a ponta":** pelo celular, direto no domínio da
-   plataforma, laudar um ECG e um MAPA de teste, e conferir se o PDF final
+3. **Teste final "de ponta a ponta":** pelo celular, direto no domínio do
+   site, laudar um ECG e um MAPA de teste, e conferir se o PDF final
    sai assinado, com timbre e fontes corretas, na hora.
 
 Guardar este roteiro para quando a integração de assinatura estiver pronta
