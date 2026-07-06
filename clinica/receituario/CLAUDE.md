@@ -51,15 +51,31 @@ Cada categoria segue este formato:
    - Seleção múltipla entre categorias, mantendo a ordem de clique
    - Painel lateral "Receita em montagem" com cabeçalho fixo **USO CONTÍNUO**,
      itens numerados, botões de mover (▲▼) e remover (×)
-   - Botão "Copiar receita" (copia USO CONTÍNUO + medicamentos formatados),
-     com fallback caso a Clipboard API falhe
-   - Paleta clínica (verde-azulado/teal, fundo claro), tudo funcionando offline
+   - Botão "Copiar receita" (copia USO CONTÍNUO + medicamentos formatados,
+     nunca o campo `obs`). A cópia é rich-text: `buildText()` gera o texto
+     puro e `buildHtml()` gera a mesma coisa em HTML com
+     `font-family: Arial, sans-serif; font-size: 10pt`, e
+     `copyToClipboard()` escreve os dois via `navigator.clipboard.write()`
+     + `ClipboardItem` (`text/plain` e `text/html`), para colar já em
+     Arial 10 no Word/prontuário. Fallback em cascata se `ClipboardItem`
+     não existir: `fallbackCopyRich()` (div `contenteditable` + `execCommand
+     ('copy')`) → `fallbackCopyPlain()` (textarea simples, texto puro)
+   - **Paleta clínica é AZUL, não verde/teal**: `--teal: #1D5FA8`,
+     `--teal-dark: #123E6E`, `--teal-soft: #E5EEF8`. Isso já regrediu para a
+     paleta verde antiga (`--teal: #0E6F65`) mais de uma vez (mesmo padrão de
+     regressão visto antes nas abas) — ao editar cores, conferir os tons
+     secundários também (hover de linha, borda do checkbox, fundo do bloco
+     `obs`, borda do aside, subtítulo do header), que tendem a ficar
+     esverdeados junto se a paleta for revertida
 3. **Ao adicionar/editar um medicamento**, seguir o padrão dos existentes:
    nome em maiúsculas com marca(s) entre parênteses e dose, depois as linhas de
    posologia exatamente como o Mario prescreve (manter avisos como "Este
    medicamento não pode ser partido" como estão, sem reformular).
-4. **Após gerar o HTML**, verificar que: o JSON embutido no `<script>` é válido,
-   categorias/itens novos aparecem nas abas corretas, e busca/cópia funcionam.
+4. **Após gerar o HTML**, verificar que: o JSON embutido no `<script>` é válido
+   (`node --check`), as 4 abas (`data-tab`: cardio/pa/imc/contatos) estão
+   presentes, os blocos `CARDIO`/`PA`/`CONTATOS` embutidos batem byte-a-byte
+   com `medicamentos.json`/`pa.json`/`contatos.json`, e que um item com `obs`
+   selecionado não vaza esse campo no texto copiado.
 5. **Atualizar também os `.json`** sempre que a estrutura de dados mudar, para
    manter tudo sincronizado nas próximas conversas.
 6. Se o pedido for ambíguo (ex: "muda a dose do Losartana" sem dizer qual
