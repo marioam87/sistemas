@@ -290,6 +290,24 @@ administrador — Mario decidiu não replicar essa limitação).
 (provavelmente os 3 sistemas acima, ou os 3 portais dos parceiros — verificar
 quando os prints chegarem).
 
+### Seção "Termos" (planejada em 06/07/2026)
+
+Tanto o **Sistema Administrador** quanto o **Sistema Parceiros** vão ter uma
+seção chamada **"Termos"**, exibindo os arquivos já preparados em
+`site/termos/`:
+
+- `HOLTER - orientações.docx`
+- `MAPA - orientações.docx`
+- `relatório de atividades.docx`
+- `termo de autorização dos dados.docx`
+- `termo de responsabilidade.docx`
+
+São modelos/formulários genéricos (sem dado de paciente). Detalhes ainda em
+aberto: se cada perfil vê os 5 documentos ou um subconjunto, se é só
+visualização/download ou também upload de versão assinada, e se entra como
+subseção dentro de alguma tela já mapeada (ex.: Cadastros, Configurações) ou
+como item novo no menu.
+
 ### Tela de login (definida em 03/07/2026)
 
 Layout, de cima para baixo:
