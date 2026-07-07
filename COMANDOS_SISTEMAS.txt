@@ -2,9 +2,29 @@
   COMANDOS DA PASTA SISTEMAS  (cola rápida)
 ========================================
 
+★★★ OS 2 QUE MAIS USO ★★★
+----------------------------------------
+1) Entrar na pasta:
+     cd ~/sistemas
+
+2) Salvar (com descrição + data/hora automáticas) e enviar pro GitHub:
+     gsalvar "descrição breve do que mudou"
+
+   - Troque o texto entre aspas pela frase curta do que você fez
+     (ex.: gsalvar "ajusta laudo MAPA" ou gsalvar "corrige regra do MRPA").
+   - A data e hora são adicionadas automaticamente na mensagem do commit.
+   - Guarda a alteração no computador (commit) E manda pro GitHub (push)
+     numa tacada só.
+   - Se aparecer erro no "push" (em vez de só um aviso), NÃO insista —
+     cola a mensagem de erro pro Claude Code resolver.
+   - Esse comando (gsalvar) funciona em qualquer pasta — ele já entra
+     em ~/sistemas sozinho.
+----------------------------------------
+
+
 Fluxo normal de todo dia:
 1) arrastar/mexer nos arquivos no Finder
-2) rodar UM comando de "salvar" abaixo
+2) rodar UM comando de "salvar" acima
 
 
 ----------------------------------------
@@ -26,32 +46,6 @@ USAR O CLAUDE CODE  (o assistente que mexe nos arquivos por você)
   - Pode conversar normalmente, sem precisar saber comandos técnicos.
   - Se pedir para "fazer o commit", ele mesmo roda os comandos de git.
   - Fechar o Terminal também sai do Claude Code, mas o /exit é mais educado.
-
-
-----------------------------------------
-ENTRAR NA PASTA (sempre antes de qualquer comando)
-----------------------------------------
-cd ~/sistemas
-
-  (o começo da linha muda de "~" para "sistemas" = você entrou)
-
-
-----------------------------------------
-SALVAR E ENVIAR PRO GITHUB  (o comando que serve para tudo)
-----------------------------------------
-cd ~/sistemas && git add -A && git commit -m "atualizacao $(date '+%Y-%m-%d %H:%M')"; git push
-
-  - Use SEMPRE este. Funciona mesmo se não tiver nada novo pra commitar
-    (só avisa "nothing to commit" e continua pro push).
-  - Guarda a alteração no computador (commit) E manda pro GitHub (push)
-    numa tacada só.
-  - Se aparecer erro no "push" (em vez de só um aviso), NÃO insista —
-    cola a mensagem de erro pro Claude Code resolver.
-
-  Se preferir escrever você mesmo a descrição do que mudou, troque o
-  comando acima por dois passos:
-    cd ~/sistemas && git add -A && git commit -m "sua descrição aqui"
-    git push
 
 
 ----------------------------------------
