@@ -493,18 +493,78 @@ function blocoFinal() {
 }
 
 // ─── QUALIDADE ────────────────────────────────────────────────────────────────
+// Regra (V/6ª Diretrizes MAPA-MRPA): exames com ≥20% de exclusão de medidas são
+// provavelmente decorrentes de problema técnico do aparelho.
+// Alguns aparelhos (ex. Contec) não discriminam quantas medidas foram excluídas,
+// apenas o total de medidas válidas obtidas — nesses casos não há como calcular
+// o percentual de exclusão, e o script declara essa limitação no laudo (Opção B)
+// em vez de omitir o assunto ou inventar um percentual.
+function parsePct(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const n = parseFloat(String(v).replace("%", "").replace(",", "."));
+  return isNaN(n) ? null : n;
+}
+
 function fraseQualidade() {
-  const pct = PCT_VALIDO ? ` (${PCT_VALIDO})` : "";
-  return new Paragraph({
-    children: [
-      r("Procedimento realizado com boa qualidade técnica, tendo sido obtidas "),
-      r(N_VALIDAS, { bold: true }),
-      r(` medições válidas${pct} nas `),
-      r(DURACAO, { bold: true }),
-      r("."),
-    ],
-    spacing: { before: 60, after: 80 },
-  });
+  const pctValido = parsePct(PCT_VALIDO);
+
+  // ── Caso 1: aparelho não informa percentual de validade (ex. Contec) ──
+  if (pctValido === null) {
+    return [
+      new Paragraph({
+        children: [
+          r("Procedimento realizado, tendo sido obtidas "),
+          r(N_VALIDAS, { bold: true }),
+          r(` medições válidas nas `),
+          r(DURACAO, { bold: true }),
+          r("."),
+        ],
+        spacing: { before: 60, after: 40 },
+      }),
+      new Paragraph({
+        children: [r(
+          "O equipamento utilizado não fornece discriminação do percentual de medidas excluídas. " +
+          "A avaliação de qualidade técnica deste exame baseia-se, portanto, no número total de " +
+          "medições válidas obtidas em relação ao mínimo recomendado (16 na vigília e 8 no sono).",
+          { italic: true, size: 20 }
+        )],
+        spacing: { before: 0, after: 80 },
+      }),
+    ];
+  }
+
+  // ── Caso 2: aparelho informa percentual — checar exclusão ≥20% ──
+  const pctExcluido = 100 - pctValido;
+  const qualidadeReduzida = pctExcluido >= 20;
+
+  const paragrafos = [
+    new Paragraph({
+      children: [
+        r(qualidadeReduzida
+          ? "Procedimento realizado, tendo sido obtidas "
+          : "Procedimento realizado com boa qualidade técnica, tendo sido obtidas "),
+        r(N_VALIDAS, { bold: true }),
+        r(` medições válidas (${PCT_VALIDO}) nas `),
+        r(DURACAO, { bold: true }),
+        r("."),
+      ],
+      spacing: { before: 60, after: qualidadeReduzida ? 40 : 80 },
+    }),
+  ];
+
+  if (qualidadeReduzida) {
+    paragrafos.push(new Paragraph({
+      children: [r(
+        `Percentual de exclusão de medidas (${pctExcluido.toFixed(1).replace(".", ",")}%) igual ou ` +
+        "superior a 20%, provavelmente decorrente de problema técnico do aparelho ou má adaptação do " +
+        "paciente ao equipamento. Este achado deve ser considerado na interpretação do exame.",
+        { italic: true, size: 20 }
+      )],
+      spacing: { before: 0, after: 80 },
+    }));
+  }
+
+  return paragrafos;
 }
 
 // ─── CABEÇALHO DO PACIENTE ───────────────────────────────────────────────────
@@ -536,7 +596,7 @@ function gerarDocxParaPDF() {
     ...alertaQualidade(),
     ...blocoPaciente(),
     secHead("Qualidade do procedimento"),
-    fraseQualidade(),
+    ...fraseQualidade(),
     ...blocoArtefatos(),
     secHead("Resultados"),
     tabelaResultados(),
@@ -591,7 +651,7 @@ function gerarDocx() {
     ...alertaQualidade(),
     ...blocoPaciente(),
     secHead("Qualidade do procedimento"),
-    fraseQualidade(),
+    ...fraseQualidade(),
     ...blocoArtefatos(),
     ...resultados,
     ...cargas,
