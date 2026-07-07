@@ -59,6 +59,36 @@ N_VIG      =              ← nº de aferições na vigília  (número inteiro)
 N_SONO     =              ← nº de aferições no sono     (número inteiro)
 ```
 
+## Critérios de exclusão de medidas discrepantes (aplicar automaticamente)
+
+Ao processar a tabela de aferições individuais do exame (PDF do aparelho), identificar e
+excluir automaticamente — **sem precisar perguntar ao médico** — qualquer medida que se
+enquadre em:
+
+| Critério | Condição de exclusão |
+|---|---|
+| PAD muito alta | PAD > 140 mmHg |
+| PAD muito baixa | PAD < 40 mmHg |
+| PAS muito baixa | PAS < 70 mmHg |
+| PAS muito alta | PAS > 250 mmHg |
+| Pressão de pulso estreita | PP < 20 mmHg (PP = PAS − PAD) |
+| Pressão de pulso ampla | PP > 100 mmHg |
+| Desvio da média do período | \|PAS − média do período (vigília/sono)\| > 40 mmHg, OU \|PAD − média do período\| > 40 mmHg |
+
+> Os critérios absolutos (PAD, PAS, PP) seguem as Diretrizes Brasileiras de Medidas da PA
+> Dentro e Fora do Consultório (2023) — os mesmos usados no MRPA (ver `mrpa/CLAUDE.md`).
+> O critério de desvio da média do período é um refinamento clínico do Dr. Mario, para
+> capturar medidas isoladas que não violam os limiares absolutos mas destoam do padrão do
+> próprio exame (ex.: base 120-130x90 com medida isolada de 180x95).
+
+Após identificar as exclusões, preencher automaticamente:
+- `ARTEFATOS`: cada medida excluída, com valor e horário.
+- `MEDIAS_RECALC`: médias recalculadas (total, vigília, sono) sem as medidas excluídas.
+
+Não perguntar ao médico quais medidas excluir — aplicar os critérios diretamente. Só pedir
+confirmação se houver ambiguidade na leitura do PDF (valor ilegível) ou se a exclusão mudar
+significativamente a conclusão clínica do exame.
+
 ## Médias pressóricas (mmHg — apenas números inteiros)
 
 ```
@@ -98,8 +128,9 @@ DESC_DIA   =              ← queda noturna diastólica
 ```
 NOMENCLATURA = "vigilia_sono"    ← ou "diurno_noturno"
 
-ARTEFATOS    = []                ← vazio, ou ex: [{ valor:"210x130", hora:"14h20" }]
-MEDIAS_RECALC = null             ← null, ou ex: { total:"128x80", vig:"132x84", sono:"116x70" }
+ARTEFATOS    = []                ← preenchido automaticamente a partir dos critérios de
+                                    exclusão acima, quando a tabela de aferições for fornecida
+MEDIAS_RECALC = null             ← idem — calculado automaticamente junto com ARTEFATOS
 ```
 
 ---
