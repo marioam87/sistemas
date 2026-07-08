@@ -32,21 +32,33 @@ Sub LimparFiltros()
     On Error GoTo 0
 End Sub
 
-' ---- ordena a tabela da aba ativa por Data (crescente) ----
-'      (Plantoes tem coluna "Data"; nas demais abas o botao nao existe) ----
+' ============================================================
+' ORDENAR DADOS - ordena a tabela da aba ativa.
+'   - Se a tabela tiver uma coluna chamada "Data" (aba Plantoes),
+'     ordena por ela, crescente (comportamento original).
+'   - Caso contrario (ex.: aba Pacientes, tabela TB_Pacientes, que
+'     nao tem coluna "Data"), ordena pela PRIMEIRA coluna da tabela
+'     (coluna A), crescente - em Pacientes isso e a coluna PACIENTE,
+'     ou seja, ordem alfabetica pelo nome.
+' ============================================================
 Sub OrdenarDados()
     Dim lo As ListObject
     If ActiveSheet.ListObjects.Count = 0 Then Exit Sub
     Set lo = ActiveSheet.ListObjects(1)
     If lo.DataBodyRange Is Nothing Then Exit Sub
+
+    Dim chave As Range
     On Error Resume Next
+    Set chave = lo.ListColumns("Data").DataBodyRange
+    On Error GoTo 0
+    If chave Is Nothing Then Set chave = lo.ListColumns(1).DataBodyRange
+
     With lo.Sort
         .SortFields.Clear
-        .SortFields.Add key:=lo.ListColumns("Data").DataBodyRange, SortOn:=xlSortOnValues, Order:=xlAscending
+        .SortFields.Add key:=chave, SortOn:=xlSortOnValues, Order:=xlAscending
         .Header = xlYes
         .Apply
     End With
-    On Error GoTo 0
 End Sub
 
 ' ============================================================
@@ -122,9 +134,8 @@ End Sub
 '
 ' Atencao ao reaproveitar os mesmos 3 botoes nesta aba:
 '   - "Limpar Filtros" funciona normalmente aqui (usa a aba ativa).
-'   - "Ordenar Dados" nao faz nada em Pacientes: a tabela TB_Pacientes
-'     nao tem coluna chamada "Data" (tem NASC), entao a macro sai sem
-'     ordenar nada.
+'   - "Ordenar Dados" agora ordena por PACIENTE (coluna A), em ordem
+'     alfabetica, ja que a tabela TB_Pacientes nao tem coluna "Data".
 '   - "Validar Dados" sempre valida a aba Plantoes, nao Pacientes,
 '     porque a macro esta fixa em ThisWorkbook.Sheets("Plantoes").
 ' ============================================================
