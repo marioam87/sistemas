@@ -16,12 +16,34 @@ Fluxo Node.js + `docx`, com saída dupla PDF/DOCX via LibreOffice.
 - Cabeçalho: **Dr. Mario Augusto Mariano — CRM-PR 34.819**.
 - Cabeçalhos de tabela em azul-escuro **`#2C3E6B`**.
 - Carimbo **centralizado** ao final do documento.
+- Tabelas de Resultados e Cargas Pressóricas: texto sempre em preto (sem
+  destaque verde/vermelho em fundo de célula); valores anormais usam apenas
+  texto vermelho.
 
 ## Seção Ritmo Circadiano — quebra de página condicional
 
 - **Sem artefatos:** a seção abre a **página 2** sem sobras, inserindo um
   `Paragraph` isolado com `new PageBreak()` (não a propriedade `pageBreakBefore`).
 - **Com artefatos:** a seção segue o fluxo normal do documento (sem quebra forçada).
+
+## Recálculo de médias (artefatos excluídos)
+
+Quando `MEDIAS_RECALC` estiver populado (ver critérios de exclusão abaixo):
+
+- Os campos `SIS_TOTAL` / `DIA_TOTAL` / `SIS_VIG` / `DIA_VIG` / `SIS_SONO` /
+  `DIA_SONO` do JSON de entrada devem já vir preenchidos com os **valores
+  recalculados** (sem as medidas excluídas) — não com os valores brutos do
+  aparelho. A tabela de Resultados exibe esses números diretamente, mantendo
+  a estrutura atual da tabela (não é necessário alterar o script para isso).
+- O título da seção passa automaticamente para **"Resultados recalculado"**
+  (`TITULO_RESULTADOS = MEDIAS_RECALC ? "Resultados recalculado" : "Resultados"`,
+  usado no `secHead` tanto da versão PDF quanto da versão DOCX).
+- O bloco de texto `blocoRecalc()` ("Médias recalculadas sem artefatos") **não
+  aparece mais** após a seção de Cargas Pressóricas na versão DOCX (chamada
+  removida do array `children` de `gerarDocx()`) — os números já vêm certos
+  direto na tabela de Resultados.
+- `ARTEFATOS[]` continua sendo exibido normalmente (via `blocoArtefatos()`),
+  documentando quais medidas foram excluídas e por quê.
 
 ## Saída
 
@@ -84,6 +106,8 @@ enquadre em:
 Após identificar as exclusões, preencher automaticamente:
 - `ARTEFATOS`: cada medida excluída, com valor e horário.
 - `MEDIAS_RECALC`: médias recalculadas (total, vigília, sono) sem as medidas excluídas.
+- `SIS_TOTAL` / `DIA_TOTAL` / `SIS_VIG` / `DIA_VIG` / `SIS_SONO` / `DIA_SONO`: já
+  substituídos pelos valores recalculados (ver seção "Recálculo de médias" acima).
 
 Não perguntar ao médico quais medidas excluir — aplicar os critérios diretamente. Só pedir
 confirmação se houver ambiguidade na leitura do PDF (valor ilegível) ou se a exclusão mudar
@@ -99,6 +123,9 @@ DIA_VIG    =              ← diastólica vigília
 SIS_SONO   =              ← sistólica  sono
 DIA_SONO   =              ← diastólica sono
 ```
+
+> Se houver exclusão de artefatos, estes já devem ser os valores recalculados
+> (ver "Recálculo de médias" acima).
 
 ## Picos pressóricos
 

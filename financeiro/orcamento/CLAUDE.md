@@ -1,17 +1,36 @@
 # Orcamento Pessoal (Mario) — Regras do sistema
 
-## Arquivo de trabalho
-`orcamento_definitivo.xlsm` — macro-enabled workbook, Mac + Windows.
+## Arquivos de trabalho
 
-> **Privacidade:** a planilha `.xlsm` contem dados sensiveis (aba Pacientes com
-> ~4.000 pacientes reais + controle financeiro) e **fica fora do Git**. Esta
+O ecossistema agora tem **dois arquivos `.xlsm` separados**:
+
+| Arquivo | Escopo | Abas |
+|---|---|---|
+| `orcamento_definitivo.xlsm` | Financeiro pessoal | Dados, Mensal, Fluxo, Anual, Anual_bkp, Recorrente, Pri, Pai, Contrato, Anotacoes, Magic (+ eventualmente Plantoes/Pacientes/Consultas/Exames/Listas — a confirmar, ver nota abaixo) |
+| `CONSULTORIO.xlsm` | Consultorio medico (plantoes, pacientes, agenda) | Plantoes, Pacientes, Consultas, Exames, Listas (oculta) |
+
+> **Nota em aberto:** os modulos do Consultorio deixam explicito que as macros
+> financeiras (`GerarDashboard`, `LancarRecorrentes`, `AtualizarImoveis`, etc.)
+> **nao existem** nesse arquivo — elas ficaram no arquivo financeiro (referenciado
+> nos comentarios do modulo como `orcamento_6_6.xlsm`, possivelmente um nome de
+> versao anterior a `orcamento_definitivo.xlsm`). Nao esta confirmado se as abas
+> Plantoes/Pacientes/Consultas/Exames/Listas foram **removidas** do arquivo
+' financeiro ao criar o `CONSULTORIO.xlsm`, ou se ele e apenas uma copia enxuta
+> derivada para uso mais leve/portatil. Confirmar com Mario antes de assumir
+> qualquer uma das duas hipoteses em futuras edicoes.
+
+> **Privacidade:** ambos os arquivos contem dados sensiveis (aba Pacientes com
+> ~4.000 pacientes reais + controle financeiro) e **ficam fora do Git**. Esta
 > pasta versiona apenas os modulos VBA (`.bas`) e esta documentacao.
+
+Mario trabalha em Mac (workflow principal) — ver detalhes de compatibilidade
+Mac/Windows por arquivo abaixo.
 
 ---
 
 ## REGRA FUNDAMENTAL: ZERO ACENTOS
 
-Todo o arquivo e completamente livre de acentuacao:
+Vale para **os dois arquivos**. Todo o conteudo e completamente livre de acentuacao:
 - Valores de celulas, nomes de abas, cabecalhos de coluna de tabela
 - Named ranges, formulas, strings no VBA
 
@@ -19,7 +38,7 @@ Isso elimina toda a familia de bugs de encoding Mac/Windows.
 
 Ao adicionar qualquer dado novo, **nunca usar acentos**.
 Exemplos corretos: Imoveis, Cartao, Saude, Onix - prestacao, Consorcio,
-Responsavel, Periodo, Competencia, Plantoes, Anotacoes.
+Responsavel, Periodo, Competencia, Plantoes, Anotacoes, Terca, Sabado.
 
 Ao normalizar celulas via openpyxl, tambem normalizar:
 - Nomes de abas
@@ -39,12 +58,13 @@ Se qualquer um desses for esquecido, o Excel acusa "erro de conteudo" ao abrir.
 | Zip-level XML surgery | Formatacao, conditional formatting, VBA-safe edits |
 | LibreOffice (recalc) | Verificacao de erros de formula apos edicoes |
 | `restore_codenames.py` | Restaurar `codeName` apos qualquer recalc |
-| `.bas` files | Entrega de modulos VBA para import manual |
+| `.bas` files | Entrega de modulos VBA para import manual (Windows) ou colagem direta na VBE (Mac) |
 
 ### Por que zip-level XML surgery
 openpyxl ao salvar reescreve o zip inteiro e pode corromper `vbaProject.bin`.
 Para qualquer edicao que envolva VBA ou formatacao avancada: editar diretamente
-os XMLs dentro do zip, sem passar pelo save do openpyxl.
+os XMLs dentro do zip, sem passar pelo save do openpyxl. Validar via SHA-256
+que `vbaProject.bin` permanece byte-a-byte identico.
 
 ### Risco `codeName`
 openpyxl E LibreOffice removem atributos `codeName` de worksheets e workbook.
@@ -52,7 +72,16 @@ Apos qualquer recalc do LibreOffice: rodar `restore_codenames.py` antes de
 devolver o arquivo. Sem isso, os modulos VBA perdem o vinculo com as abas.
 (O `restore_codenames.py` nao esta versionado aqui — e recriado quando necessario.)
 
+### Regra de entrega de modulos `.bas`
+- **Colagem direta na VBE (fluxo padrao do Mario, Mac)**: nunca incluir a linha
+  `Attribute VB_Name = "..."` — causa erro de sintaxe ao colar direto no painel
+  de codigo da VBE. O dialogo de Import File e quebrado no Mac (bug de sandboxing).
+- **Arquivo `.bas` para File > Import (Windows)**: incluir `Attribute VB_Name`
+  normalmente. So usar esse formato se explicitamente pedido.
+
 ---
+
+# ARQUIVO 1 — orcamento_definitivo.xlsm (financeiro)
 
 ## Estrutura das abas (16 abas)
 
@@ -75,8 +104,6 @@ devolver o arquivo. Sem isso, os modulos VBA perdem o vinculo com as abas.
 | Contrato | Contratos ativos |
 | Listas | Named ranges e listas de validacao, oculta |
 
----
-
 ## Tabelas (ListObjects)
 
 ### ControleFinanceiro — aba Dados, A1:J~3500, 10 colunas
@@ -87,6 +114,11 @@ Ano/Mes | Data | Tipo | Categoria | Subcategoria | Anotacoes | Valor | Pagamento
 
 Obs: Prestacao e Termino sao so controle — NAO exportadas para Dados.
 Itens com Valor em branco/zero SAO lancados na Dados de proposito (preenchimento manual ao longo do mes).
+
+A tabela `Prestacoes` em Mensal usa SUMIFS contra ranges fixos em Recorrente
+(`$G$2:$G$48`, `$I$2:$I$48`, `$N$2:$N$48`), com `$S$1` fazendo o parse do mes
+lancado a partir do titulo do dashboard em A1. SUMIFS exige que todos os ranges
+tenham exatamente o mesmo tamanho — descasamento silencioso gera `#VALUE!`.
 
 ### Plantoes — aba Plantoes, A1:E~3000, 5 colunas
 Competencia | Data | Dia da Semana | Local de Trabalho | Periodo do Plantao
@@ -142,7 +174,7 @@ Macros principais:
 Helpers privados: AsciiKey, FindKey, FindKey1, ColIndex, FmtRow, RenderCart, CartMatch, PlacarAnual, CabecalhoAnual, LinhaAnual, TotalAnual, GarantirBotaoAnual, AtuFixaSimples, AtuFixaDupla, AtuAberta, FmtLinhaImv, FmtTotImv, AddBtnAt, AddBtn.
 
 ### Modulo_DuploClique_v3.bas
-Colado em **EstaPasta_de_trabalho** (ThisWorkbook), nao em modulo de planilha.
+Colado em **EstaPastaDeTrabalho** (ThisWorkbook), nao em modulo de planilha.
 Evento: `Workbook_SheetBeforeDoubleClick`
 
 - Age apenas nas abas: Dados, Plantoes, Recorrente
@@ -153,6 +185,10 @@ Evento: `Workbook_SheetBeforeDoubleClick`
 - Formata a linha inteira (Arial 12, centralizado, bordas, fundo branco)
 - lastCol por aba: Dados=10, Recorrente=11, Plantoes=5
 - Usa `Sh` (parametro do evento), nunca `Me` — por isso funciona no ThisWorkbook
+
+**Cuidado com objetos duplicados:** imports/conversoes podem criar um
+`EstaPastaDeTrabalho` duplicado. Antes de colar codigo de evento, confirmar o
+objeto ativo real via `? ThisWorkbook.CodeName` na Immediate Window.
 
 ---
 
@@ -227,19 +263,79 @@ Obs: Nubank/Pri ficam intencionalmente vazios ate julho (inicio de uso).
 
 ---
 
-## Armadilhas conhecidas
+# ARQUIVO 2 — CONSULTORIO.xlsm (consultorio medico)
+
+Arquivo separado, deliberadamente **enxuto**: contem apenas o que faz sentido
+no contexto do consultorio. As macros financeiras (GerarDashboard,
+LancarRecorrentes, AtualizarImoveis, dashboards Mensal/Anual, etc.) **nao
+existem** neste arquivo.
+
+## Abas
+Plantoes, Pacientes, Consultas, Exames, Listas (oculta).
+
+Estrutura de dados dessas abas segue o mesmo padrao do Arquivo 1 (ver
+`Plantoes` e `TB_Pacientes` acima) ate confirmacao em contrario.
+
+## Modulos VBA
+
+### Modulo_Principal_Consultorio.bas
+Instalado via colagem direta na VBE (Alt+F11 > Inserir > Modulo > colar > Ctrl+S).
+
+| Macro | Descricao |
+|---|---|
+| LimparFiltros | Limpa AutoFilter/ShowAllData e reexibe linhas ocultas da aba ativa. |
+| OrdenarDados | Ordena a tabela da aba ativa pela coluna "Data" (crescente). Botao so faz sentido em Plantoes (unica aba com esse botao). |
+| ValidarDados | **Versao Plantoes** (diferente da versao ControleFinanceiro do Arquivo 1): varre a tabela Plantoes conferindo (a) Competencia (col A, yyyy-mm) bate com a Data (col B), (b) ordem cronologica, (c) Dia da Semana (col C) bate com `Weekday(Data)`. Reporta ate 25 problemas. |
+| CriarBotoes | Recria os 3 botoes (Limpar Filtros, Ordenar Dados, Validar Dados) na aba Plantoes, empilhados abaixo da tabela. Roda uma vez apos importar os modulos. |
+| ReativarEventos | Restaura EnableEvents/ScreenUpdating/Calculation. |
+
+Helper privado: `AddBtnAt(ws, r, col, cap, macroName)`.
+
+### Modulo_DuploClique_Consultorio.bas
+Colado em **EstaPasta_de_trabalho** (ThisWorkbook) — **atencao**: este arquivo
+usa o nome com underscores (`EstaPasta_de_trabalho`), diferente da grafia usada
+no Arquivo 1 (`EstaPastaDeTrabalho`). Confirmar o nome real do objeto via
+`? ThisWorkbook.CodeName` antes de colar, igual ao procedimento do Arquivo 1.
+
+Evento: `Workbook_SheetBeforeDoubleClick`
+
+- Age **apenas** na aba Plantoes (mais restrito que o Arquivo 1, que cobre
+  Dados/Plantoes/Recorrente)
+- Coluna B (Data), linha > 1
+- Abre InputBox de data (dd/mm/aaaa)
+- Preenche Competencia (coluna A, formato yyyy-mm)
+- Preenche Dia da Semana (coluna C) automaticamente, sem acentos (Terca, Sabado)
+- Formata a linha inteira A:E (Arial 12, centralizado, bordas, fundo branco)
+- Aplica formato de data `[$-416]d/mmm/yy;@`
+- Usa `Sh` (parametro do evento), nunca `Me`
+- Comentado no proprio modulo: nao depende de Dados/Recorrente nem de nenhuma
+  aba que ficou no arquivo financeiro — confirma o isolamento entre os dois arquivos
+
+## Armadilhas especificas do CONSULTORIO.xlsm
+
+| Problema | Causa | Solucao |
+|---|---|---|
+| Nome do ThisWorkbook diferente entre arquivos | `EstaPasta_de_trabalho` aqui vs `EstaPastaDeTrabalho` no Arquivo 1 | Sempre verificar `? ThisWorkbook.CodeName` antes de colar codigo de evento; nao assumir o mesmo nome entre os dois arquivos |
+| ValidarDados com nome igual ao do Arquivo 1 mas logica diferente | Mesma macro-name, escopo diferente (Plantoes vs ControleFinanceiro) | Ao editar, confirmar em qual arquivo/modulo se esta trabalhando antes de portar logica de um para o outro |
+| Duplo clique so funciona em Plantoes aqui | Modulo deliberadamente restrito (vs. 3 abas no Arquivo 1) | Nao portar automaticamente o comportamento das 3 abas do Arquivo 1 para este arquivo sem confirmar com Mario |
+
+---
+
+## Armadilhas conhecidas (gerais, ambos os arquivos)
 
 | Problema | Causa | Solucao |
 |---|---|---|
 | `codeName` sumindo | openpyxl ou LibreOffice removem o atributo | Rodar `restore_codenames.py` apos todo recalc |
-| VBA nao encontra aba | Modulo de duplo clique colado no lugar errado | Colar em EstaPasta_de_trabalho, usar `Sh` nao `Me` |
-| Duplo ThisWorkbook | Import/conversao cria `EstaPastaDeTrabalho` duplicado | Verificar `ThisWorkbook.CodeName` no Immediate Window |
+| VBA nao encontra aba | Modulo de duplo clique colado no lugar errado | Colar no ThisWorkbook do arquivo correto, usar `Sh` nao `Me` |
+| Duplo ThisWorkbook | Import/conversao cria objeto ThisWorkbook duplicado | Verificar `ThisWorkbook.CodeName` no Immediate Window |
 | `val` como variavel | Conflito com VBA built-in `Val()` | Usar `valor` |
 | `CDbl` em celula vazia | Type error | Usar `Val(cell & "")` |
-| Clear destroi Prestacoes | Full-row clear apaga P:Q | Limpar so `A8:N(fim)` |
+| Clear destroi Prestacoes | Full-row clear apaga P:Q (so no Arquivo 1) | Limpar so `A8:N(fim)` |
 | Botao Anual sumindo | Insert/Delete de linhas move botao ancorado | Usar `xlFreeFloating` |
-| Tabela Recorrente: 12 colunas | Prestacao e Termino existem entre Pagamento e Responsavel | Responsavel = col 11, Status = col 12; no LancarRecorrentes: `src.Cells(1,11)` = Responsavel, `src.Cells(1,12)` = Status |
+| Tabela Recorrente: 12 colunas | Prestacao e Termino existem entre Pagamento e Responsavel (so Arquivo 1) | Responsavel = col 11, Status = col 12; no LancarRecorrentes: `src.Cells(1,11)` = Responsavel, `src.Cells(1,12)` = Status |
 | `Scripting.Dictionary` | So existe no Windows | Usar `Collection` + `ColIndex()` helper |
 | openpyxl strips VBA | Save normal reescreve o zip | Sempre usar zip surgery para edits VBA-safe |
 | LibreOffice reseta largura de colunas | Recalc padroniza tudo | Reaplicar larguras apos recalc sem novo recalc |
 | Conditional formatting fora do range | Regras ficam ancoradas ao range antigo no XML | Atualizar manualmente via XML do sheet apos mover tabelas |
+| VBE Import File quebrado no Mac | Bug de sandboxing | Colar codigo direto no painel de codigo da VBE (nao usar File > Import) |
+| Modulos `.bas` com `Attribute VB_Name` colados na VBE | Causa erro de sintaxe ao colar direto | Remover essa linha para entregas de colagem direta; so incluir para import no Windows |

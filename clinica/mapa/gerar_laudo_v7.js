@@ -50,7 +50,7 @@ const {
 const OUT = "/mnt/user-data/outputs";
 
 // ─── Imagem do carimbo ────────────────────────────────────────────────────────
-const CARIMBO_DATA = fs.readFileSync(path.join(__dirname, "carimbo.png"));
+const CARIMBO_DATA = fs.readFileSync(path.join(__dirname, "assets", "carimbo.png"));
 const CARIMBO_PX_W = 177;
 const CARIMBO_PX_H =  89;
 
@@ -100,6 +100,8 @@ const fmt1 = v => v.toFixed(2).replace(".", ",") + "%";
 
 const SIS_CONC = MEDIAS_RECALC ? parseInt(MEDIAS_RECALC.total.split("x")[0]) : SIS_TOTAL;
 const DIA_CONC = MEDIAS_RECALC ? parseInt(MEDIAS_RECALC.total.split("x")[1]) : DIA_TOTAL;
+
+const TITULO_RESULTADOS = MEDIAS_RECALC ? "Resultados recalculado" : "Resultados";
 
 // ─── Cores ────────────────────────────────────────────────────────────────────
 const BLUE  = "2C3E6B";
@@ -598,10 +600,9 @@ function gerarDocxParaPDF() {
     secHead("Qualidade do procedimento"),
     ...fraseQualidade(),
     ...blocoArtefatos(),
-    secHead("Resultados"),
+    secHead(TITULO_RESULTADOS),
     tabelaResultados(),
     blank(20),
-    ...blocoRecalc(),
     secHead("Cargas pressóricas"),
     tabelaCargas(),
     sidebar("Admite-se como anormais valores superiores à 50%."),
@@ -626,7 +627,7 @@ function gerarDocx() {
   const temArtefatos = ARTEFATOS.length > 0;
 
   const resultados = [
-    secHead("Resultados"),
+    secHead(TITULO_RESULTADOS),
     bul([r("Pressão arterial média total: "), r(`${SIS_TOTAL} x ${DIA_TOTAL} mmHg`, { bold: true }), r(" (VR: 130 x 80 mmHg)")]),
     bul([r(`Pressão arterial média no período de ${T.p1.toLowerCase()}: `), r(`${SIS_VIG} x ${DIA_VIG} mmHg`, { bold: true }), r(` (VR: ${LIM_P1_SIS} x ${LIM_P1_DIA} mmHg)`)]),
     bul([r(`Pressão arterial média no período de ${T.p2.toLowerCase()}: `), r(`${SIS_SONO} x ${DIA_SONO} mmHg`, { bold: true }), r(` (VR: ${LIM_P2_SIS} x ${LIM_P2_DIA} mmHg)`)]),
@@ -655,7 +656,6 @@ function gerarDocx() {
     ...blocoArtefatos(),
     ...resultados,
     ...cargas,
-    ...blocoRecalc(),
     ...blocoRitmo(temArtefatos),
     blank(),
     ...blocoConc(),
