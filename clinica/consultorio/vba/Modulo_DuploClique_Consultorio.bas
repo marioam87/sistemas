@@ -14,10 +14,11 @@
 '    Age na aba Pacientes, tabela TB_Pacientes: sempre que uma celula
 '    de uma linha da tabela e editada (nova ficha ou correcao), a
 '    linha inteira e reformatada (fonte Arial 12 preta, sem negrito,
-'    fundo branco, bordas finas, centralizado). Isso evita o problema
-'    de linhas no fim da tabela "perdendo" a formatacao (por exemplo
-'    ficando com fonte azul e caixa de borda diferente) quando dados
-'    sao colados ou preenchidos via Tab.
+'    fundo branco, bordas finas). A coluna A (PACIENTE) fica alinhada
+'    a esquerda; as demais colunas ficam centralizadas. Isso evita o
+'    problema de linhas no fim da tabela "perdendo" a formatacao (por
+'    exemplo ficando com fonte azul, negrito laranja, ou caixa de
+'    borda diferente) quando dados sao colados ou preenchidos via Tab.
 '
 ' Usa o parametro "Sh" (nunca "Me"), por isso funciona colado no
 ' ThisWorkbook. Testado: nao depende de Dados/Recorrente nem de
@@ -76,7 +77,8 @@ End Sub
 ' alterada (nova linha digitada, Tab no fim da tabela, colar dados,
 ' correcao de um campo existente etc.), reaplica a formatacao padrao
 ' na linha inteira daquela tabela: fonte Arial 12 preta sem negrito,
-' fundo branco, bordas finas e centralizado.
+' fundo branco, bordas finas. A coluna A (PACIENTE) fica alinhada a
+' esquerda; as demais colunas (B em diante) ficam centralizadas.
 '
 ' Isso resolve o efeito de "perder a formatacao" ao chegar no fim da
 ' tabela: nao importa a causa (colar de outra fonte, autocompletar,
@@ -117,6 +119,8 @@ Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
                 .Color = RGB(0, 0, 0)
             End With
         End With
+        ' coluna A (PACIENTE) fica alinhada a esquerda, nao centralizada
+        Sh.Cells(r.Row, primeiraCol).HorizontalAlignment = xlLeft
     Next r
 
     Application.EnableEvents = True
