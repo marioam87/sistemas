@@ -699,35 +699,5 @@
         }
       ]
     }
-  ],
-  "resumoContraindicados": {
-    "gestacao": [
-      "Amiodarona",
-      "Apixabana, Dabigatrana, Rivaroxabana",
-      "Atenolol",
-      "Bisoprolol",
-      "Clorotiazida",
-      "Espironolactona",
-      "Estatinas, Fibratos, Ezetimiba, Alirocumabe",
-      "IECA e BRA (todos)",
-      "Ivabradina",
-      "Nifedipina — via sublingual (via oral é permitida)",
-      "Prasugrel, Ticagrelor, Ticlopidina",
-      "Propranolol — em dose alta (160 mg/dia)",
-      "Sacubitril/valsartana",
-      "Sotalol",
-      "Varfarina"
-    ],
-    "lactacao": [
-      "Amiodarona",
-      "Apixabana, Dabigatrana, Rivaroxabana",
-      "Espironolactona",
-      "Estatinas, Fibratos, Ezetimiba, Alirocumabe",
-      "Ivabradina",
-      "Nitroprussiato de sódio",
-      "Sacubitril/valsartana",
-      "Sotalol",
-      "Ticlopidina"
-    ]
-  }
+  ]
 }

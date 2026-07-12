@@ -1,6 +1,6 @@
 [
   {
-    "categoria": "ABSCESSO",
+    "categoria": "ABSCESSO / CELULITE / ERISIPELA",
     "itens": [
       {
         "nome": "AMOXICILINA-CLAVULANATO 875/125 MG",
@@ -427,10 +427,6 @@
       {
         "nome": "AGENDAR EM 3 SEMANAS CONSULTA COM CARDIOLOGISTA CLINICO PARA AVALIACAO DE FIBRILACAO ATRIAL E PROGRAMACAO DE CARDIOVERSAO ELETRICA",
         "linhas": []
-      },
-      {
-        "nome": "AGENDAR CONSULTA COM ARRITMOLOGISTA - DR. GEL - PRA PROGRAMAÇÃO DE ESTUDO ELETROFISIOLOGICO E ABLACAO DA FIBRILACAO ATRIAL",
-        "linhas": []
       }
     ]
   },
@@ -471,11 +467,7 @@
     "categoria": "FRIEIRA",
     "itens": [
       {
-        "nome": "RECEITA MANIPULADA",
-        "linhas": []
-      },
-      {
-        "nome": "ERITROMICINA 2%",
+        "nome": "RECEITA MANIPULADA - ERITROMICINA 2%",
         "linhas": [
           "SOLUÇÃO HIDROALCOOLICA QSP",
           "FRASCO SPRAY 100 ML",
@@ -649,12 +641,9 @@
       {
         "nome": "PYRIDIUM 200 MG",
         "linhas": [
-          "TOMAR 01 COMPRIMIDOS, DE 8/8H, ATÉ MELHORA DA DOR PARA URINAR."
+          "TOMAR 01 COMPRIMIDOS, DE 8/8H, ATÉ MELHORA DA DOR PARA URINAR.",
+          "ESTA MEDICAÇÃO DEIXA A URINA ALARANJADA."
         ]
-      },
-      {
-        "nome": "ESTA MEDICAÇÃO DEIXA A URINA ALARANJADA.",
-        "linhas": []
       }
     ]
   },
@@ -831,6 +820,12 @@
     "categoria": "RESFRIADO COMUM",
     "itens": [
       {
+        "nome": "AZITROMICINA 500 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO AO DIA, POR 5 DIAS, 1H ANTES DE SE ALIMENTAR."
+        ]
+      },
+      {
         "nome": "PREDSIM  / PRELONE 40 MG",
         "linhas": [
           "TOMAR 01 COMPRIMIDO, AS 8H DA MANHÃ, POR 5 DIAS."
@@ -863,12 +858,6 @@
       {
         "nome": "BEBER 2-3 LITROS DE ÁGUA POR DIA, POR 10 DIAS.",
         "linhas": []
-      },
-      {
-        "nome": "AZITROMICINA 500 MG",
-        "linhas": [
-          "TOMAR 01 COMPRIMIDO AO DIA, POR 5 DIAS, 1H ANTES DE SE ALIMENTAR."
-        ]
       }
     ]
   },
@@ -999,22 +988,28 @@
       {
         "nome": "ALLEGRA 180 MG",
         "linhas": [
-          "TOMAR 01 COMPRIMIDO, 1 VEZ AO DIA, POR 10 DIAS.",
-          "- rinite alérgica e urticária"
+          "TOMAR 01 COMPRIMIDO, 1 VEZ AO DIA, POR 10 DIAS."
+        ],
+        "obs": [
+          "rinite alérgica e urticária"
         ]
       },
       {
         "nome": "ALLEGRA D",
         "linhas": [
-          "TOMAR 01 COMPRIMIDO, DE 12/12H, POR 7 DIAS.",
-          "- espirros, coriza, prurido nasal e ocular, congestão nasal"
+          "TOMAR 01 COMPRIMIDO, DE 12/12H, POR 7 DIAS."
+        ],
+        "obs": [
+          "espirros, coriza, prurido nasal e ocular, congestão nasal"
         ]
       },
       {
         "nome": "ALEKTOS",
         "linhas": [
-          "TOMAR 01 COMPRIMIDOS, PELA MANHÃ, 1H ANTES OU 2H DEPOIS DE COMER, POR 7 DIAS.",
-          "- rinoconjuntivite alérgica: espirros, congestão nasal, prurido e rinorréia, hiperemia conjuntival, lacrimejamento; urticária crônica: eritemas e pápulas, com prurido"
+          "TOMAR 01 COMPRIMIDOS, PELA MANHÃ, 1H ANTES OU 2H DEPOIS DE COMER, POR 7 DIAS."
+        ],
+        "obs": [
+          "rinoconjuntivite alérgica: espirros, congestão nasal, prurido e rinorréia, hiperemia conjuntival, lacrimejamento; urticária crônica: eritemas e pápulas, com prurido"
         ]
       },
       {
@@ -1155,10 +1150,6 @@
         "linhas": [
           "TOMAR 1 COMPRIMIDO PELA MANHÃ"
         ]
-      },
-      {
-        "nome": "DIPIRONA",
-        "linhas": []
       },
       {
         "nome": "LISADOR DIP",
@@ -1509,10 +1500,6 @@
         ]
       },
       {
-        "nome": "TRAMADOL",
-        "linhas": []
-      },
-      {
         "nome": "TRAUM RETARD (TRAMADOL) 100 MG",
         "linhas": [
           "TOMAR 01 COMPRIMIDO, DE 12/12H, SE DOR FORTE"
@@ -1571,6 +1558,155 @@
         "linhas": [
           "Colocar um comprimido, em baixo da língua, quando já estiver deitado.",
           "Início do efeito da medicação em 6 minutos."
+        ]
+      }
+    ]
+  },
+  {
+    "categoria": "GESTAÇÃO/AMAMENTAÇÃO",
+    "itens": [
+      {
+        "nome": "ACICLOVIR 400 MG",
+        "linhas": [
+          "TOMAR 1 COMPRIMIDO, DE 4/4H, 7 DIAS - NÃO TOMAR A DOSE DA MADRUGADA."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "AMOXICILINA-CLAVULANATO 875/125 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO, DE 12/12H, POR 7 DIAS."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "AZITROMICINA 500 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO AO DIA, 1h ANTES OU DUAS HORAS DEPOIS DE COMER, DURANTE 5 DIAS."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "BACTRIM F 800/160 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO, VIA ORAL, DE 12/12H, 5 DIAS"
+        ],
+        "obs": [
+          "Gestação: contraindicado (antagonista de folato; risco de kernicterus perto do termo). Lactação: compatível em RN saudável a termo — evitar se RN com deficiência de G6PD, prematuro ou ictérico."
+        ]
+      },
+      {
+        "nome": "BUSCOPAN 10 MG",
+        "linhas": [
+          "TOMAR 02 COMPRIMIDOS, DE 6/6H, SE DOR ABDOMINAL."
+        ],
+        "obs": [
+          "Gestação: dados limitados; considerada baixo risco em uso pontual. Lactação: dados limitados; uso pontual considerado aceitável."
+        ]
+      },
+      {
+        "nome": "CEFUROXIMA (MEFEX / ZINNAT) 250 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO, DE 12/12H, POR 7 DIAS."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "CIMETIDINA 150 MG/ML, AMPOLA DE 2 ML",
+        "linhas": [
+          "FAZER 1 AMPOLA ENDOVENOSA"
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "FLUCONAZOL 150 MG",
+        "linhas": [
+          "TOMAR 1 COMPRIMIDO, VIA ORAL, EM DOSE ÚNICA"
+        ],
+        "obs": [
+          "Gestação: evitar, principalmente doses altas/repetidas e no 1º trimestre (associação com malformações). Lactação: dose única baixa considerada compatível."
+        ]
+      },
+      {
+        "nome": "LISADOR DIP 1 G",
+        "linhas": [
+          "TOMAR 1 COMPRIMIDO, DE 6/6H, SE DOR OU FEBRE MAIOR QUE 37.9º."
+        ],
+        "obs": [
+          "Gestação: evitar se possível (dados de segurança mais escassos que paracetamol; evitar no 1º e 3º trimestre). Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "LORATADINA 10 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO, 1 VEZ AO DIA, POR 7 DIAS."
+        ],
+        "obs": [
+          "Gestação: dados limitados (anti-H1 de 2ª geração mais estudados). Lactação: dados limitados; anti-H1 de 2ª geração geralmente compatíveis."
+        ]
+      },
+      {
+        "nome": "METRONIDAZOL 250 MG",
+        "linhas": [
+          "TOMAR 02 COMPRIMIDOS, DE 8/8H, 10 DIAS"
+        ],
+        "obs": [
+          "Gestação: compatível (uso amplo; alguns preferem evitar doses altas no 1º trimestre). Lactação: compatível (dose bolus única: considerar pausa breve na amamentação)."
+        ]
+      },
+      {
+        "nome": "NISTATINA CREME VAGINAL",
+        "linhas": [
+          "APLICAR 1 MEDIDOR, DENTRO DA VAGINA, AO DEITAR PARA DORMIR, 14 DIAS"
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "NITROFURANTOINA 100 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO, VIA ORAL, DE 6/6H, 7 DIAS"
+        ],
+        "obs": [
+          "Gestação: compatível, exceto próximo ao termo (36–42 semanas) e periparto (risco de anemia hemolítica no RN). Lactação: compatível, exceto se RN prematuro, <1 mês ou deficiência de G6PD."
+        ]
+      },
+      {
+        "nome": "PANTOZOL 20 MG",
+        "linhas": [
+          "TOMAR 01 COMPRIMIDO ANTES DO CAFÉ DA MANHÃ, POR 30 DIAS."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: provavelmente compatível (dados mais limitados que omeprazol)."
+        ]
+      },
+      {
+        "nome": "PROVANCE",
+        "linhas": [
+          "TOMAR UM COMPRIMIDO MASTIGÁVEL, 1 VEZ AO DIA, 10 DIAS."
+        ],
+        "obs": [
+          "Gestação: compatível. Lactação: compatível."
+        ]
+      },
+      {
+        "nome": "VONAU FLASH 8 MG",
+        "linhas": [
+          "COLOCAR 01 COMPRIMIDO NA PONTA DA LÍNGUA E DEIXAR DISSOLVER, DE 12/12H, SE NÁUSEAS OU VÔMITOS."
+        ],
+        "obs": [
+          "Gestação: uso controverso — alguns estudos observacionais associam a discreto aumento de risco de fenda palatina/malformação cardíaca; usar se benefício > risco. Lactação: compatível (dados limitados)."
         ]
       }
     ]
