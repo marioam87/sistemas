@@ -296,7 +296,13 @@
     text-overflow:ellipsis;
     min-width:0;
   }
+  .activity-emoji{
+    font-size:12.5px;
+    line-height:1;
+    flex-shrink:0;
+  }
   .activity-remove{
+    display:none;
     cursor:pointer;
     margin-left:auto;
     font-weight:700;
@@ -313,6 +319,7 @@
     white-space:normal;
   }
   .activity-pill.expanded .activity-remove{
+    display:inline-block;
     opacity:1;
     font-size:13px;
     padding:2px 8px;
@@ -1752,17 +1759,17 @@ function renderCalendar(){
     const isToday = key === todayKey;
     const acts = state.activities[key] || [];
     const pills = acts.map((a, idx) => {
-      let cls, label;
-      if(a.type === 'fullbody'){ cls='fullbody'; label = `🏋 ${a.label || 'Musculação'}`; }
-      else if(a.type === 'boxe'){ cls='boxe'; label = `🥊 Boxe`; }
-      else if(a.type === 'bike'){ cls='bike'; label = `🚴 ${a.km ? a.km+'km' : 'Bike'}`; }
-      else if(a.type === 'tabata'){ cls='tabata'; label = `🔥 Tabata`; }
-      else if(a.type === 'alongamento'){ cls='alongamento'; label = `🧘 Alongamento`; }
-      else if(a.type === 'abdominal'){ cls='abdominal'; label = `💥 Abdominal`; }
-      else { cls='esteira'; label = `🏃 ${a.km ? a.km+'km' : 'Esteira'}`; }
+      let cls, emoji, label;
+      if(a.type === 'fullbody'){ cls='fullbody'; emoji='🏋'; label = a.label || 'Musculação'; }
+      else if(a.type === 'boxe'){ cls='boxe'; emoji='🥊'; label = 'Boxe'; }
+      else if(a.type === 'bike'){ cls='bike'; emoji='🚴'; label = a.km ? a.km+'km' : 'Bike'; }
+      else if(a.type === 'tabata'){ cls='tabata'; emoji='🔥'; label = 'Tabata'; }
+      else if(a.type === 'alongamento'){ cls='alongamento'; emoji='🧘'; label = 'Alongamento'; }
+      else if(a.type === 'abdominal'){ cls='abdominal'; emoji='💥'; label = 'Abdominal'; }
+      else { cls='esteira'; emoji='🏃'; label = a.km ? a.km+'km' : 'Esteira'; }
       const pillId = key + '|' + idx;
       const isExpanded = expandedPill === pillId;
-      return `<div class="activity-pill ${cls} ${isExpanded?'expanded':''}" onclick="togglePillExpand('${key}',${idx})"><span class="activity-label">${label}</span><span class="activity-remove" onclick="event.stopPropagation();removeActivity('${key}',${idx})">×</span></div>`;
+      return `<div class="activity-pill ${cls} ${isExpanded?'expanded':''}" onclick="togglePillExpand('${key}',${idx})"><span class="activity-emoji">${emoji}</span><span class="activity-label">${label}</span><span class="activity-remove" onclick="event.stopPropagation();removeActivity('${key}',${idx})">×</span></div>`;
     }).join('');
     cells += `<div class="cal-cell ${isToday?'today':''}"><div class="cal-daynum">${d}</div>${pills}</div>`;
   }
