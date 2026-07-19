@@ -1062,7 +1062,8 @@ function buildStretchTimeline(){
   return timeline;
 }
 const STRETCH_TIMELINE = buildStretchTimeline();
-const STRETCH_TOTAL_SECONDS = STRETCH_TIMELINE.reduce((sum,s)=>sum+s.duracao,0);
+const REST_SECONDS = 10; // descanso entre um exercício e o próximo
+const STRETCH_TOTAL_SECONDS = STRETCH_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + (STRETCH_TIMELINE.length-1)*REST_SECONDS;
 
 function formatMMSS(totalSeconds){
   const t = Math.max(0, totalSeconds);
@@ -1076,16 +1077,34 @@ let stretchRemaining = STRETCH_TIMELINE[0].duracao;
 let stretchRunning = false;
 let stretchFinished = false;
 let stretchRegistered = false;
+let stretchResting = false;
+let stretchRestRemaining = REST_SECONDS;
 let stretchMuted = false;
 let stretchInterval = null;
 let audioCtx = null;
+
+// Toque um buffer silencioso assim que o contexto é criado — necessário no
+// iOS/Safari pra "destravar" o áudio de vez, já que só criar o AudioContext
+// ou chamar resume() não é sempre suficiente sem isso.
+function unlockAudioContext(ctx){
+  try{
+    const buffer = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    if(src.start) src.start(0); else src.noteOn(0);
+  }catch(e){ /* segue sem travar a inicialização */ }
+}
 
 function getAudioCtx(){
   if(!audioCtx){
     const Ctx = window.AudioContext || window.webkitAudioContext;
     audioCtx = new Ctx();
+    unlockAudioContext(audioCtx);
   }
-  if(audioCtx.state === 'suspended') audioCtx.resume();
+  if(audioCtx.state === 'suspended'){
+    audioCtx.resume();
+  }
   return audioCtx;
 }
 
@@ -1093,21 +1112,23 @@ function beep(freq, dur, delay){
   if(stretchMuted) return;
   try{
     const ctx = getAudioCtx();
+    if(ctx.state === 'suspended') ctx.resume();
     const t0 = ctx.currentTime + (delay||0);
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(0.3, t0+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur/1000);
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.5, t0 + 0.015);
+    gain.gain.linearRampToValueAtTime(0, t0 + dur/1000);
     osc.connect(gain); gain.connect(ctx.destination);
     osc.start(t0);
-    osc.stop(t0 + dur/1000 + 0.03);
+    osc.stop(t0 + dur/1000 + 0.05);
   }catch(e){ /* áudio indisponível, segue sem som */ }
 }
 
-function playSegmentEndBeep(){ beep(880, 180, 0); }
+function playSegmentEndBeep(){ beep(660, 200, 0); }
+function playRestEndBeep(){ beep(940, 200, 0); }
 function playRoutineEndBeep(){ beep(660,150,0); beep(880,150,0.22); beep(1046,280,0.44); }
 
 function logStretchActivity(){
@@ -1133,6 +1154,7 @@ function startStretch(){
     stretchRemaining = STRETCH_TIMELINE[0].duracao;
     stretchFinished = false;
     stretchRegistered = false;
+    stretchResting = false;
   }
   stretchRunning = true;
   getAudioCtx();
@@ -1154,16 +1176,28 @@ function resetStretch(){
   stretchRemaining = STRETCH_TIMELINE[0].duracao;
   stretchFinished = false;
   stretchRegistered = false;
+  stretchResting = false;
   render();
 }
 
 function tickStretch(){
+  if(stretchResting){
+    stretchRestRemaining--;
+    if(stretchRestRemaining <= 0){
+      stretchResting = false;
+      stretchIdx++;
+      stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+      playRestEndBeep();
+    }
+    render();
+    return;
+  }
   stretchRemaining--;
   if(stretchRemaining <= 0){
     if(stretchIdx < STRETCH_TIMELINE.length-1){
       playSegmentEndBeep();
-      stretchIdx++;
-      stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+      stretchResting = true;
+      stretchRestRemaining = REST_SECONDS;
     } else {
       clearInterval(stretchInterval);
       stretchRunning = false;
@@ -1175,6 +1209,20 @@ function tickStretch(){
 }
 
 function skipStretch(delta){
+  if(stretchResting){
+    stretchResting = false;
+    if(delta > 0){
+      const newIdx = stretchIdx + 1;
+      if(newIdx >= STRETCH_TIMELINE.length) return;
+      stretchIdx = newIdx;
+    }
+    stretchRunning = false;
+    clearInterval(stretchInterval);
+    stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+    stretchFinished = false;
+    render();
+    return;
+  }
   const newIdx = stretchIdx + delta;
   if(newIdx < 0 || newIdx >= STRETCH_TIMELINE.length) return;
   stretchRunning = false;
@@ -1192,8 +1240,12 @@ function toggleStretchMute(){
 
 function elapsedStretchSeconds(){
   let elapsed = 0;
-  for(let i=0;i<stretchIdx;i++) elapsed += STRETCH_TIMELINE[i].duracao;
-  elapsed += (STRETCH_TIMELINE[stretchIdx].duracao - stretchRemaining);
+  for(let i=0;i<stretchIdx;i++) elapsed += STRETCH_TIMELINE[i].duracao + REST_SECONDS;
+  if(stretchResting){
+    elapsed += STRETCH_TIMELINE[stretchIdx].duracao + (REST_SECONDS - stretchRestRemaining);
+  } else {
+    elapsed += (STRETCH_TIMELINE[stretchIdx].duracao - stretchRemaining);
+  }
   return elapsed;
 }
 
@@ -1202,23 +1254,7 @@ function renderAlongamento(){
   const totalElapsed = stretchFinished ? STRETCH_TOTAL_SECONDS : elapsedStretchSeconds();
   const pctDone = Math.round((totalElapsed/STRETCH_TOTAL_SECONDS)*100);
 
-  const timerBody = stretchFinished ? `
-    <div class="stretch-finished-msg">✓ Rotina de 20 minutos concluída!</div>
-    <div class="stretch-controls">
-      <button class="stretch-btn primary" onclick="startStretch()" title="Refazer">↺</button>
-    </div>
-  ` : `
-    <div class="stretch-progress-label">Exercício ${stretchIdx+1} de ${STRETCH_TIMELINE.length}</div>
-    <div class="stretch-group-tag">${seg.grupo === 'Inferior' ? 'Membro inferior' : 'Membro superior'}</div>
-    <div class="stretch-current-name">${seg.nome}</div>
-    ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
-    <div class="stretch-clock">${formatMMSS(stretchRemaining)}</div>
-    <div class="stretch-meta-row">
-      <span class="stretch-tag">⏱ ${seg.duracao}s</span>
-      <span class="stretch-tag">🧰 ${seg.equipamento}</span>
-    </div>
-    <div class="stretch-instrucao">${seg.instrucao}</div>
-    <a class="stretch-video-link" href="${seg.videoUrl}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
+  const controlsHtml = `
     <div class="stretch-controls">
       <button class="stretch-btn" onclick="skipStretch(-1)" title="Anterior">⏮</button>
       ${stretchRunning
@@ -1229,6 +1265,42 @@ function renderAlongamento(){
       <button class="stretch-btn" onclick="resetStretch()" title="Reiniciar">↺</button>
     </div>
   `;
+
+  let timerBody;
+  if(stretchFinished){
+    timerBody = `
+      <div class="stretch-finished-msg">✓ Rotina de 20 minutos concluída!</div>
+      <div class="stretch-controls">
+        <button class="stretch-btn primary" onclick="startStretch()" title="Refazer">↺</button>
+      </div>
+    `;
+  } else if(stretchResting){
+    const nextSeg = STRETCH_TIMELINE[stretchIdx+1];
+    timerBody = `
+      <div class="stretch-progress-label">Descanso</div>
+      <div class="stretch-group-tag">Próximo: ${nextSeg.nome}${nextSeg.lado ? ' — '+nextSeg.lado : ''}</div>
+      <div class="stretch-current-name">Descanso</div>
+      <div class="stretch-current-side">&nbsp;</div>
+      <div class="stretch-clock">${formatMMSS(stretchRestRemaining)}</div>
+      <div class="stretch-instrucao">Respire e prepare-se pro próximo alongamento.</div>
+      ${controlsHtml}
+    `;
+  } else {
+    timerBody = `
+      <div class="stretch-progress-label">Exercício ${stretchIdx+1} de ${STRETCH_TIMELINE.length}</div>
+      <div class="stretch-group-tag">${seg.grupo === 'Inferior' ? 'Membro inferior' : 'Membro superior'}</div>
+      <div class="stretch-current-name">${seg.nome}</div>
+      ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
+      <div class="stretch-clock">${formatMMSS(stretchRemaining)}</div>
+      <div class="stretch-meta-row">
+        <span class="stretch-tag">⏱ ${seg.duracao}s</span>
+        <span class="stretch-tag">🧰 ${seg.equipamento}</span>
+      </div>
+      <div class="stretch-instrucao">${seg.instrucao}</div>
+      <a class="stretch-video-link" href="${seg.videoUrl}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
+      ${controlsHtml}
+    `;
+  }
 
   const listRows = STRETCH_EXERCISES.map((ex, i) => {
     const isActiveEx = !stretchFinished && seg.id === ex.id;
@@ -1259,7 +1331,7 @@ function renderAlongamento(){
       ${listRows}
     </div>
     <div class="stretch-intro" style="margin:16px 0 0;">
-      Rotina de <strong>20 minutos</strong> pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores. O relógio toca um sinal sonoro ao final de cada exercício e avança automaticamente pro próximo.
+      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores. São <strong>20 minutos</strong> de alongamento com <strong>10 segundos de descanso</strong> entre um exercício e o próximo (± 23:30 no total). O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
     </div>
   `;
 }
