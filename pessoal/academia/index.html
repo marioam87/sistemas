@@ -284,6 +284,7 @@
     margin-bottom:2px;
     white-space:nowrap;
     position:relative;
+    cursor:pointer;
   }
   .activity-pill.fullbody{background:var(--accent-dim);color:#8a5a1c;}
   .activity-pill.boxe{background:#fde3da;color:#a8431c;}
@@ -299,13 +300,26 @@
     cursor:pointer;
     margin-left:auto;
     font-weight:700;
-    opacity:.7;
+    opacity:.6;
     flex-shrink:0;
-    padding:2px 5px 2px 3px;
-    min-width:16px;
-    text-align:center;
   }
   .activity-remove:hover{opacity:1;}
+  .activity-pill.expanded{
+    white-space:normal;
+  }
+  .activity-pill.expanded .activity-label{
+    overflow:visible;
+    text-overflow:unset;
+    white-space:normal;
+  }
+  .activity-pill.expanded .activity-remove{
+    opacity:1;
+    font-size:13px;
+    padding:2px 8px;
+    background:rgba(0,0,0,0.1);
+    border-radius:6px;
+    margin-left:8px;
+  }
   .cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;}
   .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);}
   .legend-dot{width:9px;height:9px;border-radius:50%;}
@@ -724,6 +738,15 @@ function changeDashMonth(delta){
 
 function toKey(y,m,d){
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+// Controla qual pílula de atividade está "expandida" no calendário (não
+// precisa persistir entre sessões — é só um estado de UI temporário).
+let expandedPill = null;
+function togglePillExpand(key, idx){
+  const id = key + '|' + idx;
+  expandedPill = (expandedPill === id) ? null : id;
+  render();
 }
 
 // Histórico importado do calendário do iPhone (Janeiro a Junho de 2026)
@@ -1737,7 +1760,9 @@ function renderCalendar(){
       else if(a.type === 'alongamento'){ cls='alongamento'; label = `🧘 Alongamento`; }
       else if(a.type === 'abdominal'){ cls='abdominal'; label = `💥 Abdominal`; }
       else { cls='esteira'; label = `🏃 ${a.km ? a.km+'km' : 'Esteira'}`; }
-      return `<div class="activity-pill ${cls}"><span class="activity-label">${label}</span><span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      const pillId = key + '|' + idx;
+      const isExpanded = expandedPill === pillId;
+      return `<div class="activity-pill ${cls} ${isExpanded?'expanded':''}" onclick="togglePillExpand('${key}',${idx})"><span class="activity-label">${label}</span><span class="activity-remove" onclick="event.stopPropagation();removeActivity('${key}',${idx})">×</span></div>`;
     }).join('');
     cells += `<div class="cal-cell ${isToday?'today':''}"><div class="cal-daynum">${d}</div>${pills}</div>`;
   }
