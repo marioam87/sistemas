@@ -6,6 +6,14 @@ Documento de handoff para o Claude Code. Este arquivo é um app pessoal de trein
 > puramente cosmético, sem mudança de código ou de dados. A URL do GitHub
 > Pages mudou junto (ver aviso na seção "iPhone" abaixo).
 
+> 19/07/2026 — "Musculação" passou a poder ser registrada manualmente no
+> formulário do Calendário (antes só era adicionada automaticamente ao
+> concluir uma sessão na aba Musculação). Mudança de uma linha: nova
+> `<option value="fullbody">Musculação</option>` no `<select id="act-type">`
+> dentro de `renderCalendar()`. Nenhuma outra função precisou mudar — a
+> pílula, a legenda e o campo de km (que continua escondido pra esse tipo)
+> já tratavam `fullbody` corretamente.
+
 ## Onde está
 
 `~/pessoal/pessoal/academia/index.html` (nome `index.html` é importante pro GitHub Pages servir na raiz da pasta).
@@ -22,14 +30,15 @@ Documento de handoff para o Claude Code. Este arquivo é um app pessoal de trein
 Três abas: **Calendário**, **Musculação** (a composição corporal foi removida a pedido do usuário).
 
 ### Aba Calendário
-- Resumo anual (navegável por ano, com setas ‹›): cartões de total (Musculação, Boxe, Pedaladas, Km na bike, Tabata, Esteira) — só aparecem categorias com total > 0 naquele ano.
+- Resumo anual (navegável por ano, com setas ‹›): cartões de total (Musculação, Boxe, Pedaladas, Km na bike, Tabata, Esteira, Alongamento, Abdominal) — só aparecem categorias com total > 0 naquele ano.
 - Resumo mensal (navegável por mês, com setas ‹›, dentro do mesmo card): mesmos cartões, filtrados pro mês.
 - Calendário mensal navegável, com histórico importado (ver `SEED_ACTIVITIES`) + registros novos do usuário.
-- Formulário de registro manual: data + tipo (Boxe/Bike/Tabata/Esteira) + km (só bike/esteira).
+- Formulário de registro manual: data + tipo (**Musculação**/Boxe/Bike/Tabata/Esteira/Alongamento/Abdominal) + km (só bike/esteira). Musculação registrada manualmente aqui é equivalente à registrada automaticamente ao concluir uma sessão — ambas viram uma entrada `{type:'fullbody', label:'Musculação'}` em `state.activities`.
 
 ### Aba Musculação
 - Trilha de 24 sessões (`SESSIONS`, gerado a partir de `WAVES`), organizadas em 3 ciclos de 4 semanas (2x/semana), full body (braço+perna no mesmo treino), sem afundo com halteres (usuário tem dor no tornozelo).
 - Sessão N só desbloqueia quando a sessão N-1 é concluída (todos os exercícios marcados).
+- Ao concluir uma sessão, ela também gera automaticamente uma entrada de "Musculação" no calendário do dia (ver seção Calendário acima — mesmo formato da entrada manual).
 - Peso de cada exercício é editável e persiste por nome do exercício (`state.weights`), reaproveitado em todas as ocorrências futuras daquele exercício.
 - Barra de progresso + "trilha" visual de bolinhas (uma por sessão, agrupadas por ciclo).
 
@@ -44,7 +53,7 @@ Chave: `mfit-trilha-progresso` (constante `STORAGE_KEY`). Um único JSON:
   selected: number,             // índice da sessão selecionada na aba Musculação
   weights: { "Nome do Exercício": "12kg", ... },
   activities: {                 // calendário
-    "YYYY-MM-DD": [{type: 'fullbody'|'boxe'|'bike'|'tabata'|'esteira', label?, km?}, ...]
+    "YYYY-MM-DD": [{type: 'fullbody'|'boxe'|'bike'|'tabata'|'esteira'|'alongamento'|'abdominal', label?, km?}, ...]
   },
   seededVersion: number,        // controla histórico importado (SEED_ACTIVITIES)
 }
