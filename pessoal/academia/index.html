@@ -1012,14 +1012,18 @@ const STRETCH_EXERCISES = [
     instrucao:'Deitado de costas no colchonete, passe o elástico aberto na sola do pé. Com a perna esticada, puxe suavemente em direção ao peito, mantendo a outra perna esticada ou apoiada no chão.',
     videoQuery:'alongamento isquiotibiais deitado com faixa elástica',
     videoUrl:'https://www.youtube.com/watch?v=oH8NrbkSEtw' },
-  { id:'isquio-peso', nome:'Isquiotibiais em pé com sobrecarga leve', grupo:'Inferior', equipamento:'2 pesos de 3kg', duracao:60, sides:false,
-    instrucao:'Em pé, segure um peso de 3kg em cada mão com os braços soltos ao lado do corpo. Flexione o quadril à frente (dobradiça de quadril) com os joelhos levemente flexionados e a coluna neutra, deixando o peso aprofundar aos poucos o alongamento na parte de trás da perna. Suba sempre devagar.',
-    videoQuery:'hip hinge alongamento posterior de coxa com peso',
-    videoUrl:'https://www.youtube.com/watch?v=zllICZRjSj0' },
+  { id:'flexor-quadril', nome:'Flexor de quadril ajoelhado', grupo:'Inferior', equipamento:'Colchonete', duracao:45, sides:true,
+    instrucao:'Ajoelhado com um joelho no colchonete e o outro pé à frente, apoiado no chão (afundo baixo, sem precisar ficar de pé nem apoiar peso no tornozelo). Empurre o quadril suavemente à frente mantendo o tronco ereto, até sentir o alongamento na frente do quadril/coxa da perna de trás.',
+    videoQuery:'alongamento flexor de quadril ajoelhado afundo baixo',
+    videoUrl:'https://www.youtube.com/watch?v=DqjW0ldTvcU' },
   { id:'gluteo', nome:'Alongamento de glúteo (figura 4)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
     instrucao:'Deitado de costas, cruze o tornozelo sobre o joelho da perna oposta formando um "4". Segure atrás da coxa da perna apoiada no chão e puxe suavemente em direção ao peito.',
     videoQuery:'alongamento glúteo figura 4 deitado',
     videoUrl:'https://www.youtube.com/watch?v=ddlwrFQ7Gl4' },
+  { id:'adutor', nome:'Adutor sentado (borboleta)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Sentado, junte as solas dos pés e deixe os joelhos caírem para os lados. Com a coluna reta, incline levemente o tronco à frente até sentir o alongamento na virilha/parte interna da coxa.',
+    videoQuery:'alongamento adutor borboleta sentado',
+    videoUrl:'https://www.youtube.com/watch?v=Kv_67CmMY9Y' },
   { id:'lombar', nome:'Lombar — joelhos ao peito', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:false,
     instrucao:'Deitado de costas, abrace os dois joelhos e puxe suavemente em direção ao peito, mantendo a lombar apoiada no chão.',
     videoQuery:'alongamento lombar joelhos no peito deitado',
@@ -1032,6 +1036,18 @@ const STRETCH_EXERCISES = [
     instrucao:'Deitado de costas com os braços abertos, leve um joelho para o lado oposto do corpo mantendo os dois ombros no chão. Olhe para o lado contrário ao da perna.',
     videoQuery:'alongamento torção de coluna deitado',
     videoUrl:'https://www.youtube.com/watch?v=4umc3BMCGk0' },
+  { id:'quadriceps', nome:'Quadríceps em pé', grupo:'Inferior', equipamento:'Parede ou apoio (opcional)', duracao:45, sides:true,
+    instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
+    videoQuery:'alongamento de quadríceps em pé unilateral',
+    videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
+  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:45, sides:true,
+    instrucao:'Sentado, levante o pé do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
+    videoQuery:'mobilidade de tornozelo círculos alfabeto exercício leve',
+    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
+  { id:'tornozelo-elastico', nome:'Dorsiflexão de tornozelo com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m)', duracao:45, sides:true,
+    instrucao:'Sentado com a perna esticada, prenda o elástico numa base fixa (ou peça ajuda) e passe-o pelo peito do pé. Puxe a ponta do pé suavemente em direção à canela (dorsiflexão), sem forçar.',
+    videoQuery:'alongamento dorsiflexão de tornozelo com elástico sentado',
+    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
   { id:'peitoral', nome:'Peitoral com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
     instrucao:'Segure o elástico aberto com as duas mãos atrás das costas, braços esticados. Aproxime as escápulas e abra levemente o peito.',
     videoQuery:'alongamento de peitoral com elástico atrás das costas',
@@ -1048,22 +1064,14 @@ const STRETCH_EXERCISES = [
     instrucao:'Leve um braço atrás da cabeça com o cotovelo apontando para cima. Use a outra mão para empurrar suavemente o cotovelo, sem forçar o pescoço.',
     videoQuery:'alongamento de tríceps atrás da cabeça',
     videoUrl:'https://www.youtube.com/watch?v=hVlYfDablao' },
+  { id:'biceps', nome:'Bíceps / antebraço na parede', grupo:'Superior', equipamento:'Parede', duracao:30, sides:true,
+    instrucao:'Encoste a palma da mão na parede, dedos apontando para trás, braço esticado na altura do ombro. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do braço/antebraço.',
+    videoQuery:'alongamento de bíceps antebraço na parede',
+    videoUrl:'https://www.youtube.com/watch?v=WNIayC1JMxE' },
   { id:'lat', nome:'Grande dorsal (lateral do tronco) com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
     instrucao:'Segure o elástico com as duas mãos, braços esticados acima da cabeça. Incline o tronco levemente para um lado e depois para o outro, sentindo o alongamento na lateral das costas.',
     videoQuery:'alongamento grande dorsal lateral do tronco',
     videoUrl:'https://www.youtube.com/watch?v=VkYO-HrDeV0' },
-  { id:'quadriceps', nome:'Quadríceps em pé', grupo:'Inferior', equipamento:'Parede ou apoio (opcional)', duracao:45, sides:true,
-    instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
-    videoQuery:'alongamento de quadríceps em pé unilateral',
-    videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
-  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:45, sides:true,
-    instrucao:'Sentado, levante o pé do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
-    videoQuery:'mobilidade de tornozelo círculos alfabeto exercício leve',
-    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
-  { id:'tornozelo-elastico', nome:'Dorsiflexão de tornozelo com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m)', duracao:45, sides:true,
-    instrucao:'Sentado com a perna esticada, prenda o elástico numa base fixa (ou peça ajuda) e passe-o pelo peito do pé. Puxe a ponta do pé suavemente em direção à canela (dorsiflexão), sem forçar. Vá com calma nessa articulação, especialmente do lado que fraturou.',
-    videoQuery:'alongamento dorsiflexão de tornozelo com elástico sentado',
-    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
 ];
 
 function buildStretchTimeline(){
@@ -1370,9 +1378,7 @@ function renderAlongamento(){
       ${listRows}
     </div>
     <div class="stretch-intro" style="margin:16px 0 0;">
-      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores, peitoral, quadríceps e mobilidade de tornozelo. Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
-      <br><br>
-      ⚠️ <strong>Tornozelo direito fraturado:</strong> os exercícios de mobilidade/dorsiflexão de tornozelo são bem leves de propósito. Só faça essa parte se o médico ou fisioterapeuta já tiver liberado movimentação ativa da articulação, vá com amplitude reduzida no lado direito e pare na hora se sentir dor (desconforto leve é esperado, dor não).
+      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, mesa de 87cm, bolinhas de 15cm e parede/batente. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo, adutor e lombar), que está encurtada — depois fecha com quadríceps, flexor de quadril, mobilidade de tornozelo e alongamentos de membros superiores (peitoral, tríceps, bíceps, pescoço e dorsal). Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
     </div>
   `;
 }
@@ -2157,8 +2163,8 @@ function render(){
     <div class="tabs">
       <button class="tab-btn ${activeTab==='calendario'?'active':''}" onclick="setTab('calendario')">Calendário</button>
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
-      <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
       <button class="tab-btn ${activeTab==='abdominal'?'active':''}" onclick="setTab('abdominal')">Abdominal</button>
+      <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
     </div>
 
     ${activeTab === 'calendario' ? `
@@ -2176,7 +2182,7 @@ function render(){
       <div class="trilha-scroll">${trilhaHtml}</div>
 
       <div class="session-card">${bodyHtml}</div>
-    ` : activeTab === 'alongamento' ? renderAlongamento() : renderAbdominal()}
+    ` : activeTab === 'abdominal' ? renderAbdominal() : renderAlongamento()}
   `;
 }
 
