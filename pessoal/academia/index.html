@@ -415,6 +415,160 @@
   .chart-bar.tabata{background:#8547b8;}
   .chart-bar.esteira{background:#3068b8;}
   .chart-mlabel{font-family:'JetBrains Mono', monospace;font-size:9px;color:var(--text-faint);margin-top:6px;text-transform:uppercase;}
+
+  .activity-pill.alongamento{background:#e8e6f7;color:#4a4a9e;}
+  .legend-dot.alongamento{background:#5c5cc4;}
+  .stat-box.alongamento .stat-num{color:#5c5cc4;}
+  .chart-bar.alongamento{background:#5c5cc4;}
+
+  /* alongamento tab */
+  .stretch-intro{
+    font-size:12.5px;color:var(--text-muted);
+    background:var(--surface-2);
+    border-radius:9px;
+    padding:12px 14px;
+    margin-bottom:16px;
+    line-height:1.5;
+  }
+  .stretch-timer-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:22px;
+    margin-bottom:18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+    text-align:center;
+  }
+  .stretch-progress-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11.5px;
+    color:var(--text-faint);
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    margin-bottom:10px;
+  }
+  .stretch-group-tag{
+    display:inline-block;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--accent);
+    background:var(--accent-dim);
+    padding:3px 10px;
+    border-radius:99px;
+    margin-bottom:10px;
+  }
+  .stretch-current-name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:19px;
+    margin-bottom:2px;
+  }
+  .stretch-current-side{
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .stretch-clock{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:52px;
+    letter-spacing:0.02em;
+    color:var(--text);
+    margin:6px 0 4px;
+    font-variant-numeric:tabular-nums;
+  }
+  .stretch-clock.finished{color:var(--done);}
+  .stretch-total-track{
+    height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin:14px 0 18px;
+  }
+  .stretch-total-fill{height:100%;background:linear-gradient(90deg, var(--done), var(--accent));border-radius:99px;transition:width .3s ease;}
+  .stretch-instrucao{
+    font-size:13.5px;
+    color:var(--text-muted);
+    line-height:1.55;
+    text-align:left;
+    background:var(--surface-2);
+    border-radius:9px;
+    padding:12px 14px;
+    margin-bottom:14px;
+  }
+  .stretch-meta-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .stretch-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-muted);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    padding:4px 10px;
+    border-radius:99px;
+  }
+  .stretch-video-link{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:'Inter', sans-serif;font-size:13px;font-weight:600;
+    color:var(--accent);text-decoration:none;
+    margin-bottom:18px;
+  }
+  .stretch-video-link:hover{text-decoration:underline;}
+  .stretch-controls{display:flex;justify-content:center;align-items:center;gap:10px;}
+  .stretch-btn{
+    width:46px;height:46px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+    font-size:16px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:.15s;
+  }
+  .stretch-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .stretch-btn.primary{
+    width:58px;height:58px;
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+    font-size:20px;
+  }
+  .stretch-btn.primary:hover{filter:brightness(1.08);color:#fff;}
+  .stretch-btn.muted{color:var(--accent);border-color:var(--accent);}
+  .stretch-finished-msg{
+    font-size:14px;color:var(--done);font-weight:600;margin-bottom:14px;
+  }
+  .stretch-list-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:8px 18px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.04);
+  }
+  .stretch-list-title{
+    font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:14.5px;
+    padding:14px 0 6px;
+  }
+  .stretch-item{
+    display:flex;align-items:flex-start;gap:12px;
+    padding:13px 0;
+    border-top:1px solid var(--border);
+  }
+  .stretch-item:first-of-type{border-top:none;}
+  .stretch-item.active{background:var(--accent-dim);margin:0 -18px;padding:13px 18px;border-radius:10px;border-top-color:transparent;}
+  .stretch-item-idx{
+    font-family:'JetBrains Mono', monospace;font-size:12px;color:var(--text-faint);
+    width:20px;flex-shrink:0;padding-top:2px;
+  }
+  .stretch-item-body{flex:1;min-width:0;}
+  .stretch-item-name{font-size:14px;font-weight:500;line-height:1.3;}
+  .stretch-item-name.checked-text{color:var(--text-muted);text-decoration:line-through;text-decoration-color:var(--text-faint);}
+  .stretch-item-meta{font-size:11.5px;color:var(--text-muted);margin-top:3px;}
+  .stretch-item-dur{
+    font-family:'JetBrains Mono', monospace;font-size:12px;color:var(--accent);font-weight:600;
+    flex-shrink:0;white-space:nowrap;padding-top:2px;
+  }
+  .stretch-item-video{
+    flex-shrink:0;color:var(--text-faint);text-decoration:none;font-size:15px;padding:2px 4px;border-radius:6px;
+  }
+  .stretch-item-video:hover{color:var(--accent);background:var(--surface-2);}
 </style>
 </head>
 <body>
@@ -527,11 +681,11 @@ let state = {
   checks: Array(TOTAL).fill(null).map(()=>Array(7).fill(false)),
   selected: 0,
   weights: {}, // nome do exercício -> carga atual (editada pelo usuário)
-  activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira', label, km}]
+  activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira'|'alongamento', label, km}]
   seededVersion: 0, // controla quais rodadas de histórico importado já foram mescladas
 };
 
-const CURRENT_SEED_VERSION = 3; // v1 = histórico 2026, v2 = + histórico 2025 (mar-dez), v3 = + jan/fev 2025
+const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 (mar-dez), v3 = + jan/fev 2025, v4 = + jul/2026 (calendário) e conclusão dos treinos 1 e 2 de musculação
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -644,6 +798,13 @@ const SEED_ACTIVITIES = {
 
   "2026-06-19": [{type:"boxe"}],
   "2026-06-28": [{type:"bike", km:24}],
+
+  "2026-07-03": [{type:"boxe"}],
+  "2026-07-05": [{type:"fullbody", label:"Musculação"}],
+  "2026-07-08": [{type:"boxe"}],
+  "2026-07-09": [{type:"fullbody", label:"Musculação"}],
+  "2026-07-12": [{type:"bike", km:20}],
+  "2026-07-16": [{type:"bike", km:25}],
 
   // Histórico importado do calendário do iPhone (Março a Dezembro de 2025)
   "2025-01-05": [{type:"tabata"}],
@@ -783,6 +944,327 @@ function youtubeLink(nome){
   return "https://www.youtube.com/results?search_query=" + q;
 }
 
+// Vídeos específicos de execução para cada exercício da trilha de Musculação
+// (mapeados por nome exato, conforme aparecem nos templates de treino acima).
+const EXERCISE_VIDEOS = {
+  "Agachamento Livre com Halteres": "https://www.youtube.com/watch?v=taK1dUUT2_I",
+  "Supino Reto com Halteres": "https://www.youtube.com/watch?v=P2xVkheMBZM",
+  "Cadeira Extensora": "https://www.youtube.com/watch?v=exLCpU7mT3g",
+  "Supino Inclinado com Halteres": "https://www.youtube.com/watch?v=G-i3jMIbDmo",
+  "Leg Press 45": "https://www.youtube.com/watch?v=waAxlYvtCcI",
+  "Tríceps na Polia com Corda": "https://www.youtube.com/watch?v=YQ6MRBeyIAE",
+  "Abdominal Supra Solo": "https://www.youtube.com/watch?v=hZVIstfFsIc",
+  "Levantamento Terra": "https://www.youtube.com/watch?v=T3x53s0jEns",
+  "Puxada Aberta Barra Reta": "https://www.youtube.com/watch?v=uQQeckxqI0U",
+  "Mesa Flexora": "https://www.youtube.com/watch?v=sWSm1pWb3lw",
+  "Remada Unilateral Halteres (Serrote)": "https://www.youtube.com/watch?v=EUisRaNkCd4",
+  "Elevação de Quadril": "https://www.youtube.com/watch?v=Y0CalyZrWcc",
+  "Rosca Martelo com Halteres": "https://www.youtube.com/watch?v=5vPGH1uTtbs",
+  "Prancha Dinâmica": "https://www.youtube.com/watch?v=UqFRSI_FT4c",
+  "Agachamento Sumô": "https://www.youtube.com/watch?v=u_TTcv8FvOk",
+  "Supino Reto com Barra Reta": "https://www.youtube.com/watch?v=ZN7SuDQpNMk",
+  "Cadeira Extensora Unilateral": "https://www.youtube.com/watch?v=Os_byCyi6MI",
+  "Crucifixo Inclinado com Halteres": "https://www.youtube.com/watch?v=oQARSPqhvs8",
+  "Tríceps Francês com Anilha": "https://www.youtube.com/watch?v=tgllcMgCulU",
+  "Abdominal Bicicleta": "https://www.youtube.com/watch?v=ofuUL0cdgVA",
+  "Sti com Halteres": "https://www.youtube.com/watch?v=601YoPL6y6E",
+  "Puxada Fechada Barra Reta": "https://www.youtube.com/watch?v=VLufBOXjryk",
+  "Remada Baixa Triângulo": "https://www.youtube.com/watch?v=C9N2sCdAWJ8",
+  "Elevação de Quadril Unilateral": "https://www.youtube.com/watch?v=IW-xVGlldho",
+  "Rosca Direta com Halteres": "https://www.youtube.com/watch?v=nDOTShRclYQ",
+  "Corda Naval": "https://www.youtube.com/watch?v=kV5R57WSGjI",
+  "Agachamento com Halter na Frente": "https://www.youtube.com/watch?v=n_2FmC3-lJ4",
+  "Supino Inclinado com Barra Reta": "https://www.youtube.com/watch?v=1f-YLKuz_h8",
+  "Fly Reto": "https://www.youtube.com/watch?v=_kpKlYexyXs",
+  "Tríceps Testa com Halteres": "https://www.youtube.com/watch?v=P61aUsjcT4Q",
+  "Abdominal Infra Bola Suíça": "https://www.youtube.com/watch?v=OJSRfh__Nd0",
+  "Remada Curvada com Barra Reta": "https://www.youtube.com/watch?v=VJHBEy2duVc",
+  "Elevação de Quadril com Barra": "https://www.youtube.com/watch?v=3mnHo-F-U4Q",
+  "Rosca Scott Unilateral com Halteres": "https://www.youtube.com/watch?v=rDqH-nMPgg8",
+  "Prancha Cruzada": "https://www.youtube.com/watch?v=k-HXfx7yBsA",
+};
+
+function exerciseVideoLink(nome){
+  return EXERCISE_VIDEOS[nome] || youtubeLink(nome);
+}
+
+// ===================== ALONGAMENTO =====================
+// Rotina de 20 minutos, foco em cadeia posterior (isquiotibiais, panturrilha,
+// glúteo e lombar) + alongamentos de membros superiores pro equilíbrio.
+// Equipamento disponível em casa: elástico circular (25cm), elástico aberto
+// (1,20m), colchonete, mesa de 87cm de altura, 2 pesos de 3kg, 2 bolinhas
+// plásticas macias de 15cm de diâmetro.
+const STRETCH_EXERCISES = [
+  { id:'panturrilha', nome:'Panturrilha na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:45, sides:true,
+    instrucao:'Fique de frente pra mesa e apoie a ponta do pé na quina dela, mantendo o calcanhar no chão. Incline o corpo à frente sem dobrar o joelho de apoio, até sentir o alongamento na panturrilha.',
+    videoQuery:'alongamento de panturrilha em pé',
+    videoUrl:'https://www.youtube.com/watch?v=vPUJae2zN80' },
+  { id:'isquio-mesa', nome:'Isquiotibiais com a perna apoiada na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:75, sides:true,
+    instrucao:'Apoie o calcanhar em cima da mesa com a perna esticada e o joelho da perna de apoio levemente flexionado. Mantenha a coluna reta e incline o quadril à frente (não a lombar) até sentir o alongamento atrás da coxa.',
+    videoQuery:'alongamento isquiotibiais perna apoiada em superfície alta',
+    videoUrl:'https://www.youtube.com/watch?v=7F1jXnsM_8Y' },
+  { id:'isquio-elastico', nome:'Isquiotibiais deitado com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m) + colchonete', duracao:75, sides:true,
+    instrucao:'Deitado de costas no colchonete, passe o elástico aberto na sola do pé. Com a perna esticada, puxe suavemente em direção ao peito, mantendo a outra perna esticada ou apoiada no chão.',
+    videoQuery:'alongamento isquiotibiais deitado com faixa elástica',
+    videoUrl:'https://www.youtube.com/watch?v=oH8NrbkSEtw' },
+  { id:'isquio-peso', nome:'Isquiotibiais em pé com sobrecarga leve', grupo:'Inferior', equipamento:'2 pesos de 3kg', duracao:60, sides:false,
+    instrucao:'Em pé, segure um peso de 3kg em cada mão com os braços soltos ao lado do corpo. Flexione o quadril à frente (dobradiça de quadril) com os joelhos levemente flexionados e a coluna neutra, deixando o peso aprofundar aos poucos o alongamento na parte de trás da perna. Suba sempre devagar.',
+    videoQuery:'hip hinge alongamento posterior de coxa com peso',
+    videoUrl:'https://www.youtube.com/watch?v=zllICZRjSj0' },
+  { id:'gluteo', nome:'Alongamento de glúteo (figura 4)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
+    instrucao:'Deitado de costas, cruze o tornozelo sobre o joelho da perna oposta formando um "4". Segure atrás da coxa da perna apoiada no chão e puxe suavemente em direção ao peito.',
+    videoQuery:'alongamento glúteo figura 4 deitado',
+    videoUrl:'https://www.youtube.com/watch?v=ddlwrFQ7Gl4' },
+  { id:'lombar', nome:'Lombar — joelhos ao peito', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, abrace os dois joelhos e puxe suavemente em direção ao peito, mantendo a lombar apoiada no chão.',
+    videoQuery:'alongamento lombar joelhos no peito deitado',
+    videoUrl:'https://www.youtube.com/watch?v=rLDqCqdHXrY' },
+  { id:'pe-bolinha', nome:'Liberação miofascial da sola do pé', grupo:'Inferior', equipamento:'Bolinha (15cm)', duracao:45, sides:true,
+    instrucao:'Sentado ou em pé com apoio, coloque a bolinha sob a sola do pé e role com pressão moderada, do calcanhar até os dedos.',
+    videoQuery:'liberação miofascial sola do pé com bolinha',
+    videoUrl:'https://www.youtube.com/watch?v=rR_RTft3P9I' },
+  { id:'torcao', nome:'Torção de coluna deitada', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
+    instrucao:'Deitado de costas com os braços abertos, leve um joelho para o lado oposto do corpo mantendo os dois ombros no chão. Olhe para o lado contrário ao da perna.',
+    videoQuery:'alongamento torção de coluna deitado',
+    videoUrl:'https://www.youtube.com/watch?v=4umc3BMCGk0' },
+  { id:'peitoral', nome:'Peitoral com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
+    instrucao:'Segure o elástico aberto com as duas mãos atrás das costas, braços esticados. Aproxime as escápulas e abra levemente o peito.',
+    videoQuery:'alongamento de peitoral com elástico atrás das costas',
+    videoUrl:'https://www.youtube.com/watch?v=xTqlaM598ew' },
+  { id:'pescoco', nome:'Pescoço / trapézio', grupo:'Superior', equipamento:'Nenhum', duracao:30, sides:true,
+    instrucao:'Sentado, incline a cabeça para um lado levando a orelha em direção ao ombro. Use a mão do mesmo lado para uma leve pressão adicional, sem forçar.',
+    videoQuery:'alongamento de pescoço trapézio superior',
+    videoUrl:'https://www.youtube.com/watch?v=EZN78jMP6Rw' },
+  { id:'triceps', nome:'Tríceps / ombro', grupo:'Superior', equipamento:'Nenhum', duracao:30, sides:true,
+    instrucao:'Leve um braço atrás da cabeça com o cotovelo apontando para cima. Use a outra mão para empurrar suavemente o cotovelo, sem forçar o pescoço.',
+    videoQuery:'alongamento de tríceps atrás da cabeça',
+    videoUrl:'https://www.youtube.com/watch?v=hVlYfDablao' },
+  { id:'lat', nome:'Grande dorsal (lateral do tronco) com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
+    instrucao:'Segure o elástico com as duas mãos, braços esticados acima da cabeça. Incline o tronco levemente para um lado e depois para o outro, sentindo o alongamento na lateral das costas.',
+    videoQuery:'alongamento grande dorsal lateral do tronco',
+    videoUrl:'https://www.youtube.com/shorts/B40cXuhLm4Y' },
+  { id:'trapezio-bolinha', nome:'Liberação do trapézio superior com bolinha', grupo:'Superior', equipamento:'Bolinha (15cm)', duracao:60, sides:true,
+    instrucao:'Deitado no colchonete ou encostado na parede, posicione a bolinha entre a omoplata e o pescoço e faça pequenos movimentos de pressão, sem prender a respiração.',
+    videoQuery:'liberação miofascial trapézio superior com bolinha',
+    videoUrl:'https://www.youtube.com/watch?v=jlBrLQe5oyM' },
+];
+
+function buildStretchTimeline(){
+  const timeline = [];
+  STRETCH_EXERCISES.forEach(ex=>{
+    if(ex.sides){
+      timeline.push(Object.assign({}, ex, {lado:'Direita'}));
+      timeline.push(Object.assign({}, ex, {lado:'Esquerda'}));
+    } else {
+      timeline.push(Object.assign({}, ex, {lado:null}));
+    }
+  });
+  return timeline;
+}
+const STRETCH_TIMELINE = buildStretchTimeline();
+const STRETCH_TOTAL_SECONDS = STRETCH_TIMELINE.reduce((sum,s)=>sum+s.duracao,0);
+
+function formatMMSS(totalSeconds){
+  const t = Math.max(0, totalSeconds);
+  const m = Math.floor(t/60);
+  const s = t % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+let stretchIdx = 0;
+let stretchRemaining = STRETCH_TIMELINE[0].duracao;
+let stretchRunning = false;
+let stretchFinished = false;
+let stretchRegistered = false;
+let stretchMuted = false;
+let stretchInterval = null;
+let audioCtx = null;
+
+function getAudioCtx(){
+  if(!audioCtx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new Ctx();
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function beep(freq, dur, delay){
+  if(stretchMuted) return;
+  try{
+    const ctx = getAudioCtx();
+    const t0 = ctx.currentTime + (delay||0);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.3, t0+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur/1000);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur/1000 + 0.03);
+  }catch(e){ /* áudio indisponível, segue sem som */ }
+}
+
+function playSegmentEndBeep(){ beep(880, 180, 0); }
+function playRoutineEndBeep(){ beep(660,150,0); beep(880,150,0.22); beep(1046,280,0.44); }
+
+function logStretchActivity(){
+  const now = new Date();
+  const key = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+  if(!state.activities[key]) state.activities[key] = [];
+  state.activities[key].push({type:'alongamento', label:'Alongamento'});
+}
+
+// Registra manualmente o treino de alongamento no calendário de hoje. É a
+// única forma de registrar — não depende de terminar o timer nem de marcar
+// exercícios.
+function registerStretchSession(){
+  logStretchActivity();
+  stretchRegistered = true;
+  saveState();
+  render();
+}
+
+function startStretch(){
+  if(stretchFinished){
+    stretchIdx = 0;
+    stretchRemaining = STRETCH_TIMELINE[0].duracao;
+    stretchFinished = false;
+    stretchRegistered = false;
+  }
+  stretchRunning = true;
+  getAudioCtx();
+  clearInterval(stretchInterval);
+  stretchInterval = setInterval(tickStretch, 1000);
+  render();
+}
+
+function pauseStretch(){
+  stretchRunning = false;
+  clearInterval(stretchInterval);
+  render();
+}
+
+function resetStretch(){
+  stretchRunning = false;
+  clearInterval(stretchInterval);
+  stretchIdx = 0;
+  stretchRemaining = STRETCH_TIMELINE[0].duracao;
+  stretchFinished = false;
+  stretchRegistered = false;
+  render();
+}
+
+function tickStretch(){
+  stretchRemaining--;
+  if(stretchRemaining <= 0){
+    if(stretchIdx < STRETCH_TIMELINE.length-1){
+      playSegmentEndBeep();
+      stretchIdx++;
+      stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+    } else {
+      clearInterval(stretchInterval);
+      stretchRunning = false;
+      stretchFinished = true;
+      playRoutineEndBeep();
+    }
+  }
+  render();
+}
+
+function skipStretch(delta){
+  const newIdx = stretchIdx + delta;
+  if(newIdx < 0 || newIdx >= STRETCH_TIMELINE.length) return;
+  stretchRunning = false;
+  clearInterval(stretchInterval);
+  stretchIdx = newIdx;
+  stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+  stretchFinished = false;
+  render();
+}
+
+function toggleStretchMute(){
+  stretchMuted = !stretchMuted;
+  render();
+}
+
+function elapsedStretchSeconds(){
+  let elapsed = 0;
+  for(let i=0;i<stretchIdx;i++) elapsed += STRETCH_TIMELINE[i].duracao;
+  elapsed += (STRETCH_TIMELINE[stretchIdx].duracao - stretchRemaining);
+  return elapsed;
+}
+
+function renderAlongamento(){
+  const seg = STRETCH_TIMELINE[stretchIdx];
+  const totalElapsed = stretchFinished ? STRETCH_TOTAL_SECONDS : elapsedStretchSeconds();
+  const pctDone = Math.round((totalElapsed/STRETCH_TOTAL_SECONDS)*100);
+
+  const timerBody = stretchFinished ? `
+    <div class="stretch-finished-msg">✓ Rotina de 20 minutos concluída!</div>
+    <div class="stretch-controls">
+      <button class="stretch-btn primary" onclick="startStretch()" title="Refazer">↺</button>
+    </div>
+  ` : `
+    <div class="stretch-progress-label">Exercício ${stretchIdx+1} de ${STRETCH_TIMELINE.length}</div>
+    <div class="stretch-group-tag">${seg.grupo === 'Inferior' ? 'Membro inferior' : 'Membro superior'}</div>
+    <div class="stretch-current-name">${seg.nome}</div>
+    ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
+    <div class="stretch-clock">${formatMMSS(stretchRemaining)}</div>
+    <div class="stretch-meta-row">
+      <span class="stretch-tag">⏱ ${seg.duracao}s</span>
+      <span class="stretch-tag">🧰 ${seg.equipamento}</span>
+    </div>
+    <div class="stretch-instrucao">${seg.instrucao}</div>
+    <a class="stretch-video-link" href="${seg.videoUrl}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
+    <div class="stretch-controls">
+      <button class="stretch-btn" onclick="skipStretch(-1)" title="Anterior">⏮</button>
+      ${stretchRunning
+        ? `<button class="stretch-btn primary" onclick="pauseStretch()" title="Pausar">⏸</button>`
+        : `<button class="stretch-btn primary" onclick="startStretch()" title="Iniciar">▶</button>`}
+      <button class="stretch-btn" onclick="skipStretch(1)" title="Próximo">⏭</button>
+      <button class="stretch-btn ${stretchMuted?'muted':''}" onclick="toggleStretchMute()" title="Som">${stretchMuted?'🔇':'🔈'}</button>
+      <button class="stretch-btn" onclick="resetStretch()" title="Reiniciar">↺</button>
+    </div>
+  `;
+
+  const listRows = STRETCH_EXERCISES.map((ex, i) => {
+    const isActiveEx = !stretchFinished && seg.id === ex.id;
+    const durLabel = ex.sides ? `${ex.duracao}s cada lado` : `${ex.duracao}s`;
+    return `
+      <div class="stretch-item ${isActiveEx?'active':''}">
+        <div class="stretch-item-idx">${i+1}</div>
+        <div class="stretch-item-body">
+          <div class="stretch-item-name">${ex.nome}</div>
+          <div class="stretch-item-meta">${ex.grupo} · ${ex.equipamento}</div>
+        </div>
+        <div class="stretch-item-dur">${durLabel}</div>
+        <a class="stretch-item-video" href="${ex.videoUrl}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="stretch-timer-card">
+      <div class="stretch-total-track"><div class="stretch-total-fill" style="width:${pctDone}%"></div></div>
+      ${timerBody}
+    </div>
+    ${stretchRegistered
+      ? `<button class="finish-btn done-state" disabled style="margin:16px 0 18px;">✓ Treino registrado no calendário</button>`
+      : `<button class="finish-btn ready" onclick="registerStretchSession()" style="margin:16px 0 18px;">Registrar treino</button>`}
+    <div class="stretch-list-card">
+      <div class="stretch-list-title">Todos os alongamentos (${STRETCH_EXERCISES.length})</div>
+      ${listRows}
+    </div>
+    <div class="stretch-intro" style="margin:16px 0 0;">
+      Rotina de <strong>20 minutos</strong> pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores. O relógio toca um sinal sonoro ao final de cada exercício e avança automaticamente pro próximo.
+    </div>
+  `;
+}
+// =================== FIM ALONGAMENTO ====================
+
 function changeMonth(delta){
   calView.month += delta;
   if(calView.month < 0){ calView.month = 11; calView.year--; }
@@ -843,6 +1325,8 @@ function renderCalendar(){
         return `<div class="activity-pill bike">🚴 ${a.km ? a.km+'km' : 'Bike'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else if(a.type === 'tabata'){
         return `<div class="activity-pill tabata">🔥 Tabata<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      } else if(a.type === 'alongamento'){
+        return `<div class="activity-pill alongamento">🧘 Alongamento<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else {
         return `<div class="activity-pill esteira">🏃 ${a.km ? a.km+'km' : 'Esteira'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       }
@@ -868,6 +1352,7 @@ function renderCalendar(){
       <div class="legend-item"><div class="legend-dot bike"></div>Bike</div>
       <div class="legend-item"><div class="legend-dot tabata"></div>Tabata</div>
       <div class="legend-item"><div class="legend-dot esteira"></div>Esteira</div>
+      <div class="legend-item"><div class="legend-dot alongamento"></div>Alongamento</div>
     </div>
     <div class="cal-form">
       <label>Data</label>
@@ -878,6 +1363,7 @@ function renderCalendar(){
         <option value="bike">Bike</option>
         <option value="tabata">Tabata</option>
         <option value="esteira">Esteira</option>
+        <option value="alongamento">Alongamento</option>
       </select>
       <div id="act-km-wrap" style="display:none;align-items:center;gap:6px;">
         <label>Km</label>
@@ -924,6 +1410,16 @@ async function loadState(){
         state.activities[key] = JSON.parse(JSON.stringify(SEED_ACTIVITIES[key]));
       }
     });
+    // v4: as sessões 1 (Treino A) e 2 (Treino B) do ciclo 1 já foram feitas
+    // (registradas no calendário do iPhone em 05/07 e 09/07/2026) — marca
+    // ambas como concluídas, com todos os exercícios do template checados.
+    if(state.seededVersion < 4){
+      for(let i=0;i<2;i++){
+        state.completed[i] = true;
+        state.checks[i] = state.checks[i].map(() => true);
+      }
+      if(state.selected < 2) state.selected = 2;
+    }
     state.seededVersion = CURRENT_SEED_VERSION;
     await saveState();
   }
@@ -993,7 +1489,7 @@ function completeSession(i){
 const MONTH_ABBR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
 function computeMonthStats(year, month){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0;
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0;
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -1004,10 +1500,11 @@ function computeMonthStats(year, month){
       else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); }
       else if(a.type === 'tabata'){ tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); }
+      else if(a.type === 'alongamento'){ alongamento++; }
     });
   });
 
-  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm};
+  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento};
 }
 
 function renderMonthStats(){
@@ -1020,8 +1517,9 @@ function renderMonthStats(){
     ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+    ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
   `;
-  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount) > 0;
+  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount + s.alongamento) > 0;
 
   return `
     <div class="cal-header" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">
@@ -1038,8 +1536,8 @@ function renderMonthStats(){
 }
 
 function computeStats(year){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0;
-  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0}));
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0;
+  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0, alongamento:0}));
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -1051,10 +1549,11 @@ function computeStats(year){
       else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); monthly[mi].bike++; }
       else if(a.type === 'tabata'){ tabata++; monthly[mi].tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); monthly[mi].esteira++; }
+      else if(a.type === 'alongamento'){ alongamento++; monthly[mi].alongamento++; }
     });
   });
 
-  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, monthly};
+  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, monthly};
 }
 
 function renderDashboard(){
@@ -1066,6 +1565,7 @@ function renderDashboard(){
     {key:'bike', total: s.bikeCount, legendClass:'bike', label:'Bike'},
     {key:'tabata', total: s.tabata, legendClass:'tabata', label:'Tabata'},
     {key:'esteira', total: s.esteiraCount, legendClass:'esteira', label:'Esteira'},
+    {key:'alongamento', total: s.alongamento, legendClass:'alongamento', label:'Alongamento'},
   ];
   const activeCats = CATS.filter(c => c.total > 0);
 
@@ -1077,6 +1577,7 @@ function renderDashboard(){
     ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+    ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
   `;
 
   const legendHtml = activeCats.length === 0 ? '' : activeCats.map(c =>
@@ -1210,7 +1711,7 @@ function render(){
           <input class="ex-weight-input" type="text" value="${currentWeight.replace(/"/g,'&quot;')}"
             onchange="updateWeight('${ex.nome.replace(/'/g,"\\'")}', this.value)" />
         </div>
-        <a class="ex-video" href="${youtubeLink(ex.nome)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
+        <a class="ex-video" href="${exerciseVideoLink(ex.nome)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
       </div>
     `;
     }).join('');
@@ -1248,12 +1749,13 @@ function render(){
     <div class="tabs">
       <button class="tab-btn ${activeTab==='calendario'?'active':''}" onclick="setTab('calendario')">Calendário</button>
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
+      <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
     </div>
 
     ${activeTab === 'calendario' ? `
       ${renderDashboard()}
       <div class="cal-card">${renderCalendar()}</div>
-    ` : `
+    ` : activeTab === 'musculacao' ? `
       <div class="progress-card">
         <div class="progress-top">
           <div class="progress-num">${doneCount}<span> / ${TOTAL} treinos</span></div>
@@ -1265,7 +1767,7 @@ function render(){
       <div class="trilha-scroll">${trilhaHtml}</div>
 
       <div class="session-card">${bodyHtml}</div>
-    `}
+    ` : renderAlongamento()}
   `;
 }
 
