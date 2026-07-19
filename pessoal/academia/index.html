@@ -365,17 +365,17 @@
   }
 
   /* abas */
-  .tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .tabs{display:flex;gap:6px;margin-bottom:20px;}
   .tab-btn{
     flex:1;
-    padding:11px;
+    padding:10px 4px;
     border-radius:10px;
     border:1px solid var(--border);
     background:var(--surface-2);
     color:var(--text-muted);
     font-family:'Inter', sans-serif;
     font-weight:600;
-    font-size:14px;
+    font-size:12.5px;
     cursor:pointer;
   }
   .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -420,6 +420,11 @@
   .legend-dot.alongamento{background:#5c5cc4;}
   .stat-box.alongamento .stat-num{color:#5c5cc4;}
   .chart-bar.alongamento{background:#5c5cc4;}
+
+  .activity-pill.abdominal{background:#fbe0e6;color:#b8315f;}
+  .legend-dot.abdominal{background:#d84a75;}
+  .stat-box.abdominal .stat-num{color:#d84a75;}
+  .chart-bar.abdominal{background:#d84a75;}
 
   /* alongamento tab */
   .stretch-intro{
@@ -999,11 +1004,11 @@ const STRETCH_EXERCISES = [
     instrucao:'Fique de frente pra mesa e apoie a ponta do pé na quina dela, mantendo o calcanhar no chão. Incline o corpo à frente sem dobrar o joelho de apoio, até sentir o alongamento na panturrilha.',
     videoQuery:'alongamento de panturrilha em pé',
     videoUrl:'https://www.youtube.com/watch?v=vPUJae2zN80' },
-  { id:'isquio-mesa', nome:'Isquiotibiais com a perna apoiada na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:75, sides:true,
+  { id:'isquio-mesa', nome:'Isquiotibiais com a perna apoiada na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:60, sides:true,
     instrucao:'Apoie o calcanhar em cima da mesa com a perna esticada e o joelho da perna de apoio levemente flexionado. Mantenha a coluna reta e incline o quadril à frente (não a lombar) até sentir o alongamento atrás da coxa.',
     videoQuery:'alongamento isquiotibiais perna apoiada em superfície alta',
     videoUrl:'https://www.youtube.com/watch?v=7F1jXnsM_8Y' },
-  { id:'isquio-elastico', nome:'Isquiotibiais deitado com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m) + colchonete', duracao:75, sides:true,
+  { id:'isquio-elastico', nome:'Isquiotibiais deitado com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m) + colchonete', duracao:60, sides:true,
     instrucao:'Deitado de costas no colchonete, passe o elástico aberto na sola do pé. Com a perna esticada, puxe suavemente em direção ao peito, mantendo a outra perna esticada ou apoiada no chão.',
     videoQuery:'alongamento isquiotibiais deitado com faixa elástica',
     videoUrl:'https://www.youtube.com/watch?v=oH8NrbkSEtw' },
@@ -1030,7 +1035,11 @@ const STRETCH_EXERCISES = [
   { id:'peitoral', nome:'Peitoral com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
     instrucao:'Segure o elástico aberto com as duas mãos atrás das costas, braços esticados. Aproxime as escápulas e abra levemente o peito.',
     videoQuery:'alongamento de peitoral com elástico atrás das costas',
-    videoUrl:'https://www.youtube.com/watch?v=xTqlaM598ew' },
+    videoUrl:'https://www.youtube.com/watch?v=BJbecSYWQRg' },
+  { id:'peitoral-parede', nome:'Peitoral na parede/batente', grupo:'Superior', equipamento:'Parede ou batente de porta', duracao:45, sides:true,
+    instrucao:'Encoste o antebraço e a palma da mão na parede (ou batente de porta), cotovelo na altura do ombro, formando ~90°. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do ombro/peito.',
+    videoQuery:'alongamento de peitoral na parede batente de porta',
+    videoUrl:'https://www.youtube.com/watch?v=6Be-s3RwVp4' },
   { id:'pescoco', nome:'Pescoço / trapézio', grupo:'Superior', equipamento:'Nenhum', duracao:30, sides:true,
     instrucao:'Sentado, incline a cabeça para um lado levando a orelha em direção ao ombro. Use a mão do mesmo lado para uma leve pressão adicional, sem forçar.',
     videoQuery:'alongamento de pescoço trapézio superior',
@@ -1042,11 +1051,19 @@ const STRETCH_EXERCISES = [
   { id:'lat', nome:'Grande dorsal (lateral do tronco) com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
     instrucao:'Segure o elástico com as duas mãos, braços esticados acima da cabeça. Incline o tronco levemente para um lado e depois para o outro, sentindo o alongamento na lateral das costas.',
     videoQuery:'alongamento grande dorsal lateral do tronco',
-    videoUrl:'https://www.youtube.com/shorts/B40cXuhLm4Y' },
-  { id:'trapezio-bolinha', nome:'Liberação do trapézio superior com bolinha', grupo:'Superior', equipamento:'Bolinha (15cm)', duracao:60, sides:true,
-    instrucao:'Deitado no colchonete ou encostado na parede, posicione a bolinha entre a omoplata e o pescoço e faça pequenos movimentos de pressão, sem prender a respiração.',
-    videoQuery:'liberação miofascial trapézio superior com bolinha',
-    videoUrl:'https://www.youtube.com/watch?v=jlBrLQe5oyM' },
+    videoUrl:'https://www.youtube.com/watch?v=VkYO-HrDeV0' },
+  { id:'quadriceps', nome:'Quadríceps em pé', grupo:'Inferior', equipamento:'Parede ou apoio (opcional)', duracao:45, sides:true,
+    instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
+    videoQuery:'alongamento de quadríceps em pé unilateral',
+    videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
+  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:45, sides:true,
+    instrucao:'Sentado, levante o pé do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
+    videoQuery:'mobilidade de tornozelo círculos alfabeto exercício leve',
+    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
+  { id:'tornozelo-elastico', nome:'Dorsiflexão de tornozelo com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m)', duracao:45, sides:true,
+    instrucao:'Sentado com a perna esticada, prenda o elástico numa base fixa (ou peça ajuda) e passe-o pelo peito do pé. Puxe a ponta do pé suavemente em direção à canela (dorsiflexão), sem forçar. Vá com calma nessa articulação, especialmente do lado que fraturou.',
+    videoQuery:'alongamento dorsiflexão de tornozelo com elástico sentado',
+    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
 ];
 
 function buildStretchTimeline(){
@@ -1102,17 +1119,39 @@ function getAudioCtx(){
     audioCtx = new Ctx();
     unlockAudioContext(audioCtx);
   }
-  if(audioCtx.state === 'suspended'){
-    audioCtx.resume();
-  }
   return audioCtx;
 }
 
-function beep(freq, dur, delay){
+// iOS/Safari (especialmente em PWA "Adicionar à Tela de Início" no iOS 26)
+// costuma suspender o AudioContext se ele não foi criado/retomado dentro de
+// um gesto direto do usuário, e pode suspendê-lo de novo ao voltar de segundo
+// plano. Por isso: (1) criamos/destravamos o contexto no primeiro toque em
+// QUALQUER lugar da página, não só no botão de play; (2) toda vez que o app
+// volta a ficar visível, tentamos retomar o contexto; (3) beep() sempre
+// aguarda o resume() terminar antes de agendar o som.
+let audioUnlockedOnce = false;
+function unlockAudioOnFirstGesture(){
+  if(audioUnlockedOnce) return;
+  audioUnlockedOnce = true;
+  const ctx = getAudioCtx();
+  if(ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+}
+['touchend','click','pointerdown'].forEach(evt=>{
+  document.addEventListener(evt, unlockAudioOnFirstGesture, {once:true, passive:true});
+});
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended'){
+    audioCtx.resume().catch(()=>{});
+  }
+});
+
+async function beep(freq, dur, delay){
   if(stretchMuted) return;
   try{
     const ctx = getAudioCtx();
-    if(ctx.state === 'suspended') ctx.resume();
+    if(ctx.state === 'suspended'){
+      await ctx.resume();
+    }
     const t0 = ctx.currentTime + (delay||0);
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -1331,11 +1370,299 @@ function renderAlongamento(){
       ${listRows}
     </div>
     <div class="stretch-intro" style="margin:16px 0 0;">
-      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores. São <strong>20 minutos</strong> de alongamento com <strong>10 segundos de descanso</strong> entre um exercício e o próximo (± 23:30 no total). O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
+      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, a mesa de 87cm, os 2 pesos de 3kg e as bolinhas de 15cm. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo e lombar), que está encurtada — depois fecha com alongamentos de membros superiores, peitoral, quadríceps e mobilidade de tornozelo. Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
+      <br><br>
+      ⚠️ <strong>Tornozelo direito fraturado:</strong> os exercícios de mobilidade/dorsiflexão de tornozelo são bem leves de propósito. Só faça essa parte se o médico ou fisioterapeuta já tiver liberado movimentação ativa da articulação, vá com amplitude reduzida no lado direito e pare na hora se sentir dor (desconforto leve é esperado, dor não).
     </div>
   `;
 }
 // =================== FIM ALONGAMENTO ====================
+
+// ===================== ABDOMINAL =====================
+// Circuito de abdômen no chão, ~20 minutos, com 30 segundos de descanso
+// entre um exercício e o próximo. Segue o mesmo modelo de timer/registro da
+// aba Alongamento. Tudo é feito deitado/apoiado no colchonete — nenhum
+// exercício exige apoiar peso em pé sobre o tornozelo direito.
+const ABS_EXERCISES = [
+  { id:'abs-respiracao', nome:'Respiração diafragmática e ativação do core', grupo:'Aquecimento', equipamento:'Colchonete', duracao:30, sides:false,
+    instrucao:'Deitado de costas, joelhos dobrados e pés no chão. Inspire pelo nariz enchendo a barriga e, ao expirar, contraia levemente o abdômen como se fosse tossir. Serve de aquecimento e ativação antes do circuito.',
+    videoQuery:'ativação do core respiração diafragmática deitado' },
+  { id:'abs-prancha', nome:'Prancha frontal', grupo:'Estabilização', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Apoie os antebraços e as pontas dos pés no chão, corpo reto da cabeça aos calcanhares, sem deixar o quadril cair nem subir demais. Contraia o abdômen e o glúteo e respire de forma controlada.',
+    videoQuery:'prancha frontal isométrica execução correta',
+    videoUrl:'https://www.youtube.com/watch?v=OnVIGDpnMow' },
+  { id:'abs-prancha-lateral', nome:'Prancha lateral', grupo:'Oblíquos', equipamento:'Colchonete', duracao:30, sides:true,
+    instrucao:'Apoie o antebraço e a lateral do pé no chão, corpo alinhado dos ombros aos tornozelos, quadril elevado do chão. Se sentir o tornozelo de apoio reclamar, apoie os joelhos no chão em vez dos pés.',
+    videoQuery:'prancha lateral abdominal execução',
+    videoUrl:'https://www.youtube.com/watch?v=A0RGKVDnUok' },
+  { id:'abs-supra', nome:'Abdominal supra (crunch clássico)', grupo:'Reto abdominal', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado, joelhos dobrados e pés no chão, mãos atrás da cabeça sem puxar o pescoço. Eleve a cabeça e os ombros do chão contraindo o abdômen, e desça devagar.',
+    videoQuery:'abdominal supra crunch execução correta' },
+  { id:'abs-infra', nome:'Abdominal infra (elevação de pernas)', grupo:'Reto abdominal inferior', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, pernas esticadas (ou levemente flexionadas se sentir a lombar), eleve as pernas até 90° e desça sem encostar totalmente no chão. Mantenha a lombar apoiada no colchonete.',
+    videoQuery:'abdominal infra elevação de pernas execução' },
+  { id:'abs-bicicleta', nome:'Bicicleta (elbow-to-knee)', grupo:'Oblíquos', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado, mãos atrás da cabeça, leve o cotovelo em direção ao joelho oposto enquanto estica a outra perna, alternando os lados em ritmo controlado, como pedalando.',
+    videoQuery:'abdominal bicicleta elbow to knee execução' },
+  { id:'abs-deadbug', nome:'Dead bug', grupo:'Estabilização', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, braços esticados para cima e joelhos dobrados a 90°. Estenda o braço e a perna opostos em direção ao chão devagar, sem deixar a lombar arquear, e volte. Alterne os lados.',
+    videoQuery:'dead bug exercício abdominal execução' },
+  { id:'abs-toque-ombro', nome:'Prancha com toque no ombro', grupo:'Estabilização/Anti-rotação', equipamento:'Colchonete', duracao:45, sides:false,
+    instrucao:'Na posição de prancha alta (mãos no chão), toque o ombro oposto com uma mão de cada vez, mantendo o quadril o mais parado possível, sem balançar.',
+    videoQuery:'prancha com toque no ombro exercício abdominal' },
+  { id:'abs-russian-twist', nome:'Russian twist com peso de 3kg', grupo:'Oblíquos', equipamento:'Colchonete + peso de 3kg', duracao:60, sides:false,
+    instrucao:'Sentado, tronco levemente inclinado para trás e pés no chão (ou levantados, se conseguir manter o equilíbrio), segure o peso de 3kg com as duas mãos e gire o tronco de um lado para o outro, tocando o peso perto do quadril.',
+    videoQuery:'russian twist abdominal com peso execução' },
+  { id:'abs-canivete', nome:'Canivete (V-up com joelhos dobrados)', grupo:'Reto abdominal', equipamento:'Colchonete', duracao:45, sides:false,
+    instrucao:'Deitado, braços esticados atrás da cabeça. Suba o tronco e as pernas (joelhos podem ficar levemente dobrados) ao mesmo tempo, buscando tocar as mãos nos pés ou nas canelas, e desça controlado.',
+    videoQuery:'canivete v-up abdominal execução' },
+  { id:'abs-prancha-perna', nome:'Prancha com elevação de perna alternada', grupo:'Estabilização/Glúteo', equipamento:'Colchonete', duracao:30, sides:true,
+    instrucao:'Na posição de prancha frontal (antebraços no chão), eleve uma perna esticada alguns centímetros sem deixar o quadril girar, segure um instante e alterne.',
+    videoQuery:'prancha com elevação de perna alternada execução' },
+  { id:'abs-toe-touch', nome:'Toe touch crunch (toque alternado no tornozelo)', grupo:'Oblíquos', equipamento:'Colchonete', duracao:45, sides:false,
+    instrucao:'Deitado, joelhos dobrados a 90° com os pés no ar (ou apoiados, se preferir), eleve o tronco levemente e toque alternadamente um tornozelo e depois o outro, sem puxar o pescoço.',
+    videoQuery:'toe touch crunch abdominal execução' },
+  { id:'abs-bicicleta-bolinha', nome:'Bicicleta lenta com bolinha entre os joelhos', grupo:'Reto abdominal inferior', equipamento:'Colchonete + bolinha (15cm)', duracao:45, sides:false,
+    instrucao:'Deitado, prenda a bolinha entre os joelhos pra manter o alinhamento das pernas. Traga os joelhos em direção ao peito e estenda de volta devagar, num ritmo lento e controlado — ótimo pra reduzir impacto na região do quadril/tornozelo.',
+    videoQuery:'abdominal infra lento com bola entre os joelhos' },
+  { id:'abs-cobra', nome:'Extensão lombar suave (cobra) — desaquecimento', grupo:'Lombar', equipamento:'Colchonete', duracao:40, sides:false,
+    instrucao:'Deitado de bruços, apoie as mãos perto do peito e eleve o tronco suavemente, sem forçar, olhando para frente. Serve pra descomprimir a lombar depois do circuito de abdômen.',
+    videoQuery:'extensão lombar suave cobra alongamento pós abdominal' },
+];
+
+function buildAbsTimeline(){
+  const timeline = [];
+  ABS_EXERCISES.forEach(ex=>{
+    if(ex.sides){
+      timeline.push(Object.assign({}, ex, {lado:'Direita'}));
+      timeline.push(Object.assign({}, ex, {lado:'Esquerda'}));
+    } else {
+      timeline.push(Object.assign({}, ex, {lado:null}));
+    }
+  });
+  return timeline;
+}
+const ABS_TIMELINE = buildAbsTimeline();
+const ABS_REST_SECONDS = 30; // pausa entre um exercício e o próximo
+const ABS_TOTAL_SECONDS = ABS_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + (ABS_TIMELINE.length-1)*ABS_REST_SECONDS;
+
+function absVideoLink(seg){
+  return seg.videoUrl || youtubeLink(seg.videoQuery || seg.nome);
+}
+
+let absIdx = 0;
+let absRemaining = ABS_TIMELINE[0].duracao;
+let absRunning = false;
+let absFinished = false;
+let absRegistered = false;
+let absResting = false;
+let absRestRemaining = ABS_REST_SECONDS;
+let absInterval = null;
+
+function logAbsActivity(){
+  const now = new Date();
+  const key = toKey(now.getFullYear(), now.getMonth(), now.getDate());
+  if(!state.activities[key]) state.activities[key] = [];
+  state.activities[key].push({type:'abdominal', label:'Abdominal'});
+}
+
+function registerAbsSession(){
+  logAbsActivity();
+  absRegistered = true;
+  saveState();
+  render();
+}
+
+function startAbs(){
+  if(absFinished){
+    absIdx = 0;
+    absRemaining = ABS_TIMELINE[0].duracao;
+    absFinished = false;
+    absRegistered = false;
+    absResting = false;
+  }
+  absRunning = true;
+  getAudioCtx();
+  clearInterval(absInterval);
+  absInterval = setInterval(tickAbs, 1000);
+  render();
+}
+
+function pauseAbs(){
+  absRunning = false;
+  clearInterval(absInterval);
+  render();
+}
+
+function resetAbs(){
+  absRunning = false;
+  clearInterval(absInterval);
+  absIdx = 0;
+  absRemaining = ABS_TIMELINE[0].duracao;
+  absFinished = false;
+  absRegistered = false;
+  absResting = false;
+  render();
+}
+
+function tickAbs(){
+  if(absResting){
+    absRestRemaining--;
+    if(absRestRemaining <= 0){
+      absResting = false;
+      absIdx++;
+      absRemaining = ABS_TIMELINE[absIdx].duracao;
+      playRestEndBeep();
+    }
+    render();
+    return;
+  }
+  absRemaining--;
+  if(absRemaining <= 0){
+    if(absIdx < ABS_TIMELINE.length-1){
+      playSegmentEndBeep();
+      absResting = true;
+      absRestRemaining = ABS_REST_SECONDS;
+    } else {
+      clearInterval(absInterval);
+      absRunning = false;
+      absFinished = true;
+      playRoutineEndBeep();
+    }
+  }
+  render();
+}
+
+function skipAbs(delta){
+  if(absResting){
+    absResting = false;
+    if(delta > 0){
+      const newIdx = absIdx + 1;
+      if(newIdx >= ABS_TIMELINE.length) return;
+      absIdx = newIdx;
+    }
+    absRunning = false;
+    clearInterval(absInterval);
+    absRemaining = ABS_TIMELINE[absIdx].duracao;
+    absFinished = false;
+    render();
+    return;
+  }
+  const newIdx = absIdx + delta;
+  if(newIdx < 0 || newIdx >= ABS_TIMELINE.length) return;
+  absRunning = false;
+  clearInterval(absInterval);
+  absIdx = newIdx;
+  absRemaining = ABS_TIMELINE[absIdx].duracao;
+  absFinished = false;
+  render();
+}
+
+function toggleAbsMute(){
+  stretchMuted = !stretchMuted;
+  render();
+}
+
+function elapsedAbsSeconds(){
+  let elapsed = 0;
+  for(let i=0;i<absIdx;i++) elapsed += ABS_TIMELINE[i].duracao + ABS_REST_SECONDS;
+  if(absResting){
+    elapsed += ABS_TIMELINE[absIdx].duracao + (ABS_REST_SECONDS - absRestRemaining);
+  } else {
+    elapsed += (ABS_TIMELINE[absIdx].duracao - absRemaining);
+  }
+  return elapsed;
+}
+
+function renderAbdominal(){
+  const seg = ABS_TIMELINE[absIdx];
+  const totalElapsed = absFinished ? ABS_TOTAL_SECONDS : elapsedAbsSeconds();
+  const pctDone = Math.round((totalElapsed/ABS_TOTAL_SECONDS)*100);
+
+  const controlsHtml = `
+    <div class="stretch-controls">
+      <button class="stretch-btn" onclick="skipAbs(-1)" title="Anterior">⏮</button>
+      ${absRunning
+        ? `<button class="stretch-btn primary" onclick="pauseAbs()" title="Pausar">⏸</button>`
+        : `<button class="stretch-btn primary" onclick="startAbs()" title="Iniciar">▶</button>`}
+      <button class="stretch-btn" onclick="skipAbs(1)" title="Próximo">⏭</button>
+      <button class="stretch-btn ${stretchMuted?'muted':''}" onclick="toggleAbsMute()" title="Som">${stretchMuted?'🔇':'🔈'}</button>
+      <button class="stretch-btn" onclick="resetAbs()" title="Reiniciar">↺</button>
+    </div>
+  `;
+
+  let timerBody;
+  if(absFinished){
+    timerBody = `
+      <div class="stretch-finished-msg">✓ Circuito de abdômen concluído!</div>
+      <div class="stretch-controls">
+        <button class="stretch-btn primary" onclick="startAbs()" title="Refazer">↺</button>
+      </div>
+    `;
+  } else if(absResting){
+    const nextSeg = ABS_TIMELINE[absIdx+1];
+    timerBody = `
+      <div class="stretch-progress-label">Descanso</div>
+      <div class="stretch-group-tag">Próximo: ${nextSeg.nome}${nextSeg.lado ? ' — '+nextSeg.lado : ''}</div>
+      <div class="stretch-current-name">Descanso</div>
+      <div class="stretch-current-side">&nbsp;</div>
+      <div class="stretch-clock">${formatMMSS(absRestRemaining)}</div>
+      <div class="stretch-instrucao">Respire e prepare-se pro próximo exercício.</div>
+      ${controlsHtml}
+    `;
+  } else {
+    timerBody = `
+      <div class="stretch-progress-label">Exercício ${absIdx+1} de ${ABS_TIMELINE.length}</div>
+      <div class="stretch-group-tag">${seg.grupo}</div>
+      <div class="stretch-current-name">${seg.nome}</div>
+      ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
+      <div class="stretch-clock">${formatMMSS(absRemaining)}</div>
+      <div class="stretch-meta-row">
+        <span class="stretch-tag">⏱ ${seg.duracao}s</span>
+        <span class="stretch-tag">🧰 ${seg.equipamento}</span>
+      </div>
+      <div class="stretch-instrucao">${seg.instrucao}</div>
+      <a class="stretch-video-link" href="${absVideoLink(seg)}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
+      ${controlsHtml}
+    `;
+  }
+
+  const listRows = ABS_EXERCISES.map((ex, i) => {
+    const isActiveEx = !absFinished && seg.id === ex.id;
+    const durLabel = ex.sides ? `${ex.duracao}s cada lado` : `${ex.duracao}s`;
+    return `
+      <div class="stretch-item ${isActiveEx?'active':''}">
+        <div class="stretch-item-idx">${i+1}</div>
+        <div class="stretch-item-body">
+          <div class="stretch-item-name">${ex.nome}</div>
+          <div class="stretch-item-meta">${ex.grupo} · ${ex.equipamento}</div>
+        </div>
+        <div class="stretch-item-dur">${durLabel}</div>
+        <a class="stretch-item-video" href="${absVideoLink(ex)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="stretch-timer-card">
+      <div class="stretch-total-track"><div class="stretch-total-fill" style="width:${pctDone}%"></div></div>
+      ${timerBody}
+    </div>
+    ${absRegistered
+      ? `<button class="finish-btn done-state" disabled style="margin:16px 0 18px;">✓ Treino registrado no calendário</button>`
+      : `<button class="finish-btn ready" onclick="registerAbsSession()" style="margin:16px 0 18px;">Registrar treino</button>`}
+    <div class="stretch-list-card">
+      <div class="stretch-list-title">Todos os exercícios (${ABS_EXERCISES.length})</div>
+      ${listRows}
+    </div>
+    <div class="stretch-intro" style="margin:16px 0 0;">
+      Circuito de abdômen no chão (colchonete), com <strong>${Math.round(ABS_TOTAL_SECONDS/60)} minutos</strong> ao todo e <strong>30 segundos de descanso</strong> entre um exercício e o próximo. Nenhum exercício exige ficar em pé apoiado no tornozelo — tudo é feito deitado ou apoiado no chão. Alguns exercícios usam o peso de 3kg ou a bolinha de 15cm; o resto é só peso do corpo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
+      <br><br>
+      Alguns vídeos abrem uma busca no YouTube em vez de um vídeo específico — clique e escolha o resultado que parecer mais claro pra você.
+    </div>
+  `;
+}
+// =================== FIM ABDOMINAL ====================
 
 function changeMonth(delta){
   calView.month += delta;
@@ -1390,7 +1717,7 @@ function renderCalendar(){
     const acts = state.activities[key] || [];
     const pills = acts.map((a, idx) => {
       if(a.type === 'fullbody'){
-        return `<div class="activity-pill fullbody">🏋 ${a.label || 'Musculação'}</div>`;
+        return `<div class="activity-pill fullbody">🏋 ${a.label || 'Musculação'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else if(a.type === 'boxe'){
         return `<div class="activity-pill boxe">🥊 Boxe<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else if(a.type === 'bike'){
@@ -1399,6 +1726,8 @@ function renderCalendar(){
         return `<div class="activity-pill tabata">🔥 Tabata<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else if(a.type === 'alongamento'){
         return `<div class="activity-pill alongamento">🧘 Alongamento<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
+      } else if(a.type === 'abdominal'){
+        return `<div class="activity-pill abdominal">💥 Abdominal<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       } else {
         return `<div class="activity-pill esteira">🏃 ${a.km ? a.km+'km' : 'Esteira'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
       }
@@ -1425,6 +1754,7 @@ function renderCalendar(){
       <div class="legend-item"><div class="legend-dot tabata"></div>Tabata</div>
       <div class="legend-item"><div class="legend-dot esteira"></div>Esteira</div>
       <div class="legend-item"><div class="legend-dot alongamento"></div>Alongamento</div>
+      <div class="legend-item"><div class="legend-dot abdominal"></div>Abdominal</div>
     </div>
     <div class="cal-form">
       <label>Data</label>
@@ -1436,6 +1766,7 @@ function renderCalendar(){
         <option value="tabata">Tabata</option>
         <option value="esteira">Esteira</option>
         <option value="alongamento">Alongamento</option>
+        <option value="abdominal">Abdominal</option>
       </select>
       <div id="act-km-wrap" style="display:none;align-items:center;gap:6px;">
         <label>Km</label>
@@ -1561,7 +1892,7 @@ function completeSession(i){
 const MONTH_ABBR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
 function computeMonthStats(year, month){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0;
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0, abdominal=0;
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -1573,10 +1904,11 @@ function computeMonthStats(year, month){
       else if(a.type === 'tabata'){ tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); }
       else if(a.type === 'alongamento'){ alongamento++; }
+      else if(a.type === 'abdominal'){ abdominal++; }
     });
   });
 
-  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento};
+  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, abdominal};
 }
 
 function renderMonthStats(){
@@ -1590,8 +1922,9 @@ function renderMonthStats(){
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
     ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
+    ${s.abdominal > 0 ? `<div class="stat-box abdominal"><div class="stat-num">${s.abdominal}</div><div class="stat-label">Abdominal</div></div>` : ''}
   `;
-  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount + s.alongamento) > 0;
+  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount + s.alongamento + s.abdominal) > 0;
 
   return `
     <div class="cal-header" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">
@@ -1608,8 +1941,8 @@ function renderMonthStats(){
 }
 
 function computeStats(year){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0;
-  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0, alongamento:0}));
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0, abdominal=0;
+  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0, alongamento:0, abdominal:0}));
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -1622,10 +1955,11 @@ function computeStats(year){
       else if(a.type === 'tabata'){ tabata++; monthly[mi].tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); monthly[mi].esteira++; }
       else if(a.type === 'alongamento'){ alongamento++; monthly[mi].alongamento++; }
+      else if(a.type === 'abdominal'){ abdominal++; monthly[mi].abdominal++; }
     });
   });
 
-  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, monthly};
+  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, abdominal, monthly};
 }
 
 function renderDashboard(){
@@ -1638,6 +1972,7 @@ function renderDashboard(){
     {key:'tabata', total: s.tabata, legendClass:'tabata', label:'Tabata'},
     {key:'esteira', total: s.esteiraCount, legendClass:'esteira', label:'Esteira'},
     {key:'alongamento', total: s.alongamento, legendClass:'alongamento', label:'Alongamento'},
+    {key:'abdominal', total: s.abdominal, legendClass:'abdominal', label:'Abdominal'},
   ];
   const activeCats = CATS.filter(c => c.total > 0);
 
@@ -1650,6 +1985,7 @@ function renderDashboard(){
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
     ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
+    ${s.abdominal > 0 ? `<div class="stat-box abdominal"><div class="stat-num">${s.abdominal}</div><div class="stat-label">Abdominal</div></div>` : ''}
   `;
 
   const legendHtml = activeCats.length === 0 ? '' : activeCats.map(c =>
@@ -1822,6 +2158,7 @@ function render(){
       <button class="tab-btn ${activeTab==='calendario'?'active':''}" onclick="setTab('calendario')">Calendário</button>
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
       <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
+      <button class="tab-btn ${activeTab==='abdominal'?'active':''}" onclick="setTab('abdominal')">Abdominal</button>
     </div>
 
     ${activeTab === 'calendario' ? `
@@ -1839,7 +2176,7 @@ function render(){
       <div class="trilha-scroll">${trilhaHtml}</div>
 
       <div class="session-card">${bodyHtml}</div>
-    ` : renderAlongamento()}
+    ` : activeTab === 'alongamento' ? renderAlongamento() : renderAbdominal()}
   `;
 }
 
