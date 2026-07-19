@@ -283,8 +283,6 @@
     border-radius:99px;
     margin-bottom:2px;
     white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
     position:relative;
   }
   .activity-pill.fullbody{background:var(--accent-dim);color:#8a5a1c;}
@@ -292,11 +290,20 @@
   .activity-pill.bike{background:#dcefe9;color:#1f6e5a;}
   .activity-pill.tabata{background:#efe0f7;color:#6b3fa0;}
   .activity-pill.esteira{background:#dbe7f7;color:#2058a3;}
+  .activity-label{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    min-width:0;
+  }
   .activity-remove{
     cursor:pointer;
     margin-left:auto;
     font-weight:700;
-    opacity:.6;
+    opacity:.7;
+    flex-shrink:0;
+    padding:2px 5px 2px 3px;
+    min-width:16px;
+    text-align:center;
   }
   .activity-remove:hover{opacity:1;}
   .cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;}
@@ -1722,21 +1729,15 @@ function renderCalendar(){
     const isToday = key === todayKey;
     const acts = state.activities[key] || [];
     const pills = acts.map((a, idx) => {
-      if(a.type === 'fullbody'){
-        return `<div class="activity-pill fullbody">🏋 ${a.label || 'Musculação'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else if(a.type === 'boxe'){
-        return `<div class="activity-pill boxe">🥊 Boxe<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else if(a.type === 'bike'){
-        return `<div class="activity-pill bike">🚴 ${a.km ? a.km+'km' : 'Bike'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else if(a.type === 'tabata'){
-        return `<div class="activity-pill tabata">🔥 Tabata<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else if(a.type === 'alongamento'){
-        return `<div class="activity-pill alongamento">🧘 Alongamento<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else if(a.type === 'abdominal'){
-        return `<div class="activity-pill abdominal">💥 Abdominal<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      } else {
-        return `<div class="activity-pill esteira">🏃 ${a.km ? a.km+'km' : 'Esteira'}<span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
-      }
+      let cls, label;
+      if(a.type === 'fullbody'){ cls='fullbody'; label = `🏋 ${a.label || 'Musculação'}`; }
+      else if(a.type === 'boxe'){ cls='boxe'; label = `🥊 Boxe`; }
+      else if(a.type === 'bike'){ cls='bike'; label = `🚴 ${a.km ? a.km+'km' : 'Bike'}`; }
+      else if(a.type === 'tabata'){ cls='tabata'; label = `🔥 Tabata`; }
+      else if(a.type === 'alongamento'){ cls='alongamento'; label = `🧘 Alongamento`; }
+      else if(a.type === 'abdominal'){ cls='abdominal'; label = `💥 Abdominal`; }
+      else { cls='esteira'; label = `🏃 ${a.km ? a.km+'km' : 'Esteira'}`; }
+      return `<div class="activity-pill ${cls}"><span class="activity-label">${label}</span><span class="activity-remove" onclick="removeActivity('${key}',${idx})">×</span></div>`;
     }).join('');
     cells += `<div class="cal-cell ${isToday?'today':''}"><div class="cal-daynum">${d}</div>${pills}</div>`;
   }
