@@ -602,6 +602,20 @@
     flex-shrink:0;color:var(--text-faint);text-decoration:none;font-size:15px;padding:2px 4px;border-radius:6px;
   }
   .stretch-item-video:hover{color:var(--accent);background:var(--surface-2);}
+  .stretch-bloco-header{
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    font-weight:600;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    padding:14px 0 4px;
+    border-top:1px solid var(--border);
+  }
+  .stretch-bloco-header:first-child{border-top:none;padding-top:6px;}
+  .stretch-bloco-header .bloco-sub{color:var(--text-faint);font-weight:500;text-transform:none;letter-spacing:0;white-space:nowrap;}
+  .stretch-bloco-header + .stretch-item{border-top:none;}
 </style>
 </head>
 <body>
@@ -1031,85 +1045,116 @@ function exerciseVideoLink(nome){
 }
 
 // ===================== ALONGAMENTO =====================
-// Rotina de 20 minutos, foco em cadeia posterior (isquiotibiais, panturrilha,
-// glúteo e lombar) + alongamentos de membros superiores pro equilíbrio.
-// Equipamento disponível em casa: elástico circular (25cm), elástico aberto
-// (1,20m), colchonete, mesa de 87cm de altura, 2 pesos de 3kg, 2 bolinhas
-// plásticas macias de 15cm de diâmetro.
+// Rotina reestruturada em 5 blocos, na ordem fixa abaixo:
+// 1) Liberação & Tornozelo · 2) Em Pé (Tronco Superior & Pernas)
+// 3) Apoio em Mesa / Cadeira · 4) Ajoelhado / Solo · 5) Deitado / Solo (Finalização)
+// Equipamento usado: bolinha (15cm), parede/batente de porta, mesa de 87cm —
+// o resto é só peso do corpo. Exercícios com restBetweenSides:false fazem os
+// dois lados em sequência direta, sem pausa entre eles (só há descanso
+// depois de terminar os dois lados, antes do próximo exercício).
+const STRETCH_BLOCOS = {
+  1: 'Liberação & Tornozelo',
+  2: 'Em Pé (Tronco Superior & Pernas)',
+  3: 'Apoio em Mesa / Cadeira',
+  4: 'Ajoelhado / Solo',
+  5: 'Deitado / Solo (Finalização)',
+};
+
 const STRETCH_EXERCISES = [
-  { id:'panturrilha', nome:'Panturrilha na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:45, sides:true,
-    instrucao:'Fique de frente pra mesa e apoie a ponta do pé na quina dela, mantendo o calcanhar no chão. Incline o corpo à frente sem dobrar o joelho de apoio, até sentir o alongamento na panturrilha.',
-    videoQuery:'alongamento de panturrilha em pé',
-    videoUrl:'https://www.youtube.com/watch?v=vPUJae2zN80' },
-  { id:'isquio-mesa', nome:'Isquiotibiais com a perna apoiada na mesa', grupo:'Inferior', equipamento:'Mesa (87cm)', duracao:60, sides:true,
-    instrucao:'Apoie o calcanhar em cima da mesa com a perna esticada e o joelho da perna de apoio levemente flexionado. Mantenha a coluna reta e incline o quadril à frente (não a lombar) até sentir o alongamento atrás da coxa.',
-    videoQuery:'alongamento isquiotibiais perna apoiada em superfície alta',
-    videoUrl:'https://www.youtube.com/watch?v=7F1jXnsM_8Y' },
-  { id:'gluteo', nome:'Alongamento de glúteo (figura 4)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
-    instrucao:'Deitado de costas, cruze o tornozelo sobre o joelho da perna oposta formando um "4". Segure atrás da coxa da perna apoiada no chão e puxe suavemente em direção ao peito.',
-    videoQuery:'alongamento glúteo figura 4 deitado',
-    videoUrl:'https://www.youtube.com/watch?v=ddlwrFQ7Gl4' },
-  { id:'adutor', nome:'Adutor sentado (borboleta)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Sentado, junte as solas dos pés e deixe os joelhos caírem para os lados. Com a coluna reta, incline levemente o tronco à frente até sentir o alongamento na virilha/parte interna da coxa.',
-    videoQuery:'alongamento adutor borboleta sentado',
-    videoUrl:'https://www.youtube.com/watch?v=Kv_67CmMY9Y' },
-  { id:'lombar', nome:'Lombar — joelhos ao peito', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Deitado de costas, abrace os dois joelhos e puxe suavemente em direção ao peito, mantendo a lombar apoiada no chão.',
-    videoQuery:'alongamento lombar joelhos no peito deitado',
-    videoUrl:'https://www.youtube.com/watch?v=rLDqCqdHXrY' },
-  { id:'pe-bolinha', nome:'Liberação miofascial da sola do pé', grupo:'Inferior', equipamento:'Bolinha (15cm)', duracao:45, sides:true,
+  { id:'pe-bolinha', bloco:1, nome:'Liberação Sola do Pé', grupo:STRETCH_BLOCOS[1], equipamento:'Bolinha (15cm)', duracao:30, sides:true, restBetweenSides:false,
     instrucao:'Sentado ou em pé com apoio, coloque a bolinha sob a sola do pé e role com pressão moderada, do calcanhar até os dedos.',
     videoQuery:'liberação miofascial sola do pé com bolinha',
     videoUrl:'https://www.youtube.com/watch?v=rR_RTft3P9I' },
-  { id:'torcao', nome:'Torção de coluna deitada', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
-    instrucao:'Deitado de costas com os braços abertos, leve um joelho para o lado oposto do corpo mantendo os dois ombros no chão. Olhe para o lado contrário ao da perna.',
-    videoQuery:'alongamento torção de coluna deitado',
-    videoUrl:'https://www.youtube.com/watch?v=4umc3BMCGk0' },
-  { id:'quadriceps', nome:'Quadríceps em pé', grupo:'Inferior', equipamento:'Parede ou apoio (opcional)', duracao:45, sides:true,
-    instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
-    videoQuery:'alongamento de quadríceps em pé unilateral',
-    videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
-  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo direito (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:60, sides:false,
-    instrucao:'Sentado, levante o pé direito do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
+  { id:'tornozelo-mobilidade', bloco:1, nome:'Mobilidade de Tornozelo', grupo:STRETCH_BLOCOS[1], equipamento:'Nenhum', duracao:60, sides:false,
+    instrucao:'Sentado, levante um pé do chão e desenhe círculos lentos com o tornozelo nos dois sentidos por cerca de 30 segundos (ou "escreva" o alfabeto no ar com a ponta do pé), depois troque de pé e repita. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
     videoQuery:'mobilidade de tornozelo círculos alfabeto exercício leve',
-    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
-  { id:'peitoral-parede', nome:'Peitoral na parede/batente', grupo:'Superior', equipamento:'Parede ou batente de porta', duracao:45, sides:true,
-    instrucao:'Encoste o antebraço e a palma da mão na parede (ou batente de porta), cotovelo na altura do ombro, formando ~90°. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do ombro/peito.',
-    videoQuery:'alongamento de peitoral na parede batente de porta',
-    videoUrl:'https://www.youtube.com/watch?v=6Be-s3RwVp4' },
-  { id:'pescoco', nome:'Pescoço / trapézio', grupo:'Superior', equipamento:'Nenhum', duracao:30, sides:true,
+    videoUrl:'https://www.youtube.com/watch?v=h7HR4Bpc2_k' },
+  { id:'pescoco', bloco:2, nome:'Pescoço / Trapézio', grupo:STRETCH_BLOCOS[2], equipamento:'Nenhum', duracao:30, sides:true, restBetweenSides:false,
     instrucao:'Sentado, incline a cabeça para um lado levando a orelha em direção ao ombro. Use a mão do mesmo lado para uma leve pressão adicional, sem forçar.',
     videoQuery:'alongamento de pescoço trapézio superior',
     videoUrl:'https://www.youtube.com/watch?v=EZN78jMP6Rw' },
-  { id:'triceps', nome:'Tríceps / ombro', grupo:'Superior', equipamento:'Nenhum', duracao:30, sides:true,
+  { id:'biceps', bloco:2, nome:'Bíceps / Antebraço / Punhos', grupo:STRETCH_BLOCOS[2], equipamento:'Parede', duracao:60, sides:true, restBetweenSides:false,
+    instrucao:'Encoste a palma da mão na parede, dedos apontando para trás, braço esticado na altura do ombro. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do braço/antebraço/punho.',
+    videoQuery:'alongamento de bíceps antebraço punho na parede',
+    videoUrl:'https://www.youtube.com/shorts/1CJCTfULu30' },
+  { id:'triceps', bloco:2, nome:'Tríceps / Ombro', grupo:STRETCH_BLOCOS[2], equipamento:'Nenhum', duracao:45, sides:true, restBetweenSides:false,
     instrucao:'Leve um braço atrás da cabeça com o cotovelo apontando para cima. Use a outra mão para empurrar suavemente o cotovelo, sem forçar o pescoço.',
     videoQuery:'alongamento de tríceps atrás da cabeça',
     videoUrl:'https://www.youtube.com/watch?v=hVlYfDablao' },
-  { id:'biceps', nome:'Bíceps / antebraço na parede', grupo:'Superior', equipamento:'Parede', duracao:30, sides:true,
-    instrucao:'Encoste a palma da mão na parede, dedos apontando para trás, braço esticado na altura do ombro. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do braço/antebraço.',
-    videoQuery:'alongamento de bíceps antebraço na parede',
-    videoUrl:'https://www.youtube.com/watch?v=WNIayC1JMxE' },
-  { id:'lat', nome:'Grande dorsal (lateral do tronco) com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
-    instrucao:'Segure o elástico com as duas mãos, braços esticados acima da cabeça. Incline o tronco levemente para um lado e depois para o outro, sentindo o alongamento na lateral das costas.',
-    videoQuery:'alongamento grande dorsal lateral do tronco',
-    videoUrl:'https://www.youtube.com/watch?v=VkYO-HrDeV0' },
+  { id:'peitoral-parede', bloco:2, nome:'Peitoral na Parede', grupo:STRETCH_BLOCOS[2], equipamento:'Parede ou batente de porta', duracao:45, sides:true, restBetweenSides:false,
+    instrucao:'Encoste o antebraço e a palma da mão na parede (ou batente de porta), cotovelo na altura do ombro, formando ~90°. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do ombro/peito.',
+    videoQuery:'alongamento de peitoral na parede batente de porta',
+    videoUrl:'https://www.youtube.com/watch?v=6Be-s3RwVp4' },
+  { id:'lat', bloco:2, nome:'Grande Dorsal', grupo:STRETCH_BLOCOS[2], equipamento:'Parede ou apoio (opcional)', duracao:45, sides:true, restBetweenSides:false,
+    instrucao:'Em pé, eleve um braço acima da cabeça e incline o tronco para o lado oposto, alongando a lateral das costas (grande dorsal). Apoie-se numa parede ou batente se precisar de equilíbrio.',
+    videoQuery:'alongamento grande dorsal lateral do tronco em pé',
+    videoUrl:'https://www.youtube.com/watch?v=SHAh9qyuQYk' },
+  { id:'quadriceps', bloco:2, nome:'Quadríceps em Pé', grupo:STRETCH_BLOCOS[2], equipamento:'Parede ou apoio (opcional)', duracao:60, sides:true,
+    instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
+    videoQuery:'alongamento de quadríceps em pé unilateral',
+    videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
+  { id:'isquio-cruzado', bloco:2, nome:'Isquiotibiais (Perna Cruzada)', grupo:STRETCH_BLOCOS[2], equipamento:'Nenhum', duracao:45, sides:true,
+    instrucao:'Em pé, cruze uma perna na frente da outra (tornozelos próximos) e incline o tronco à frente a partir do quadril, mantendo as pernas esticadas, até sentir o alongamento atrás da coxa da perna da frente. Apoie-se em algo se precisar de equilíbrio.',
+    videoQuery:'alongamento isquiotibiais em pé pernas cruzadas' },
+  { id:'tfl-lateral', bloco:2, nome:'Lateral da Coxa (TFL)', grupo:STRETCH_BLOCOS[2], equipamento:'Nenhum', duracao:45, sides:true,
+    instrucao:'Em pé, cruze uma perna por trás da outra e incline o tronco para o lado da perna de trás, empurrando o quadril na direção oposta, até sentir o alongamento na lateral da coxa (trato iliotibial/TFL).',
+    videoQuery:'alongamento TFL trato iliotibial em pé',
+    videoUrl:'https://www.youtube.com/shorts/s_tp1a_yZFI' },
+  { id:'adutor-lateral', bloco:2, nome:'Adutor Lateral', grupo:STRETCH_BLOCOS[2], equipamento:'Nenhum', duracao:60, sides:true,
+    instrucao:'Em pé com as pernas bem afastadas, transfira o peso pra um lado flexionando esse joelho (agachamento lateral), mantendo a outra perna esticada, até sentir o alongamento na virilha/parte interna da coxa esticada.',
+    videoQuery:'alongamento adutor lateral em pé agachamento cossaco',
+    videoUrl:'https://www.youtube.com/shorts/bdFNKOjDS0U' },
+  { id:'panturrilha', bloco:3, nome:'Panturrilha na Mesa', grupo:STRETCH_BLOCOS[3], equipamento:'Mesa (87cm)', duracao:45, sides:true,
+    instrucao:'Fique de frente pra mesa e apoie a ponta do pé na quina dela, mantendo o calcanhar no chão. Incline o corpo à frente sem dobrar o joelho de apoio, até sentir o alongamento na panturrilha.',
+    videoQuery:'alongamento de panturrilha em pé',
+    videoUrl:'https://www.youtube.com/watch?v=UwZql3MUeX0' },
+  { id:'isquio-mesa', bloco:3, nome:'Isquiotibiais (Perna na Mesa)', grupo:STRETCH_BLOCOS[3], equipamento:'Mesa (87cm)', duracao:60, sides:true,
+    instrucao:'Apoie o calcanhar em cima da mesa com a perna esticada e o joelho da perna de apoio levemente flexionado. Mantenha a coluna reta e incline o quadril à frente (não a lombar) até sentir o alongamento atrás da coxa.',
+    videoQuery:'alongamento isquiotibiais perna apoiada em superfície alta',
+    videoUrl:'https://www.youtube.com/watch?v=7F1jXnsM_8Y' },
+  { id:'flexor-quadril', bloco:4, nome:'Flexor do Quadril / Psoas', grupo:STRETCH_BLOCOS[4], equipamento:'Colchonete', duracao:45, sides:true,
+    instrucao:'Ajoelhado com um joelho no colchonete e o outro pé à frente, apoiado no chão (afundo baixo, sem precisar ficar de pé nem apoiar peso no tornozelo). Empurre o quadril suavemente à frente mantendo o tronco ereto, até sentir o alongamento na frente do quadril/coxa da perna de trás.',
+    videoQuery:'alongamento flexor de quadril ajoelhado afundo baixo',
+    videoUrl:'https://www.youtube.com/watch?v=LkEC8QO0ITk' },
+  { id:'gluteo', bloco:5, nome:'Alongamento de Glúteo', grupo:STRETCH_BLOCOS[5], equipamento:'Colchonete', duracao:60, sides:true,
+    instrucao:'Deitado de costas, cruze o tornozelo sobre o joelho da perna oposta formando um "4". Segure atrás da coxa da perna apoiada no chão e puxe suavemente em direção ao peito.',
+    videoQuery:'alongamento glúteo figura 4 deitado',
+    videoUrl:'https://www.youtube.com/watch?v=ddlwrFQ7Gl4' },
+  { id:'lombar', bloco:5, nome:'Lombar (Joelhos ao Peito)', grupo:STRETCH_BLOCOS[5], equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, abrace os dois joelhos e puxe suavemente em direção ao peito, mantendo a lombar apoiada no chão.',
+    videoQuery:'alongamento lombar joelhos no peito deitado',
+    videoUrl:'https://www.youtube.com/watch?v=rLDqCqdHXrY' },
+  { id:'torcao', bloco:5, nome:'Torção da Coluna Deitada', grupo:STRETCH_BLOCOS[5], equipamento:'Colchonete', duracao:45, sides:true,
+    instrucao:'Deitado de costas com os braços abertos, leve um joelho para o lado oposto do corpo mantendo os dois ombros no chão. Olhe para o lado contrário ao da perna.',
+    videoQuery:'alongamento torção de coluna deitado',
+    videoUrl:'https://www.youtube.com/watch?v=2d18uMChtLY' },
 ];
+
+function stretchVideoLink(seg){
+  return seg.videoUrl || youtubeLink(seg.videoQuery || seg.nome);
+}
+
+const REST_SECONDS = 10; // descanso padrão entre segmentos (0 quando restBetweenSides:false liga os 2 lados do mesmo exercício em sequência)
 
 function buildStretchTimeline(){
   const timeline = [];
   STRETCH_EXERCISES.forEach(ex=>{
     if(ex.sides){
-      timeline.push(Object.assign({}, ex, {lado:'Direita'}));
-      timeline.push(Object.assign({}, ex, {lado:'Esquerda'}));
+      const noRestBetween = ex.restBetweenSides === false;
+      timeline.push(Object.assign({}, ex, {lado:'Direita', restAfter: noRestBetween ? 0 : REST_SECONDS}));
+      timeline.push(Object.assign({}, ex, {lado:'Esquerda', restAfter: REST_SECONDS}));
     } else {
-      timeline.push(Object.assign({}, ex, {lado:null}));
+      timeline.push(Object.assign({}, ex, {lado:null, restAfter: REST_SECONDS}));
     }
   });
   return timeline;
 }
 const STRETCH_TIMELINE = buildStretchTimeline();
-const REST_SECONDS = 10; // descanso entre um exercício e o próximo
-const STRETCH_TOTAL_SECONDS = STRETCH_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + (STRETCH_TIMELINE.length-1)*REST_SECONDS;
+const STRETCH_TOTAL_SECONDS = STRETCH_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + STRETCH_TIMELINE.slice(0,-1).reduce((sum,s)=>sum+s.restAfter,0);
+
+function stretchBlocoSubtotal(blocoNum){
+  return STRETCH_TIMELINE.filter(s=>s.bloco===blocoNum).reduce((sum,s)=>sum+s.duracao+s.restAfter,0);
+}
 
 function formatMMSS(totalSeconds){
   const t = Math.max(0, totalSeconds);
@@ -1338,8 +1383,14 @@ function tickStretch(){
   if(stretchRemaining <= 0){
     if(stretchIdx < STRETCH_TIMELINE.length-1){
       playSegmentEndBeep();
-      stretchResting = true;
-      stretchRestRemaining = REST_SECONDS;
+      const rest = STRETCH_TIMELINE[stretchIdx].restAfter;
+      if(rest > 0){
+        stretchResting = true;
+        stretchRestRemaining = rest;
+      } else {
+        stretchIdx++;
+        stretchRemaining = STRETCH_TIMELINE[stretchIdx].duracao;
+      }
     } else {
       clearInterval(stretchInterval);
       stretchRunning = false;
@@ -1382,9 +1433,10 @@ function toggleStretchMute(){
 
 function elapsedStretchSeconds(){
   let elapsed = 0;
-  for(let i=0;i<stretchIdx;i++) elapsed += STRETCH_TIMELINE[i].duracao + REST_SECONDS;
+  for(let i=0;i<stretchIdx;i++) elapsed += STRETCH_TIMELINE[i].duracao + STRETCH_TIMELINE[i].restAfter;
   if(stretchResting){
-    elapsed += STRETCH_TIMELINE[stretchIdx].duracao + (REST_SECONDS - stretchRestRemaining);
+    const restTotal = STRETCH_TIMELINE[stretchIdx].restAfter;
+    elapsed += STRETCH_TIMELINE[stretchIdx].duracao + (restTotal - stretchRestRemaining);
   } else {
     elapsed += (STRETCH_TIMELINE[stretchIdx].duracao - stretchRemaining);
   }
@@ -1411,7 +1463,7 @@ function renderAlongamento(){
   let timerBody;
   if(stretchFinished){
     timerBody = `
-      <div class="stretch-finished-msg">✓ Rotina de 20 minutos concluída!</div>
+      <div class="stretch-finished-msg">✓ Rotina de alongamento concluída!</div>
       <div class="stretch-controls">
         <button class="stretch-btn primary" onclick="startStretch()" title="Refazer">↺</button>
       </div>
@@ -1429,8 +1481,8 @@ function renderAlongamento(){
     `;
   } else {
     timerBody = `
-      <div class="stretch-progress-label">Exercício ${stretchIdx+1} de ${STRETCH_TIMELINE.length}</div>
-      <div class="stretch-group-tag">${seg.grupo === 'Inferior' ? 'Membro inferior' : 'Membro superior'}</div>
+      <div class="stretch-progress-label">Bloco ${seg.bloco} · Exercício ${stretchIdx+1} de ${STRETCH_TIMELINE.length}</div>
+      <div class="stretch-group-tag">${seg.grupo}</div>
       <div class="stretch-current-name">${seg.nome}</div>
       ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
       <div class="stretch-clock">${formatMMSS(stretchRemaining)}</div>
@@ -1439,23 +1491,31 @@ function renderAlongamento(){
         <span class="stretch-tag">🧰 ${seg.equipamento}</span>
       </div>
       <div class="stretch-instrucao">${seg.instrucao}</div>
-      <a class="stretch-video-link" href="${seg.videoUrl}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
+      <a class="stretch-video-link" href="${stretchVideoLink(seg)}" target="_blank" rel="noopener">▶ Ver execução no YouTube</a>
       ${controlsHtml}
     `;
   }
 
+  let lastBloco = null;
   const listRows = STRETCH_EXERCISES.map((ex, i) => {
     const isActiveEx = !stretchFinished && seg.id === ex.id;
     const durLabel = ex.sides ? `${ex.duracao}s cada lado` : `${ex.duracao}s`;
+    let header = '';
+    if(ex.bloco !== lastBloco){
+      lastBloco = ex.bloco;
+      const subtotal = formatMMSS(stretchBlocoSubtotal(ex.bloco));
+      header = `<div class="stretch-bloco-header"><span>Bloco ${ex.bloco} · ${STRETCH_BLOCOS[ex.bloco]}</span><span class="bloco-sub">${subtotal}</span></div>`;
+    }
     return `
+      ${header}
       <div class="stretch-item ${isActiveEx?'active':''}">
         <div class="stretch-item-idx">${i+1}</div>
         <div class="stretch-item-body">
           <div class="stretch-item-name">${ex.nome}</div>
-          <div class="stretch-item-meta">${ex.grupo} · ${ex.equipamento}</div>
+          <div class="stretch-item-meta">${ex.equipamento}</div>
         </div>
         <div class="stretch-item-dur">${durLabel}</div>
-        <a class="stretch-item-video" href="${ex.videoUrl}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
+        <a class="stretch-item-video" href="${stretchVideoLink(ex)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
       </div>
     `;
   }).join('');
@@ -1472,80 +1532,68 @@ function renderAlongamento(){
       <div class="stretch-list-title">Todos os alongamentos (${STRETCH_EXERCISES.length})</div>
       ${listRows}
     </div>
-    <div class="stretch-intro" style="margin:16px 0 0;">
-      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, mesa de 87cm, bolinhas de 15cm e parede/batente. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo, adutor e lombar), que está encurtada — depois fecha com quadríceps, mobilidade de tornozelo e alongamentos de membros superiores (peitoral, tríceps, bíceps, pescoço e dorsal). Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
-    </div>
   `;
 }
 // =================== FIM ALONGAMENTO ====================
 
 // ===================== ABDOMINAL =====================
-// Circuito de abdômen no chão, ~20 minutos, com 30 segundos de descanso
-// entre um exercício e o próximo. Segue o mesmo modelo de timer/registro da
-// aba Alongamento. Tudo é feito deitado/apoiado no colchonete — nenhum
-// exercício exige apoiar peso em pé sobre o tornozelo direito.
+// "Treino Único de Core & Saúde Lombar": circuito contínuo de 6 exercícios,
+// repetido em 3 séries completas, trabalhando os 4 pilares do core: ativação
+// profunda/anti-extensão, flexão de tronco, controle de quadril/infra e
+// anti-rotação. 30s de descanso entre um exercício e o próximo dentro da
+// mesma série; um descanso mais longo entre uma série completa e a próxima.
+// Tudo feito no colchonete — nenhum exercício exige ficar em pé apoiado no
+// tornozelo.
 const ABS_EXERCISES = [
-  { id:'abs-respiracao', nome:'Respiração diafragmática e ativação do core', grupo:'Aquecimento', equipamento:'Colchonete', duracao:30, sides:false,
-    instrucao:'Deitado de costas, joelhos dobrados e pés no chão. Inspire pelo nariz enchendo a barriga e, ao expirar, contraia levemente o abdômen como se fosse tossir. Serve de aquecimento e ativação antes do circuito.',
-    videoQuery:'ativação do core respiração diafragmática deitado' },
-  { id:'abs-prancha', nome:'Prancha frontal', grupo:'Estabilização', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Apoie os antebraços e as pontas dos pés no chão, corpo reto da cabeça aos calcanhares, sem deixar o quadril cair nem subir demais. Contraia o abdômen e o glúteo e respire de forma controlada.',
-    videoQuery:'prancha frontal isométrica execução correta',
-    videoUrl:'https://www.youtube.com/watch?v=OnVIGDpnMow' },
-  { id:'abs-prancha-lateral', nome:'Prancha lateral', grupo:'Oblíquos', equipamento:'Colchonete', duracao:30, sides:true,
-    instrucao:'Apoie o antebraço e a lateral do pé no chão, corpo alinhado dos ombros aos tornozelos, quadril elevado do chão. Se sentir o tornozelo de apoio reclamar, apoie os joelhos no chão em vez dos pés.',
-    videoQuery:'prancha lateral abdominal execução',
-    videoUrl:'https://www.youtube.com/watch?v=A0RGKVDnUok' },
-  { id:'abs-supra', nome:'Abdominal supra (crunch clássico)', grupo:'Reto abdominal', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Deitado, joelhos dobrados e pés no chão, mãos atrás da cabeça sem puxar o pescoço. Eleve a cabeça e os ombros do chão contraindo o abdômen, e desça devagar.',
-    videoQuery:'abdominal supra crunch execução correta' },
-  { id:'abs-infra', nome:'Abdominal infra (elevação de pernas)', grupo:'Reto abdominal inferior', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Deitado de costas, pernas esticadas (ou levemente flexionadas se sentir a lombar), eleve as pernas até 90° e desça sem encostar totalmente no chão. Mantenha a lombar apoiada no colchonete.',
-    videoQuery:'abdominal infra elevação de pernas execução' },
-  { id:'abs-bicicleta', nome:'Bicicleta (elbow-to-knee)', grupo:'Oblíquos', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Deitado, mãos atrás da cabeça, leve o cotovelo em direção ao joelho oposto enquanto estica a outra perna, alternando os lados em ritmo controlado, como pedalando.',
-    videoQuery:'abdominal bicicleta elbow to knee execução' },
-  { id:'abs-deadbug', nome:'Dead bug', grupo:'Estabilização', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Deitado de costas, braços esticados para cima e joelhos dobrados a 90°. Estenda o braço e a perna opostos em direção ao chão devagar, sem deixar a lombar arquear, e volte. Alterne os lados.',
-    videoQuery:'dead bug exercício abdominal execução' },
-  { id:'abs-toque-ombro', nome:'Prancha com toque no ombro', grupo:'Estabilização/Anti-rotação', equipamento:'Colchonete', duracao:45, sides:false,
-    instrucao:'Na posição de prancha alta (mãos no chão), toque o ombro oposto com uma mão de cada vez, mantendo o quadril o mais parado possível, sem balançar.',
-    videoQuery:'prancha com toque no ombro exercício abdominal' },
-  { id:'abs-russian-twist', nome:'Russian twist com peso de 3kg', grupo:'Oblíquos', equipamento:'Colchonete + peso de 3kg', duracao:60, sides:false,
-    instrucao:'Sentado, tronco levemente inclinado para trás e pés no chão (ou levantados, se conseguir manter o equilíbrio), segure o peso de 3kg com as duas mãos e gire o tronco de um lado para o outro, tocando o peso perto do quadril.',
-    videoQuery:'russian twist abdominal com peso execução' },
-  { id:'abs-canivete', nome:'Canivete (V-up com joelhos dobrados)', grupo:'Reto abdominal', equipamento:'Colchonete', duracao:45, sides:false,
-    instrucao:'Deitado, braços esticados atrás da cabeça. Suba o tronco e as pernas (joelhos podem ficar levemente dobrados) ao mesmo tempo, buscando tocar as mãos nos pés ou nas canelas, e desça controlado.',
-    videoQuery:'canivete v-up abdominal execução' },
-  { id:'abs-prancha-perna', nome:'Prancha com elevação de perna alternada', grupo:'Estabilização/Glúteo', equipamento:'Colchonete', duracao:30, sides:true,
-    instrucao:'Na posição de prancha frontal (antebraços no chão), eleve uma perna esticada alguns centímetros sem deixar o quadril girar, segure um instante e alterne.',
-    videoQuery:'prancha com elevação de perna alternada execução' },
-  { id:'abs-toe-touch', nome:'Toe touch crunch (toque alternado no tornozelo)', grupo:'Oblíquos', equipamento:'Colchonete', duracao:45, sides:false,
-    instrucao:'Deitado, joelhos dobrados a 90° com os pés no ar (ou apoiados, se preferir), eleve o tronco levemente e toque alternadamente um tornozelo e depois o outro, sem puxar o pescoço.',
-    videoQuery:'toe touch crunch abdominal execução' },
-  { id:'abs-bicicleta-bolinha', nome:'Bicicleta lenta com bolinha entre os joelhos', grupo:'Reto abdominal inferior', equipamento:'Colchonete + bolinha (15cm)', duracao:45, sides:false,
-    instrucao:'Deitado, prenda a bolinha entre os joelhos pra manter o alinhamento das pernas. Traga os joelhos em direção ao peito e estenda de volta devagar, num ritmo lento e controlado — ótimo pra reduzir impacto na região do quadril/tornozelo.',
-    videoQuery:'abdominal infra lento com bola entre os joelhos' },
-  { id:'abs-cobra', nome:'Extensão lombar suave (cobra) — desaquecimento', grupo:'Lombar', equipamento:'Colchonete', duracao:40, sides:false,
-    instrucao:'Deitado de bruços, apoie as mãos perto do peito e eleve o tronco suavemente, sem forçar, olhando para frente. Serve pra descomprimir a lombar depois do circuito de abdômen.',
-    videoQuery:'extensão lombar suave cobra alongamento pós abdominal' },
+  { id:'abs-respiracao-bracing', nome:'Respiração Diafragmática com Bracing', grupo:'Ativação / Aquecimento', equipamento:'Colchonete', duracao:45, sides:false,
+    instrucao:'Deitado de costas, joelhos dobrados e pés no chão. Expire todo o ar contraindo o abdômen para dentro e para baixo, ativando o transverso do abdômen — ensina a proteger a coluna antes de qualquer carga ou esforço. Nunca prenda a respiração.',
+    videoQuery:'respiração diafragmática bracing ativação do core',
+    videoUrl:'https://www.youtube.com/watch?v=Mq96rcIz63Y' },
+  { id:'abs-dead-bug', nome:'Dead Bug ("Inseto Morto")', grupo:'Anti-Extensão', equipamento:'Colchonete', duracao:40, sides:false,
+    instrucao:'Deitado de costas, braços esticados para cima e joelhos dobrados a 90°. Estenda o braço e a perna opostos devagar em direção ao chão, sem deixar a lombar arquear e descolar do colchonete — se isso acontecer, diminua a amplitude. Alterne os lados em ritmo bem controlado (12 repetições alternadas, 6 de cada lado).',
+    videoQuery:'dead bug exercício abdominal execução',
+    videoUrl:'https://www.youtube.com/watch?v=uQfzuKBMJeE' },
+  { id:'abs-supra-classico', nome:'Abdominal Supra Clássico (Crunch Controlado)', grupo:'Flexão de Tronco', equipamento:'Colchonete', duracao:40, sides:false,
+    instrucao:'Deitado, joelhos dobrados e pés no chão, mãos atrás da cabeça sem puxar o pescoço. Eleve a cabeça e os ombros do chão contraindo o abdômen, segure 1 segundo no topo e desça devagar (12 a 15 repetições).',
+    videoQuery:'abdominal supra crunch controlado execução',
+    videoUrl:'https://www.youtube.com/watch?v=mfkfUkj24co' },
+  { id:'abs-infra-semiflex', nome:'Abdominal Infra no Solo (Joelhos Semiflexionados)', grupo:'Controle de Quadril / Infra', equipamento:'Colchonete', duracao:40, sides:false,
+    instrucao:'Deitado de costas, joelhos levemente flexionados (reduz a alavanca no flexor do quadril e protege a lombar). Eleve o quadril/pernas sem deixar a lombar arquear e descolar do chão, e desça controlado (10 a 12 repetições).',
+    videoQuery:'abdominal infra joelhos semiflexionados execução',
+    videoUrl:'https://www.youtube.com/watch?v=ixJcUH8AlL8' },
+  { id:'abs-prancha-lateral-toque', nome:'Prancha Lateral (ou com Toque no Ombro)', grupo:'Anti-Rotação', equipamento:'Colchonete', duracao:30, sides:true,
+    instrucao:'Apoie o antebraço e a lateral do pé (ou joelho) no chão, corpo alinhado, quadril elevado e firme — evite deixá-lo girar. Alternativa: prancha frontal com toque no ombro, mantendo o quadril o mais parado possível (25 a 30 segundos de cada lado, ou 10 toques de cada lado).',
+    videoQuery:'prancha lateral toque no ombro execução',
+    videoUrl:'https://www.youtube.com/watch?v=zt7PjySXWCw' },
+  { id:'abs-gato-vaca-crianca', nome:'Gato-Vaca + Postura da Criança (Desaquecimento)', grupo:'Desaquecimento / Mobilidade', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Alterne entre Gato (arredondar a coluna) e Vaca (arquear suavemente) e depois vá para a Postura da Criança. Nutre os discos intervertebrais e relaxa a lombar que trabalhou como estabilizadora durante o circuito — sem forçar.',
+    videoQuery:'gato vaca postura da criança mobilidade coluna',
+    videoUrl:'https://www.youtube.com/watch?v=40Y1rukJs4E' },
 ];
+
+const ABS_ROUNDS = 3; // 3 séries completas do circuito
+const ABS_REST_SECONDS = 30; // descanso entre um exercício e o próximo, dentro da mesma série
+const ABS_ROUND_REST_SECONDS = 75; // descanso entre uma série completa e a próxima (orientação de 60 a 90s — 75s como padrão)
 
 function buildAbsTimeline(){
   const timeline = [];
-  ABS_EXERCISES.forEach(ex=>{
-    if(ex.sides){
-      timeline.push(Object.assign({}, ex, {lado:'Direita'}));
-      timeline.push(Object.assign({}, ex, {lado:'Esquerda'}));
-    } else {
-      timeline.push(Object.assign({}, ex, {lado:null}));
-    }
-  });
+  for(let round=1; round<=ABS_ROUNDS; round++){
+    ABS_EXERCISES.forEach((ex, exIdxInRound)=>{
+      const isLastExInRound = exIdxInRound === ABS_EXERCISES.length-1;
+      const afterRest = isLastExInRound ? ABS_ROUND_REST_SECONDS : ABS_REST_SECONDS;
+      const exNumberInRound = exIdxInRound+1;
+      if(ex.sides){
+        timeline.push(Object.assign({}, ex, {lado:'Direita', round, exNumberInRound, restAfter:0}));
+        timeline.push(Object.assign({}, ex, {lado:'Esquerda', round, exNumberInRound, restAfter:afterRest}));
+      } else {
+        timeline.push(Object.assign({}, ex, {lado:null, round, exNumberInRound, restAfter:afterRest}));
+      }
+    });
+  }
   return timeline;
 }
 const ABS_TIMELINE = buildAbsTimeline();
-const ABS_REST_SECONDS = 30; // pausa entre um exercício e o próximo
-const ABS_TOTAL_SECONDS = ABS_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + (ABS_TIMELINE.length-1)*ABS_REST_SECONDS;
+const ABS_TOTAL_SECONDS = ABS_TIMELINE.reduce((sum,s)=>sum+s.duracao,0) + ABS_TIMELINE.slice(0,-1).reduce((sum,s)=>sum+s.restAfter,0);
 
 function absVideoLink(seg){
   return seg.videoUrl || youtubeLink(seg.videoQuery || seg.nome);
@@ -1622,8 +1670,14 @@ function tickAbs(){
   if(absRemaining <= 0){
     if(absIdx < ABS_TIMELINE.length-1){
       playSegmentEndBeep();
-      absResting = true;
-      absRestRemaining = ABS_REST_SECONDS;
+      const rest = ABS_TIMELINE[absIdx].restAfter;
+      if(rest > 0){
+        absResting = true;
+        absRestRemaining = rest;
+      } else {
+        absIdx++;
+        absRemaining = ABS_TIMELINE[absIdx].duracao;
+      }
     } else {
       clearInterval(absInterval);
       absRunning = false;
@@ -1666,9 +1720,10 @@ function toggleAbsMute(){
 
 function elapsedAbsSeconds(){
   let elapsed = 0;
-  for(let i=0;i<absIdx;i++) elapsed += ABS_TIMELINE[i].duracao + ABS_REST_SECONDS;
+  for(let i=0;i<absIdx;i++) elapsed += ABS_TIMELINE[i].duracao + ABS_TIMELINE[i].restAfter;
   if(absResting){
-    elapsed += ABS_TIMELINE[absIdx].duracao + (ABS_REST_SECONDS - absRestRemaining);
+    const restTotal = ABS_TIMELINE[absIdx].restAfter;
+    elapsed += ABS_TIMELINE[absIdx].duracao + (restTotal - absRestRemaining);
   } else {
     elapsed += (ABS_TIMELINE[absIdx].duracao - absRemaining);
   }
@@ -1695,25 +1750,26 @@ function renderAbdominal(){
   let timerBody;
   if(absFinished){
     timerBody = `
-      <div class="stretch-finished-msg">✓ Circuito de abdômen concluído!</div>
+      <div class="stretch-finished-msg">✓ Circuito de Core &amp; Saúde Lombar concluído — 3 séries!</div>
       <div class="stretch-controls">
         <button class="stretch-btn primary" onclick="startAbs()" title="Refazer">↺</button>
       </div>
     `;
   } else if(absResting){
     const nextSeg = ABS_TIMELINE[absIdx+1];
+    const novaSerie = nextSeg.round !== seg.round;
     timerBody = `
-      <div class="stretch-progress-label">Descanso</div>
+      <div class="stretch-progress-label">Descanso${novaSerie ? ' · Próxima série' : ''}</div>
       <div class="stretch-group-tag">Próximo: ${nextSeg.nome}${nextSeg.lado ? ' — '+nextSeg.lado : ''}</div>
       <div class="stretch-current-name">Descanso</div>
       <div class="stretch-current-side">&nbsp;</div>
       <div class="stretch-clock">${formatMMSS(absRestRemaining)}</div>
-      <div class="stretch-instrucao">Respire e prepare-se pro próximo exercício.</div>
+      <div class="stretch-instrucao">${novaSerie ? 'Descanso entre séries — respire fundo, hidrate-se e prepare-se pra próxima passada no circuito.' : 'Respire e prepare-se pro próximo exercício.'}</div>
       ${controlsHtml}
     `;
   } else {
     timerBody = `
-      <div class="stretch-progress-label">Exercício ${absIdx+1} de ${ABS_TIMELINE.length}</div>
+      <div class="stretch-progress-label">Série ${seg.round} de ${ABS_ROUNDS} · Exercício ${seg.exNumberInRound} de ${ABS_EXERCISES.length}</div>
       <div class="stretch-group-tag">${seg.grupo}</div>
       <div class="stretch-current-name">${seg.nome}</div>
       ${seg.lado ? `<div class="stretch-current-side">Lado: ${seg.lado}</div>` : `<div class="stretch-current-side">&nbsp;</div>`}
@@ -1753,13 +1809,8 @@ function renderAbdominal(){
       ? `<button class="finish-btn done-state" disabled style="margin:16px 0 18px;">✓ Treino registrado no calendário</button>`
       : `<button class="finish-btn ready" onclick="registerAbsSession()" style="margin:16px 0 18px;">Registrar treino</button>`}
     <div class="stretch-list-card">
-      <div class="stretch-list-title">Todos os exercícios (${ABS_EXERCISES.length})</div>
+      <div class="stretch-list-title">Circuito (${ABS_EXERCISES.length} exercícios × ${ABS_ROUNDS} séries)</div>
       ${listRows}
-    </div>
-    <div class="stretch-intro" style="margin:16px 0 0;">
-      Circuito de abdômen no chão (colchonete), com <strong>${Math.round(ABS_TOTAL_SECONDS/60)} minutos</strong> ao todo e <strong>30 segundos de descanso</strong> entre um exercício e o próximo. Nenhum exercício exige ficar em pé apoiado no tornozelo — tudo é feito deitado ou apoiado no chão. Alguns exercícios usam o peso de 3kg ou a bolinha de 15cm; o resto é só peso do corpo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
-      <br><br>
-      Alguns vídeos abrem uma busca no YouTube em vez de um vídeo específico — clique e escolha o resultado que parecer mais claro pra você.
     </div>
   `;
 }
