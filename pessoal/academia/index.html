@@ -1143,77 +1143,151 @@ let stretchResting = false;
 let stretchRestRemaining = REST_SECONDS;
 let stretchMuted = false;
 let stretchInterval = null;
-let audioCtx = null;
+// ===== ÁUDIO (compatível com iOS/Safari, inclusive modo silencioso) =====
+// O problema no iPhone: o Web Audio API é MUTADO pelo interruptor/botão de
+// silencioso do aparelho, e o Safari ainda suspende o AudioContext fora de
+// gestos do usuário. A solução aqui tem três camadas:
+//   1) Audio Session API (iOS 16.4+): categoria 'playback' faz o som tocar
+//      mesmo com o iPhone no modo silencioso.
+//   2) Os beeps viram arquivos WAV gerados em memória e tocados via <audio>,
+//      que é o caminho mais confiável no iOS (mesma categoria de mídia que
+//      um vídeo/música — ignora o modo silencioso).
+//   3) Web Audio fica como fallback, e tudo é "destravado" no primeiro
+//      toque do usuário em qualquer lugar da página.
 
-// Toque um buffer silencioso assim que o contexto é criado — necessário no
-// iOS/Safari pra "destravar" o áudio de vez, já que só criar o AudioContext
-// ou chamar resume() não é sempre suficiente sem isso.
-function unlockAudioContext(ctx){
+function setPlaybackSession(){
   try{
-    const buffer = ctx.createBuffer(1, 1, 22050);
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    src.connect(ctx.destination);
-    if(src.start) src.start(0); else src.noteOn(0);
-  }catch(e){ /* segue sem travar a inicialização */ }
+    if('audioSession' in navigator){ navigator.audioSession.type = 'playback'; }
+  }catch(e){ /* API indisponível, segue */ }
+}
+setPlaybackSession();
+
+// Gera um WAV PCM 16-bit mono em data URI a partir de uma lista de notas
+// [{freq (Hz), dur (ms), delay (s)}], com envelope de ataque/decaimento.
+function makeBeepWavURI(notes){
+  const rate = 22050;
+  const total = Math.max.apply(null, notes.map(n => n.delay + n.dur/1000)) + 0.08;
+  const len = Math.ceil(rate * total);
+  const samples = new Float32Array(len);
+  notes.forEach(n => {
+    const start = Math.floor(n.delay * rate);
+    const count = Math.floor(n.dur/1000 * rate);
+    const attack = Math.max(1, Math.floor(0.015 * rate));
+    for(let i=0; i<count && start+i<len; i++){
+      const env = Math.min(1, i/attack) * (1 - i/count);
+      samples[start+i] += Math.sin(2*Math.PI*n.freq*(i/rate)) * 0.6 * env;
+    }
+  });
+  const buf = new ArrayBuffer(44 + len*2);
+  const v = new DataView(buf);
+  const wstr = (off, s) => { for(let i=0;i<s.length;i++) v.setUint8(off+i, s.charCodeAt(i)); };
+  wstr(0,'RIFF'); v.setUint32(4, 36 + len*2, true); wstr(8,'WAVE');
+  wstr(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  wstr(36,'data'); v.setUint32(40, len*2, true);
+  for(let i=0;i<len;i++){
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(44 + i*2, s < 0 ? s*0x8000 : s*0x7FFF, true);
+  }
+  let bin = '';
+  const bytes = new Uint8Array(buf);
+  for(let i=0;i<bytes.length;i+=8192){
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i+8192));
+  }
+  return 'data:audio/wav;base64,' + btoa(bin);
 }
 
+const SND_SEGMENT = new Audio(makeBeepWavURI([{freq:660, dur:200, delay:0}]));
+const SND_REST    = new Audio(makeBeepWavURI([{freq:940, dur:200, delay:0}]));
+const SND_FINISH  = new Audio(makeBeepWavURI([
+  {freq:660, dur:150, delay:0}, {freq:880, dur:150, delay:0.22}, {freq:1046, dur:280, delay:0.44}
+]));
+const ALL_SOUNDS = [SND_SEGMENT, SND_REST, SND_FINISH];
+ALL_SOUNDS.forEach(a => { a.preload = 'auto'; a.setAttribute('playsinline',''); a.load(); });
+
+let audioCtx = null;
 function getAudioCtx(){
   if(!audioCtx){
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new Ctx();
-    unlockAudioContext(audioCtx);
+    if(Ctx) audioCtx = new Ctx();
   }
   return audioCtx;
 }
 
-// iOS/Safari (especialmente em PWA "Adicionar à Tela de Início" no iOS 26)
-// costuma suspender o AudioContext se ele não foi criado/retomado dentro de
-// um gesto direto do usuário, e pode suspendê-lo de novo ao voltar de segundo
-// plano. Por isso: (1) criamos/destravamos o contexto no primeiro toque em
-// QUALQUER lugar da página, não só no botão de play; (2) toda vez que o app
-// volta a ficar visível, tentamos retomar o contexto; (3) beep() sempre
-// aguarda o resume() terminar antes de agendar o som.
+// No primeiro gesto do usuário em QUALQUER lugar da página: define a sessão
+// de playback, toca cada <audio> mudo (isso "autoriza" reproduções futuras
+// fora de gestos, como os ticks do timer) e retoma o AudioContext.
 let audioUnlockedOnce = false;
 function unlockAudioOnFirstGesture(){
   if(audioUnlockedOnce) return;
   audioUnlockedOnce = true;
+  setPlaybackSession();
+  ALL_SOUNDS.forEach(a => {
+    a.muted = true;
+    const p = a.play();
+    if(p && p.then){
+      p.then(() => { a.pause(); a.currentTime = 0; a.muted = false; })
+       .catch(() => { a.muted = false; });
+    } else {
+      a.pause(); a.currentTime = 0; a.muted = false;
+    }
+  });
   const ctx = getAudioCtx();
-  if(ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+  if(ctx && ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
 }
 ['touchend','click','pointerdown'].forEach(evt=>{
   document.addEventListener(evt, unlockAudioOnFirstGesture, {once:true, passive:true});
 });
+// Ao voltar de segundo plano, o iOS pode ter derrubado a sessão/contexto.
 document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended'){
-    audioCtx.resume().catch(()=>{});
+  if(document.visibilityState === 'visible'){
+    setPlaybackSession();
+    if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume().catch(()=>{}); }
   }
 });
 
-async function beep(freq, dur, delay){
+function playSound(el){
   if(stretchMuted) return;
+  setPlaybackSession();
   try{
+    el.currentTime = 0;
+    const p = el.play();
+    if(p && p.catch){ p.catch(() => { webAudioFallback(el); }); }
+  }catch(e){ webAudioFallback(el); }
+}
+
+// Fallback via Web Audio caso o <audio> falhe por algum motivo.
+function webAudioFallback(el){
+  try{
+    const notes = el === SND_REST
+      ? [{f:940, d:200, t:0}]
+      : el === SND_FINISH
+        ? [{f:660, d:150, t:0}, {f:880, d:150, t:0.22}, {f:1046, d:280, t:0.44}]
+        : [{f:660, d:200, t:0}];
     const ctx = getAudioCtx();
-    if(ctx.state === 'suspended'){
-      await ctx.resume();
-    }
-    const t0 = ctx.currentTime + (delay||0);
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(0.5, t0 + 0.015);
-    gain.gain.linearRampToValueAtTime(0, t0 + dur/1000);
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.start(t0);
-    osc.stop(t0 + dur/1000 + 0.05);
+    if(!ctx) return;
+    const go = () => {
+      notes.forEach(n => {
+        const t0 = ctx.currentTime + n.t;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(n.f, t0);
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.5, t0 + 0.015);
+        gain.gain.linearRampToValueAtTime(0, t0 + n.d/1000);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + n.d/1000 + 0.05);
+      });
+    };
+    if(ctx.state === 'suspended'){ ctx.resume().then(go).catch(()=>{}); } else { go(); }
   }catch(e){ /* áudio indisponível, segue sem som */ }
 }
 
-function playSegmentEndBeep(){ beep(660, 200, 0); }
-function playRestEndBeep(){ beep(940, 200, 0); }
-function playRoutineEndBeep(){ beep(660,150,0); beep(880,150,0.22); beep(1046,280,0.44); }
+function playSegmentEndBeep(){ playSound(SND_SEGMENT); }
+function playRestEndBeep(){ playSound(SND_REST); }
+function playRoutineEndBeep(){ playSound(SND_FINISH); }
 
 function logStretchActivity(){
   const now = new Date();
@@ -1241,7 +1315,7 @@ function startStretch(){
     stretchResting = false;
   }
   stretchRunning = true;
-  getAudioCtx();
+  unlockAudioOnFirstGesture();
   clearInterval(stretchInterval);
   stretchInterval = setInterval(tickStretch, 1000);
   render();
@@ -1525,7 +1599,7 @@ function startAbs(){
     absResting = false;
   }
   absRunning = true;
-  getAudioCtx();
+  unlockAudioOnFirstGesture();
   clearInterval(absInterval);
   absInterval = setInterval(tickAbs, 1000);
   render();
