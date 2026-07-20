@@ -1188,9 +1188,14 @@ let stretchInterval = null;
 // Cuidado ao refatorar: cada camada aqui existe por causa de um bug real do
 // PWA no iPhone, mesmo que pareça redundante.
 
+// 'transient' = som de aviso: toca POR CIMA do áudio de outros apps (Deezer,
+// Spotify, podcast), no máximo abaixando o volume deles por um instante, em
+// vez de pausar a música. 'playback' (usado antes) é um tipo EXCLUSIVO: dava
+// mais garantia de tocar no modo silencioso, mas tomava o áudio do sistema e
+// parava a música do Deezer assim que o treino começava.
 function setPlaybackSession(){
   try{
-    if('audioSession' in navigator){ navigator.audioSession.type = 'playback'; }
+    if('audioSession' in navigator){ navigator.audioSession.type = 'transient'; }
   }catch(e){ /* API indisponível, segue */ }
 }
 setPlaybackSession();
@@ -1268,6 +1273,14 @@ KEEPALIVE.volume = 0.02;
 KEEPALIVE.preload = 'auto';
 KEEPALIVE.setAttribute('playsinline','');
 
+// O keep-alive só roda enquanto um timer está ativo. Antes ele ficava ligado
+// o tempo todo, o que mantinha o app segurando a saída de áudio e atrapalhava
+// a música tocando em outro app mesmo fora do treino.
+function timerAtivo(){
+  return (typeof stretchRunning !== 'undefined' && stretchRunning) ||
+         (typeof absRunning !== 'undefined' && absRunning);
+}
+
 function ensureKeepAlive(){
   try{
     if(KEEPALIVE.paused){
@@ -1275,6 +1288,17 @@ function ensureKeepAlive(){
       if(p && p.catch) p.catch(()=>{});
     }
   }catch(e){ /* segue */ }
+}
+
+function stopKeepAlive(){
+  try{
+    if(!KEEPALIVE.paused){ KEEPALIVE.pause(); KEEPALIVE.currentTime = 0; }
+  }catch(e){ /* segue */ }
+}
+
+// Liga/desliga o keep-alive conforme o timer, e o ressuscita se o iOS o pausar.
+function syncKeepAlive(){
+  if(timerAtivo()) ensureKeepAlive(); else stopKeepAlive();
 }
 
 let audioCtx = null;
@@ -1306,7 +1330,7 @@ function unlockAudioOnFirstGesture(){
       }
     });
   }
-  ensureKeepAlive();
+  syncKeepAlive();
   const ctx = getAudioCtx();
   if(ctx && ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
 }
@@ -1317,17 +1341,19 @@ function unlockAudioOnFirstGesture(){
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'visible'){
     setPlaybackSession();
-    ensureKeepAlive();
+    syncKeepAlive();
     if(audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume().catch(()=>{}); }
   }
 });
-// Watchdog: se o sistema pausar o loop silencioso, religa em poucos segundos.
-setInterval(() => { if(audioPrimed) ensureKeepAlive(); }, 5000);
+// Watchdog: durante o treino, religa o loop silencioso se o sistema o pausar;
+// fora do treino, garante que ele fique desligado (liberando o áudio do
+// aparelho pra música de outro app).
+setInterval(() => { if(audioPrimed) syncKeepAlive(); }, 3000);
 
 function playSound(el){
   if(stretchMuted) return;
   setPlaybackSession();
-  ensureKeepAlive();
+  syncKeepAlive();
   try{
     el.currentTime = 0;
     el.volume = 1;
