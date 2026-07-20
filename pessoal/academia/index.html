@@ -1181,10 +1181,13 @@ let stretchInterval = null;
 //   (b) "Funciona algumas vezes e depois para": o iOS derruba a sessão de
 //       áudio quando ela fica ociosa (ou ao voltar de segundo plano/tela
 //       bloqueada), e aí play() fora de um gesto do usuário passa a ser
-//       bloqueado. A defesa é um loop silencioso contínuo (KEEPALIVE) que
-//       mantém a sessão viva enquanto o app está aberto, um watchdog que o
-//       ressuscita a cada 5s, e o re-destravamento em TODO gesto do usuário
-//       (não só no primeiro).
+//       bloqueado. A defesa é um nó silencioso do Web Audio (keep-alive) que
+//       mantém a sessão viva enquanto um timer está rodando, um watchdog que
+//       o ressuscita, e o re-destravamento em TODO gesto do usuário (não só
+//       no primeiro).
+//   (c) Música de outro app (Deezer/Spotify) parava ao iniciar o treino: a
+//       sessão é 'transient' (mistura/duca) e o keep-alive NÃO é mais um
+//       <audio> em loop, que o iOS tratava como reprodução de mídia.
 // Cuidado ao refatorar: cada camada aqui existe por causa de um bug real do
 // PWA no iPhone, mesmo que pareça redundante.
 
@@ -1267,36 +1270,44 @@ ALL_SOUNDS.forEach(a => {
 // Loop praticamente inaudível que segura a sessão de áudio do iOS aberta.
 // Sem isso, o sistema encerra a sessão depois de um tempo ocioso e os
 // play() seguintes (disparados pelo timer, sem gesto do usuário) falham.
-const KEEPALIVE = new Audio(makeBeepWavURI([{freq:60, dur:900, delay:0}], 0.0015));
-KEEPALIVE.loop = true;
-KEEPALIVE.volume = 0.02;
-KEEPALIVE.preload = 'auto';
-KEEPALIVE.setAttribute('playsinline','');
-
-// O keep-alive só roda enquanto um timer está ativo. Antes ele ficava ligado
-// o tempo todo, o que mantinha o app segurando a saída de áudio e atrapalhava
-// a música tocando em outro app mesmo fora do treino.
+// KEEP-ALIVE VIA WEB AUDIO (não via <audio>)
+// Antes o keep-alive era um <audio> em loop. Ele resolvia o "o som para de
+// funcionar depois de um tempo", mas, sendo uma mídia contínua e audível, o
+// iOS o tratava como reprodução de música e PAUSAVA o Deezer assim que o
+// treino começava. Agora quem segura a sessão viva é um nó silencioso do
+// Web Audio: mantém o AudioContext rodando (que é o que impede o iOS de
+// derrubar a sessão) sem se apresentar como um tocador de mídia, então a
+// música do outro app continua.
 function timerAtivo(){
   return (typeof stretchRunning !== 'undefined' && stretchRunning) ||
          (typeof absRunning !== 'undefined' && absRunning);
 }
 
+let keepAliveNode = null;
 function ensureKeepAlive(){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  if(ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+  if(keepAliveNode) return;
   try{
-    if(KEEPALIVE.paused){
-      const p = KEEPALIVE.play();
-      if(p && p.catch) p.catch(()=>{});
-    }
+    // ruído inaudível (ganho ~0.00015) só pra manter o contexto ativo
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = 40;
+    gain.gain.value = 0.00015;
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    keepAliveNode = {osc, gain};
   }catch(e){ /* segue */ }
 }
 
 function stopKeepAlive(){
-  try{
-    if(!KEEPALIVE.paused){ KEEPALIVE.pause(); KEEPALIVE.currentTime = 0; }
-  }catch(e){ /* segue */ }
+  if(!keepAliveNode) return;
+  try{ keepAliveNode.osc.stop(); keepAliveNode.osc.disconnect(); keepAliveNode.gain.disconnect(); }catch(e){}
+  keepAliveNode = null;
 }
 
-// Liga/desliga o keep-alive conforme o timer, e o ressuscita se o iOS o pausar.
+// Liga/desliga o keep-alive conforme o timer.
 function syncKeepAlive(){
   if(timerAtivo()) ensureKeepAlive(); else stopKeepAlive();
 }
@@ -1330,9 +1341,9 @@ function unlockAudioOnFirstGesture(){
       }
     });
   }
-  syncKeepAlive();
   const ctx = getAudioCtx();
   if(ctx && ctx.state === 'suspended'){ ctx.resume().catch(()=>{}); }
+  syncKeepAlive();
 }
 ['touchend','click','pointerdown'].forEach(evt=>{
   document.addEventListener(evt, unlockAudioOnFirstGesture, {passive:true});
