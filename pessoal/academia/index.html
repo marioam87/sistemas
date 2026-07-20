@@ -1045,14 +1045,6 @@ const STRETCH_EXERCISES = [
     instrucao:'Apoie o calcanhar em cima da mesa com a perna esticada e o joelho da perna de apoio levemente flexionado. Mantenha a coluna reta e incline o quadril à frente (não a lombar) até sentir o alongamento atrás da coxa.',
     videoQuery:'alongamento isquiotibiais perna apoiada em superfície alta',
     videoUrl:'https://www.youtube.com/watch?v=7F1jXnsM_8Y' },
-  { id:'isquio-elastico', nome:'Isquiotibiais deitado com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m) + colchonete', duracao:60, sides:true,
-    instrucao:'Deitado de costas no colchonete, passe o elástico aberto na sola do pé. Com a perna esticada, puxe suavemente em direção ao peito, mantendo a outra perna esticada ou apoiada no chão.',
-    videoQuery:'alongamento isquiotibiais deitado com faixa elástica',
-    videoUrl:'https://www.youtube.com/watch?v=oH8NrbkSEtw' },
-  { id:'flexor-quadril', nome:'Flexor de quadril ajoelhado', grupo:'Inferior', equipamento:'Colchonete', duracao:45, sides:true,
-    instrucao:'Ajoelhado com um joelho no colchonete e o outro pé à frente, apoiado no chão (afundo baixo, sem precisar ficar de pé nem apoiar peso no tornozelo). Empurre o quadril suavemente à frente mantendo o tronco ereto, até sentir o alongamento na frente do quadril/coxa da perna de trás.',
-    videoQuery:'alongamento flexor de quadril ajoelhado afundo baixo',
-    videoUrl:'https://www.youtube.com/watch?v=DqjW0ldTvcU' },
   { id:'gluteo', nome:'Alongamento de glúteo (figura 4)', grupo:'Inferior', equipamento:'Colchonete', duracao:60, sides:true,
     instrucao:'Deitado de costas, cruze o tornozelo sobre o joelho da perna oposta formando um "4". Segure atrás da coxa da perna apoiada no chão e puxe suavemente em direção ao peito.',
     videoQuery:'alongamento glúteo figura 4 deitado',
@@ -1077,18 +1069,10 @@ const STRETCH_EXERCISES = [
     instrucao:'Em pé (apoie-se numa parede se precisar de equilíbrio), flexione o joelho levando o calcanhar em direção ao glúteo e segure o tornozelo ou a ponta do pé. Mantenha os joelhos próximos e o quadril neutro, sem jogar o corpo à frente.',
     videoQuery:'alongamento de quadríceps em pé unilateral',
     videoUrl:'https://www.youtube.com/watch?v=oNm3_Ce6IDg' },
-  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:45, sides:true,
-    instrucao:'Sentado, levante o pé do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
+  { id:'tornozelo-mobilidade', nome:'Mobilidade de tornozelo direito (círculos e alfabeto)', grupo:'Inferior', equipamento:'Nenhum', duracao:60, sides:false,
+    instrucao:'Sentado, levante o pé direito do chão e desenhe círculos lentos com o tornozelo nos dois sentidos, ou "escreva" o alfabeto no ar com a ponta do pé. Movimento leve e controlado — pare na hora se sentir dor (não apenas desconforto leve).',
     videoQuery:'mobilidade de tornozelo círculos alfabeto exercício leve',
     videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
-  { id:'tornozelo-elastico', nome:'Dorsiflexão de tornozelo com elástico', grupo:'Inferior', equipamento:'Elástico aberto (1,20m)', duracao:45, sides:true,
-    instrucao:'Sentado com a perna esticada, prenda o elástico numa base fixa (ou peça ajuda) e passe-o pelo peito do pé. Puxe a ponta do pé suavemente em direção à canela (dorsiflexão), sem forçar.',
-    videoQuery:'alongamento dorsiflexão de tornozelo com elástico sentado',
-    videoUrl:'https://www.youtube.com/watch?v=fQrQw0ATrLQ' },
-  { id:'peitoral', nome:'Peitoral com elástico', grupo:'Superior', equipamento:'Elástico aberto (1,20m)', duracao:60, sides:false,
-    instrucao:'Segure o elástico aberto com as duas mãos atrás das costas, braços esticados. Aproxime as escápulas e abra levemente o peito.',
-    videoQuery:'alongamento de peitoral com elástico atrás das costas',
-    videoUrl:'https://www.youtube.com/watch?v=BJbecSYWQRg' },
   { id:'peitoral-parede', nome:'Peitoral na parede/batente', grupo:'Superior', equipamento:'Parede ou batente de porta', duracao:45, sides:true,
     instrucao:'Encoste o antebraço e a palma da mão na parede (ou batente de porta), cotovelo na altura do ombro, formando ~90°. Gire o tronco devagar para o lado oposto até sentir o alongamento na frente do ombro/peito.',
     videoQuery:'alongamento de peitoral na parede batente de porta',
@@ -1489,7 +1473,7 @@ function renderAlongamento(){
       ${listRows}
     </div>
     <div class="stretch-intro" style="margin:16px 0 0;">
-      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, mesa de 87cm, bolinhas de 15cm e parede/batente. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo, adutor e lombar), que está encurtada — depois fecha com quadríceps, flexor de quadril, mobilidade de tornozelo e alongamentos de membros superiores (peitoral, tríceps, bíceps, pescoço e dorsal). Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
+      Rotina pensada pra fazer na sala, com o que você tem em casa: elástico circular (25cm), elástico aberto (1,20m), colchonete, mesa de 87cm, bolinhas de 15cm e parede/batente. Prioriza a cadeia posterior (panturrilha, isquiotibiais, glúteo, adutor e lombar), que está encurtada — depois fecha com quadríceps, mobilidade de tornozelo e alongamentos de membros superiores (peitoral, tríceps, bíceps, pescoço e dorsal). Nenhum exercício passa de <strong>1 minuto</strong>, com <strong>10 segundos de descanso</strong> entre um exercício e o próximo — cerca de <strong>${Math.round(STRETCH_TOTAL_SECONDS/60)} minutos</strong> ao todo. O relógio toca um sinal sonoro ao final de cada exercício, conta o descanso e avisa de novo quando o próximo começa.
     </div>
   `;
 }
