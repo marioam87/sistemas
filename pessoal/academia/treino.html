@@ -1626,43 +1626,35 @@ function renderAlongamento(){
 // =================== FIM ALONGAMENTO ====================
 
 // ===================== ABDOMINAL =====================
-// "Treino Único de Core & Saúde Lombar": circuito contínuo de 6 exercícios,
-// repetido em 3 séries completas, trabalhando os 4 pilares do core: ativação
-// profunda/anti-extensão, flexão de tronco, controle de quadril/infra e
-// anti-rotação. 30s de descanso entre um exercício e o próximo dentro da
-// mesma série; um descanso mais longo entre uma série completa e a próxima.
-// Tudo feito no colchonete — nenhum exercício exige ficar em pé apoiado no
-// tornozelo.
+// "Treino Abdominal Dinâmico + Flexão de Braço": circuito contínuo de 6
+// exercícios por TEMPO (1 minuto cadenciado cada, não por repetições fixas),
+// repetido em 3 séries completas. 20s de descanso entre um exercício e o
+// próximo dentro da mesma série; 1min15s de descanso entre uma série
+// completa e a próxima. Tempo total ≈ 22 minutos.
 const ABS_EXERCISES = [
-  { id:'abs-respiracao-bracing', nome:'Respiração Diafragmática com Bracing', grupo:'Ativação / Aquecimento', equipamento:'Colchonete', duracao:45, sides:false,
-    instrucao:'Deitado de costas, joelhos dobrados e pés no chão. Expire todo o ar contraindo o abdômen para dentro e para baixo, ativando o transverso do abdômen — ensina a proteger a coluna antes de qualquer carga ou esforço. Nunca prenda a respiração.',
-    videoQuery:'respiração diafragmática bracing ativação do core',
-    videoUrl:'https://www.youtube.com/watch?v=Mq96rcIz63Y' },
-  { id:'abs-dead-bug', nome:'Dead Bug ("Inseto Morto")', grupo:'Anti-Extensão', equipamento:'Colchonete', duracao:40, sides:false,
-    instrucao:'Deitado de costas, braços esticados para cima e joelhos dobrados a 90°. Estenda o braço e a perna opostos devagar em direção ao chão, sem deixar a lombar arquear e descolar do colchonete — se isso acontecer, diminua a amplitude. Alterne os lados em ritmo bem controlado (12 repetições alternadas, 6 de cada lado).',
-    videoQuery:'dead bug exercício abdominal execução',
-    videoUrl:'https://www.youtube.com/watch?v=uQfzuKBMJeE' },
-  { id:'abs-supra-classico', nome:'Abdominal Supra Clássico (Crunch Controlado)', grupo:'Flexão de Tronco', equipamento:'Colchonete', duracao:40, sides:false,
-    instrucao:'Deitado, joelhos dobrados e pés no chão, mãos atrás da cabeça sem puxar o pescoço. Eleve a cabeça e os ombros do chão contraindo o abdômen, segure 1 segundo no topo e desça devagar (12 a 15 repetições).',
-    videoQuery:'abdominal supra crunch controlado execução',
-    videoUrl:'https://www.youtube.com/watch?v=mfkfUkj24co' },
-  { id:'abs-infra-semiflex', nome:'Abdominal Infra no Solo (Joelhos Semiflexionados)', grupo:'Controle de Quadril / Infra', equipamento:'Colchonete', duracao:40, sides:false,
-    instrucao:'Deitado de costas, joelhos levemente flexionados (reduz a alavanca no flexor do quadril e protege a lombar). Eleve o quadril/pernas sem deixar a lombar arquear e descolar do chão, e desça controlado (10 a 12 repetições).',
-    videoQuery:'abdominal infra joelhos semiflexionados execução',
-    videoUrl:'https://www.youtube.com/watch?v=ixJcUH8AlL8' },
-  { id:'abs-prancha-lateral-toque', nome:'Prancha Lateral (ou com Toque no Ombro)', grupo:'Anti-Rotação', equipamento:'Colchonete', duracao:30, sides:true,
-    instrucao:'Apoie o antebraço e a lateral do pé (ou joelho) no chão, corpo alinhado, quadril elevado e firme — evite deixá-lo girar. Alternativa: prancha frontal com toque no ombro, mantendo o quadril o mais parado possível (25 a 30 segundos de cada lado, ou 10 toques de cada lado).',
-    videoQuery:'prancha lateral toque no ombro execução',
-    videoUrl:'https://www.youtube.com/watch?v=zt7PjySXWCw' },
-  { id:'abs-gato-vaca-crianca', nome:'Gato-Vaca + Postura da Criança (Desaquecimento)', grupo:'Desaquecimento / Mobilidade', equipamento:'Colchonete', duracao:60, sides:false,
-    instrucao:'Alterne entre Gato (arredondar a coluna) e Vaca (arquear suavemente) e depois vá para a Postura da Criança. Nutre os discos intervertebrais e relaxa a lombar que trabalhou como estabilizadora durante o circuito — sem forçar.',
-    videoQuery:'gato vaca postura da criança mobilidade coluna',
-    videoUrl:'https://www.youtube.com/watch?v=40Y1rukJs4E' },
+  { id:'abs-tesoura', nome:'Abdominal Tesoura (Scissor Kicks)', grupo:'Infra / Controle Pélvico', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, mãos ao lado do corpo ou sob o quadril, pernas esticadas levemente acima do chão. Cruze as pernas alternadamente em movimento de tesoura, de forma cadenciada, pelo minuto inteiro. Mantenha a lombar apoiada no chão — se ela arquear, suba um pouco mais a altura das pernas.',
+    videoQuery:'abdominal tesoura scissor kicks execução' },
+  { id:'abs-infra-solo', nome:'Abdominal Infra no Solo (Elevação de Pernas)', grupo:'Infra', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, joelhos flexionados. Eleve os joelhos em direção ao peito contraindo o abdômen inferior, e desça controlado sem deixar a lombar arquear. Ritmo cadenciado pelo minuto inteiro.',
+    videoQuery:'abdominal infra solo elevação de pernas joelhos flexionados execução' },
+  { id:'abs-obliquo-lateral', nome:'Abdominal Oblíquo / Lateral (Toque nos Calcanhares)', grupo:'Oblíquos / Cintura Lateral', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, joelhos flexionados e pés no chão, ombros levemente elevados do colchonete. Alterne tocando cada mão no calcanhar do mesmo lado, num movimento lateral curto e contínuo.',
+    videoQuery:'abdominal toque no calcanhar heel touch execução' },
+  { id:'abs-supra-classico', nome:'Abdominal Supra Clássico (Crunch Controlado)', grupo:'Supra', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado, joelhos dobrados e pés no chão, mãos atrás da cabeça sem puxar o pescoço. Eleve a cabeça e os ombros do chão contraindo o abdômen, segure um instante no topo e desça devagar, em ritmo cadenciado pelo minuto inteiro.',
+    videoQuery:'abdominal supra crunch controlado execução' },
+  { id:'abs-bicicleta-lenta', nome:'Bicicleta Lenta (Elbow-to-Knee Controlado)', grupo:'Rotação Cruzada', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Deitado de costas, mãos atrás da cabeça. Leve o cotovelo em direção ao joelho oposto enquanto estende a outra perna, alternando os lados de forma lenta e controlada — sem puxar o pescoço.',
+    videoQuery:'abdominal bicicleta lenta elbow to knee execução' },
+  { id:'abs-flexao-braco', nome:'Flexão de Braço (Push-Up)', grupo:'Peitoral / Tríceps / Ombros', equipamento:'Colchonete', duracao:60, sides:false,
+    instrucao:'Mãos um pouco além da largura dos ombros, corpo alinhado da cabeça aos pés. Desça o peito em direção ao chão e empurre de volta. Se a musculatura fadigar antes de completar o minuto, apoie os joelhos no chão para manter o ritmo até o fim, ou faça pausas curtas de 2 a 3 segundos e retome.',
+    videoQuery:'flexão de braço push-up execução correta' },
 ];
 
 const ABS_ROUNDS = 3; // 3 séries completas do circuito
-const ABS_REST_SECONDS = 30; // descanso entre um exercício e o próximo, dentro da mesma série
-const ABS_ROUND_REST_SECONDS = 75; // descanso entre uma série completa e a próxima (orientação de 60 a 90s — 75s como padrão)
+const ABS_REST_SECONDS = 20; // descanso entre um exercício e o próximo, dentro da mesma série
+const ABS_ROUND_REST_SECONDS = 75; // descanso entre uma série completa e a próxima (1min15s)
 
 function buildAbsTimeline(){
   const timeline = [];
@@ -1839,7 +1831,7 @@ function renderAbdominal(){
   let timerBody;
   if(absFinished){
     timerBody = `
-      <div class="stretch-finished-msg">✓ Circuito de Core &amp; Saúde Lombar concluído — 3 séries!</div>
+      <div class="stretch-finished-msg">✓ Treino Abdominal Dinâmico + Flexão concluído — 3 séries!</div>
       <div class="stretch-controls">
         <button class="stretch-btn primary" onclick="startAbs()" title="Refazer">↺</button>
       </div>
