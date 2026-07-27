@@ -7,8 +7,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Treino">
+<meta name="theme-color" content="#c17d2e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   :root{
     --bg: #ffffff;
@@ -191,6 +196,21 @@
     text-align:right;
   }
   .ex-weight-input:focus{outline:none;border-color:var(--accent);}
+  .ex-bodyweight-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--text-faint);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:4px 9px;
+  }
+  .ex-last-used{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    margin-top:3px;
+  }
   .ex-video{
     flex-shrink:0;
     color:var(--text-faint);
@@ -380,6 +400,38 @@
     cursor:pointer;
   }
   .backup-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .app-version{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--text-faint);
+    text-align:right;
+    margin:-8px 0 14px;
+  }
+
+  /* login / sync na nuvem */
+  .auth-bar{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+    background:var(--surface-2);
+    border-radius:10px;
+    padding:9px 12px;
+    margin-bottom:14px;
+    font-size:12px;
+    color:var(--text-muted);
+  }
+  .auth-status{display:flex;align-items:center;gap:6px;}
+  .auth-dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint);flex-shrink:0;}
+  .auth-dot.on{background:var(--done);}
+  .auth-link{
+    font-family:'Inter', sans-serif;font-size:12px;font-weight:600;
+    color:var(--accent);background:none;border:none;cursor:pointer;padding:0;
+  }
+  .auth-login-form{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .auth-email-input{
+    font-family:'Inter', sans-serif;font-size:12.5px;
+    padding:6px 9px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);width:180px;
+  }
+  .auth-msg{font-size:11.5px;color:var(--done);margin-top:6px;width:100%;}
 
   .save-error-banner{
     background:#fde3da;
@@ -624,6 +676,175 @@
 </div>
 
 <script>
+// ===================== NUVEM (Supabase) — Fase 3 =====================
+// Login por e-mail (magic link) + sincronização do state inteiro (a mesma
+// estrutura que já é salva no localStorage) num único registro por usuário
+// na tabela `app_state`. localStorage continua sendo a fonte de verdade pro
+// uso do dia a dia (funciona offline, na hora); a nuvem é só uma cópia
+// sincronizada pra sobreviver a perda do aparelho / trocar de iPhone.
+//
+// Nunca bloqueia o uso do app: se não tiver login, ou se a rede falhar, o
+// app continua funcionando 100% local, só sem a cópia na nuvem.
+const SUPABASE_URL = 'https://xkpwyglfmixruttgfyvg.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_WCUbgVFvUW__frfDbCCJ5g_OH6eFk1B';
+
+let supa = null;
+try{
+  if(window.supabase && window.supabase.createClient){
+    supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(e){ /* CDN falhou (offline) — segue só com localStorage */ }
+
+let authSession = null;
+let authEmailValue = '';
+let authMsg = '';
+let cloudSyncTimer = null;
+let cloudPulling = false; // trava reentrância durante o pull inicial
+
+function authRequestLogin(){
+  if(!supa) return;
+  const email = (authEmailValue || '').trim();
+  if(!email){ authMsg = 'Digite um e-mail.'; render(); return; }
+  authMsg = 'Enviando link...';
+  render();
+  supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } })
+    .then(({error}) => {
+      authMsg = error ? ('Erro: ' + error.message) : 'Link enviado! Confira seu e-mail e toque no link nesse mesmo iPhone.';
+      render();
+    })
+    .catch(() => { authMsg = 'Não consegui enviar agora (sem rede?). Tente de novo.'; render(); });
+}
+
+function authLogout(){
+  if(!supa) return;
+  supa.auth.signOut().finally(() => { authSession = null; render(); });
+}
+
+// ---------- merge seguro (mesma filosofia da restauração de backup: nunca
+// jogar fora progresso, só somar) ----------
+function mergeState(local, remote){
+  if(!remote) return local;
+  const merged = JSON.parse(JSON.stringify(local));
+
+  // completed / checks: OR — um "true" em qualquer lado vence
+  if(Array.isArray(remote.completed)){
+    const len = Math.max(merged.completed.length, remote.completed.length);
+    for(let i=0;i<len;i++){
+      if(merged.completed[i] === undefined) merged.completed[i] = false;
+      if(remote.completed[i]) merged.completed[i] = true;
+    }
+  }
+  if(Array.isArray(remote.checks)){
+    const len = Math.max(merged.checks.length, remote.checks.length);
+    for(let i=0;i<len;i++){
+      if(!merged.checks[i]) merged.checks[i] = Array(7).fill(false);
+      const remoteRow = remote.checks[i] || [];
+      for(let j=0;j<remoteRow.length;j++){
+        if(remoteRow[j]) merged.checks[i][j] = true;
+      }
+    }
+  }
+
+  // weights / sessionWeights: junta os dois, local prevalece em conflito
+  // (o aparelho que está sendo usado agora é o mais provável de estar certo)
+  merged.weights = Object.assign({}, remote.weights || {}, merged.weights || {});
+  merged.sessionWeights = merged.sessionWeights || {};
+  Object.keys(remote.sessionWeights || {}).forEach(i => {
+    merged.sessionWeights[i] = Object.assign({}, remote.sessionWeights[i], merged.sessionWeights[i]);
+  });
+
+  // activities: união por data, deduplicando entradas idênticas
+  merged.activities = merged.activities || {};
+  Object.keys(remote.activities || {}).forEach(key => {
+    const localArr = merged.activities[key] || [];
+    const remoteArr = remote.activities[key] || [];
+    const seen = new Set(localArr.map(a => JSON.stringify(a)));
+    remoteArr.forEach(a => {
+      const sig = JSON.stringify(a);
+      if(!seen.has(sig)){ localArr.push(a); seen.add(sig); }
+    });
+    merged.activities[key] = localArr;
+  });
+
+  merged.seededVersion = Math.max(merged.seededVersion || 0, remote.seededVersion || 0);
+  merged.selected = merged.selected || remote.selected || 0;
+
+  return merged;
+}
+
+async function pullStateFromCloud(){
+  if(!supa || !authSession) return;
+  cloudPulling = true;
+  try{
+    const { data, error } = await supa
+      .from('app_state')
+      .select('state')
+      .eq('user_id', authSession.user.id)
+      .maybeSingle();
+    if(!error && data && data.state){
+      state = mergeState(state, data.state);
+      await saveState(); // grava o merge no localStorage também
+    }
+  }catch(e){ /* sem rede, segue só local */ }
+  cloudPulling = false;
+  render();
+  scheduleCloudSync(); // sobe o resultado do merge de volta, garante os dois lados iguais
+}
+
+function scheduleCloudSync(){
+  if(!supa || !authSession || cloudPulling) return;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = setTimeout(pushStateToCloud, 2500);
+}
+
+async function pushStateToCloud(){
+  if(!supa || !authSession) return;
+  try{
+    await supa.from('app_state').upsert({
+      user_id: authSession.user.id,
+      state: state,
+      updated_at: new Date().toISOString(),
+    });
+  }catch(e){ /* sem rede — a próxima alteração tenta de novo */ }
+}
+
+function renderAuthBar(){
+  if(!supa){
+    return `<div class="auth-bar"><div class="auth-status"><div class="auth-dot"></div>Sincronização indisponível offline</div></div>`;
+  }
+  if(authSession){
+    return `
+      <div class="auth-bar">
+        <div class="auth-status"><div class="auth-dot on"></div>Sincronizado · ${authSession.user.email}</div>
+        <button class="auth-link" onclick="authLogout()">sair</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="auth-bar">
+      <form class="auth-login-form" onsubmit="event.preventDefault();authRequestLogin();">
+        <span>Backup na nuvem:</span>
+        <input class="auth-email-input" type="email" placeholder="seu@email.com" value="${authEmailValue}"
+          oninput="authEmailValue=this.value" />
+        <button type="submit" class="auth-link">entrar</button>
+      </form>
+      ${authMsg ? `<div class="auth-msg">${authMsg}</div>` : ''}
+    </div>
+  `;
+}
+
+if(supa){
+  supa.auth.getSession().then(({data}) => {
+    if(data && data.session){ authSession = data.session; pullStateFromCloud(); }
+  });
+  supa.auth.onAuthStateChange((event, session) => {
+    authSession = session;
+    if(event === 'SIGNED_IN') pullStateFromCloud();
+    render();
+  });
+}
+// =================== FIM NUVEM (Supabase) ===================
+
 const EXO = (nome, series, reps, carga, grupo) => ({nome, series, reps, carga, grupo});
 
 const WAVES = [
@@ -728,11 +949,19 @@ let state = {
   checks: Array(TOTAL).fill(null).map(()=>Array(7).fill(false)),
   selected: 0,
   weights: {}, // nome do exercício -> carga atual (editada pelo usuário)
+  sessionWeights: {}, // índice da sessão -> {nome do exercício: carga usada ao concluir}. Só existe
+                       // pra sessões concluídas a partir da introdução do catálogo (Fase 2) —
+                       // sessões concluídas antes disso não têm esse retrato histórico.
   activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira'|'alongamento', label, km}]
   seededVersion: 0, // controla quais rodadas de histórico importado já foram mescladas
 };
 
 const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 (mar-dez), v3 = + jan/fev 2025, v4 = + jul/2026 (calendário) e conclusão dos treinos 1 e 2 de musculação
+
+// Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
+// serve pra confirmar que o Safari carregou a versão nova depois do git push
+// (sem isso, o PWA às vezes continua servindo uma versão em cache).
+const APP_VERSION = '2026-07-27';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -1000,49 +1229,70 @@ function youtubeLink(nome){
   return "https://www.youtube.com/results?search_query=" + q;
 }
 
-// Vídeos específicos de execução para cada exercício da trilha de Musculação
-// (mapeados por nome exato, conforme aparecem nos templates de treino acima).
-const EXERCISE_VIDEOS = {
-  "Agachamento Livre com Halteres": "https://www.youtube.com/watch?v=taK1dUUT2_I",
-  "Supino Reto com Halteres": "https://www.youtube.com/watch?v=P2xVkheMBZM",
-  "Cadeira Extensora": "https://www.youtube.com/watch?v=exLCpU7mT3g",
-  "Supino Inclinado com Halteres": "https://www.youtube.com/watch?v=G-i3jMIbDmo",
-  "Leg Press 45": "https://www.youtube.com/watch?v=waAxlYvtCcI",
-  "Tríceps na Polia com Corda": "https://www.youtube.com/watch?v=YQ6MRBeyIAE",
-  "Abdominal Supra Solo": "https://www.youtube.com/watch?v=hZVIstfFsIc",
-  "Levantamento Terra": "https://www.youtube.com/watch?v=T3x53s0jEns",
-  "Puxada Aberta Barra Reta": "https://www.youtube.com/watch?v=uQQeckxqI0U",
-  "Mesa Flexora": "https://www.youtube.com/watch?v=sWSm1pWb3lw",
-  "Remada Unilateral Halteres (Serrote)": "https://www.youtube.com/watch?v=EUisRaNkCd4",
-  "Elevação de Quadril": "https://www.youtube.com/watch?v=Y0CalyZrWcc",
-  "Rosca Martelo com Halteres": "https://www.youtube.com/watch?v=5vPGH1uTtbs",
-  "Prancha Dinâmica": "https://www.youtube.com/watch?v=UqFRSI_FT4c",
-  "Agachamento Sumô": "https://www.youtube.com/watch?v=u_TTcv8FvOk",
-  "Supino Reto com Barra Reta": "https://www.youtube.com/watch?v=ZN7SuDQpNMk",
-  "Cadeira Extensora Unilateral": "https://www.youtube.com/watch?v=Os_byCyi6MI",
-  "Crucifixo Inclinado com Halteres": "https://www.youtube.com/watch?v=oQARSPqhvs8",
-  "Tríceps Francês com Anilha": "https://www.youtube.com/watch?v=tgllcMgCulU",
-  "Abdominal Bicicleta": "https://www.youtube.com/watch?v=ofuUL0cdgVA",
-  "Sti com Halteres": "https://www.youtube.com/watch?v=601YoPL6y6E",
-  "Puxada Fechada Barra Reta": "https://www.youtube.com/watch?v=VLufBOXjryk",
-  "Remada Baixa Triângulo": "https://www.youtube.com/watch?v=C9N2sCdAWJ8",
-  "Elevação de Quadril Unilateral": "https://www.youtube.com/watch?v=IW-xVGlldho",
-  "Rosca Direta com Halteres": "https://www.youtube.com/watch?v=nDOTShRclYQ",
-  "Corda Naval": "https://www.youtube.com/watch?v=kV5R57WSGjI",
-  "Agachamento com Halter na Frente": "https://www.youtube.com/watch?v=n_2FmC3-lJ4",
-  "Supino Inclinado com Barra Reta": "https://www.youtube.com/watch?v=1f-YLKuz_h8",
-  "Fly Reto": "https://www.youtube.com/watch?v=_kpKlYexyXs",
-  "Tríceps Testa com Halteres": "https://www.youtube.com/watch?v=P61aUsjcT4Q",
-  "Abdominal Infra Bola Suíça": "https://www.youtube.com/watch?v=OJSRfh__Nd0",
-  "Remada Curvada com Barra Reta": "https://www.youtube.com/watch?v=VJHBEy2duVc",
-  "Elevação de Quadril com Barra": "https://www.youtube.com/watch?v=3mnHo-F-U4Q",
-  "Rosca Scott Unilateral com Halteres": "https://www.youtube.com/watch?v=rDqH-nMPgg8",
-  "Prancha Cruzada": "https://www.youtube.com/watch?v=k-HXfx7yBsA",
+// ===================== CATÁLOGO DE EXERCÍCIOS =====================
+// Fase 2 do plano: cada exercício de Musculação tem um ID estável, grupo
+// muscular, tipo de carga (halteres/anilhas/máquina/corporal) e vídeo de
+// execução. Construído automaticamente a partir dos 35 exercícios distintos
+// que já existem nos WAVES atuais — não muda nenhum treino, só dá um ID
+// estável pra cada um, pra permitir progressão, sync com backend e o
+// gráfico de progressão (2.1) sem depender do texto exato do nome.
+const EXERCISE_CATALOG = {
+  agachamento_livre_com_halteres: { nome:'Agachamento Livre com Halteres', grupo:'Quadríceps', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=taK1dUUT2_I' },
+  supino_reto_com_halteres: { nome:'Supino Reto com Halteres', grupo:'Peito', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=P2xVkheMBZM' },
+  cadeira_extensora: { nome:'Cadeira Extensora', grupo:'Quadríceps', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=exLCpU7mT3g' },
+  supino_inclinado_com_halteres: { nome:'Supino Inclinado com Halteres', grupo:'Peito', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=G-i3jMIbDmo' },
+  leg_press_45: { nome:'Leg Press 45', grupo:'Quadríceps', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=waAxlYvtCcI' },
+  triceps_na_polia_com_corda: { nome:'Tríceps na Polia com Corda', grupo:'Tríceps', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=YQ6MRBeyIAE' },
+  abdominal_supra_solo: { nome:'Abdominal Supra Solo', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=hZVIstfFsIc' },
+  levantamento_terra: { nome:'Levantamento Terra', grupo:'Posterior', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=T3x53s0jEns' },
+  puxada_aberta_barra_reta: { nome:'Puxada Aberta Barra Reta', grupo:'Costas', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=uQQeckxqI0U' },
+  mesa_flexora: { nome:'Mesa Flexora', grupo:'Posterior', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=sWSm1pWb3lw' },
+  remada_unilateral_halteres_serrote: { nome:'Remada Unilateral Halteres (Serrote)', grupo:'Costas', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=EUisRaNkCd4' },
+  elevacao_de_quadril: { nome:'Elevação de Quadril', grupo:'Glúteo', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=Y0CalyZrWcc' },
+  rosca_martelo_com_halteres: { nome:'Rosca Martelo com Halteres', grupo:'Bíceps', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=5vPGH1uTtbs' },
+  prancha_dinamica: { nome:'Prancha Dinâmica', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=UqFRSI_FT4c' },
+  agachamento_sumo: { nome:'Agachamento Sumô', grupo:'Quadríceps/Glúteo', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=u_TTcv8FvOk' },
+  supino_reto_com_barra_reta: { nome:'Supino Reto com Barra Reta', grupo:'Peito', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=ZN7SuDQpNMk' },
+  cadeira_extensora_unilateral: { nome:'Cadeira Extensora Unilateral', grupo:'Quadríceps', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=Os_byCyi6MI' },
+  crucifixo_inclinado_com_halteres: { nome:'Crucifixo Inclinado com Halteres', grupo:'Peito', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=oQARSPqhvs8' },
+  triceps_frances_com_anilha: { nome:'Tríceps Francês com Anilha', grupo:'Tríceps', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=tgllcMgCulU' },
+  abdominal_bicicleta: { nome:'Abdominal Bicicleta', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=ofuUL0cdgVA' },
+  sti_com_halteres: { nome:'Sti com Halteres', grupo:'Posterior', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=601YoPL6y6E' },
+  puxada_fechada_barra_reta: { nome:'Puxada Fechada Barra Reta', grupo:'Costas', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=VLufBOXjryk' },
+  remada_baixa_triangulo: { nome:'Remada Baixa Triângulo', grupo:'Costas', tipoCarga:'maquina', video:'https://www.youtube.com/watch?v=C9N2sCdAWJ8' },
+  elevacao_de_quadril_unilateral: { nome:'Elevação de Quadril Unilateral', grupo:'Glúteo', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=IW-xVGlldho' },
+  rosca_direta_com_halteres: { nome:'Rosca Direta com Halteres', grupo:'Bíceps', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=nDOTShRclYQ' },
+  corda_naval: { nome:'Corda Naval', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=kV5R57WSGjI' },
+  agachamento_com_halter_na_frente: { nome:'Agachamento com Halter na Frente', grupo:'Quadríceps', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=n_2FmC3-lJ4' },
+  supino_inclinado_com_barra_reta: { nome:'Supino Inclinado com Barra Reta', grupo:'Peito', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=1f-YLKuz_h8' },
+  fly_reto: { nome:'Fly Reto', grupo:'Peito', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=_kpKlYexyXs' },
+  triceps_testa_com_halteres: { nome:'Tríceps Testa com Halteres', grupo:'Tríceps', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=P61aUsjcT4Q' },
+  abdominal_infra_bola_suica: { nome:'Abdominal Infra Bola Suíça', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=OJSRfh__Nd0' },
+  remada_curvada_com_barra_reta: { nome:'Remada Curvada com Barra Reta', grupo:'Costas', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=VJHBEy2duVc' },
+  elevacao_de_quadril_com_barra: { nome:'Elevação de Quadril com Barra', grupo:'Glúteo', tipoCarga:'anilhas', video:'https://www.youtube.com/watch?v=3mnHo-F-U4Q' },
+  rosca_scott_unilateral_com_halteres: { nome:'Rosca Scott Unilateral com Halteres', grupo:'Bíceps', tipoCarga:'halteres', video:'https://www.youtube.com/watch?v=rDqH-nMPgg8' },
+  prancha_cruzada: { nome:'Prancha Cruzada', grupo:'Core', tipoCarga:'corporal', video:'https://www.youtube.com/watch?v=k-HXfx7yBsA' },
 };
 
-function exerciseVideoLink(nome){
-  return EXERCISE_VIDEOS[nome] || youtubeLink(nome);
+// Mapa nome exato -> id do catálogo, construído automaticamente. Se dois
+// exercícios tiverem o mesmo nome escrito, o catálogo detecta e avisa no console.
+const NOME_TO_CATALOG_ID = {};
+Object.keys(EXERCISE_CATALOG).forEach(id => {
+  const nome = EXERCISE_CATALOG[id].nome;
+  if(NOME_TO_CATALOG_ID[nome]) console.warn('Catálogo: nome duplicado', nome);
+  NOME_TO_CATALOG_ID[nome] = id;
+});
+
+function catalogEntry(nome){
+  const id = NOME_TO_CATALOG_ID[nome];
+  return id ? EXERCISE_CATALOG[id] : null;
 }
+
+function exerciseVideoLink(nome){
+  const entry = catalogEntry(nome);
+  return (entry && entry.video) || youtubeLink(nome);
+}
+// =================== FIM CATÁLOGO DE EXERCÍCIOS ===================
 
 // ===================== ALONGAMENTO =====================
 // Rotina reestruturada em 5 blocos, na ordem fixa abaixo:
@@ -2028,6 +2278,7 @@ async function loadState(){
           parsed.checks = (parsed.checks || []).slice(0, TOTAL);
         }
         if(!parsed.weights) parsed.weights = {};
+        if(!parsed.sessionWeights) parsed.sessionWeights = {};
         if(!parsed.activities) parsed.activities = {};
         if(!parsed.seededVersion) parsed.seededVersion = 0;
         state = parsed;
@@ -2069,6 +2320,7 @@ async function saveState(){
       saveErrorFlag = false;
       render();
     }
+    scheduleCloudSync();
   }catch(e){
     console.error('Falha ao salvar progresso', e);
     saveErrorFlag = true;
@@ -2094,6 +2346,34 @@ function selectSession(i){
   render();
 }
 
+// Procura, a partir da sessão atual pra trás, a última sessão CONCLUÍDA em
+// que esse exercício (por nome) apareceu. Retorna o índice dessa sessão, ou
+// null se nunca apareceu antes. Só serve pra dizer "em qual sessão" — a
+// carga em si já fica sempre visível no próprio campo (state.weights é
+// reaproveitado por nome), não há histórico de carga por sessão.
+function lastSessionForExercise(nome, beforeIndex){
+  for(let i=beforeIndex-1;i>=0;i--){
+    if(!state.completed[i]) continue;
+    if(SESSIONS[i].template.exercicios.some(e=>e.nome===nome)) return i;
+  }
+  return null;
+}
+
+// Histórico de cargas registradas (state.sessionWeights) pra esse exercício,
+// em ordem cronológica, olhando só sessões concluídas antes de beforeIndex.
+// Só tem dados a partir da sessão em que o retrato passou a ser tirado
+// (ver completeSession) — histórico anterior a isso não existe.
+function exerciseWeightHistory(nome, beforeIndex){
+  const hist = [];
+  for(let i=0;i<beforeIndex;i++){
+    if(!state.completed[i]) continue;
+    if(!SESSIONS[i].template.exercicios.some(e=>e.nome===nome)) continue;
+    const snap = state.sessionWeights[i];
+    if(snap && snap[nome] !== undefined) hist.push(snap[nome]);
+  }
+  return hist;
+}
+
 function toggleCheck(sessionIdx, exIdx){
   if(!isUnlocked(sessionIdx)) return;
   state.checks[sessionIdx][exIdx] = !state.checks[sessionIdx][exIdx];
@@ -2110,6 +2390,14 @@ function completeSession(i){
   const allChecked = state.checks[i].every(Boolean);
   if(!allChecked) return;
   state.completed[i] = true;
+  // Retrato da carga usada em cada exercício desta sessão, pra dar base à
+  // progressão histórica (Fase 2.1). Sessões concluídas antes desta versão
+  // não têm esse retrato — não tem como reconstruir carga do passado.
+  const snapshot = {};
+  SESSIONS[i].template.exercicios.forEach(ex => {
+    snapshot[ex.nome] = state.weights[ex.nome] !== undefined ? state.weights[ex.nome] : ex.carga;
+  });
+  state.sessionWeights[i] = snapshot;
   const now = new Date();
   const key = toKey(now.getFullYear(), now.getMonth(), now.getDate());
   if(!state.activities[key]) state.activities[key] = [];
@@ -2277,6 +2565,7 @@ function handleRestoreFile(input){
         parsed.checks = (parsed.checks || []).slice(0, TOTAL);
       }
       if(!parsed.weights) parsed.weights = {};
+      if(!parsed.sessionWeights) parsed.sessionWeights = {};
       if(!parsed.activities) parsed.activities = {};
       if(!parsed.seededVersion) parsed.seededVersion = 0;
       state = parsed;
@@ -2337,6 +2626,15 @@ function render(){
   } else {
     const exRows = session.template.exercicios.map((ex, ei) => {
       const currentWeight = state.weights[ex.nome] !== undefined ? state.weights[ex.nome] : ex.carga;
+      const isBodyweight = ex.carga === '0kg'; // peso corporal, sem carga adicional — julga pelo valor original do template
+      const lastIdx = isBodyweight ? null : lastSessionForExercise(ex.nome, sel);
+      const weightHist = isBodyweight ? [] : exerciseWeightHistory(ex.nome, sel);
+      let lastInfo = '';
+      if(weightHist.length >= 2){
+        lastInfo = 'histórico: ' + weightHist.join(' → ');
+      } else if(lastIdx !== null){
+        lastInfo = 'última vez: sessão ' + (lastIdx+1);
+      }
       return `
       <div class="ex-row">
         <div class="ex-check ${checks[ei]?'checked':''}" onclick="toggleCheck(${sel},${ei})"></div>
@@ -2346,8 +2644,11 @@ function render(){
         </div>
         <div class="ex-specs">
           <div class="ex-reps">${ex.series}x${ex.reps}</div>
-          <input class="ex-weight-input" type="text" value="${currentWeight.replace(/"/g,'&quot;')}"
-            onchange="updateWeight('${ex.nome.replace(/'/g,"\\'")}', this.value)" />
+          ${isBodyweight
+            ? `<div class="ex-bodyweight-tag">peso corporal</div>`
+            : `<input class="ex-weight-input" type="text" value="${currentWeight.replace(/"/g,'&quot;')}"
+                onchange="updateWeight('${ex.nome.replace(/'/g,"\\'")}', this.value)" />`}
+          ${lastInfo ? `<div class="ex-last-used">${lastInfo}</div>` : ''}
         </div>
         <a class="ex-video" href="${exerciseVideoLink(ex.nome)}" target="_blank" rel="noopener" title="Ver execução no YouTube">▶</a>
       </div>
@@ -2376,11 +2677,13 @@ function render(){
   }
 
   app.innerHTML = `
+    ${renderAuthBar()}
     <div class="backup-bar">
       <button class="backup-btn" onclick="downloadBackup()">⬇ Baixar backup</button>
       <button class="backup-btn" onclick="triggerRestore()">⬆ Restaurar backup</button>
       <input type="file" id="restore-file-input" accept="application/json" style="display:none;" onchange="handleRestoreFile(this)">
     </div>
+    <div class="app-version">v${APP_VERSION}</div>
     ${saveErrorFlag ? `<div class="save-error-banner">⚠ Não consegui salvar essa alteração agora (falha no armazenamento). Baixe um backup pra não perder nada, e tente recarregar a página.</div>` : ''}
     <h1>ATIVIDADE FÍSICA</h1>
 
@@ -2411,6 +2714,16 @@ function render(){
 }
 
 loadState();
+
+// Registra o service worker (Fase 5.1 — funcionar offline). Falha em
+// silêncio se o navegador não suportar ou se o SW não puder ser servido
+// (ex.: abrindo o arquivo local sem servidor) — o app continua funcionando
+// normalmente, só sem o cache offline.
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
