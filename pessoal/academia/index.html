@@ -697,27 +697,64 @@ try{
 
 let authSession = null;
 let authEmailValue = '';
+let authCodeValue = '';
+let authAwaitingCode = false; // true depois de pedir o código, esperando o usuário digitar
 let authMsg = '';
 let cloudSyncTimer = null;
 let cloudPulling = false; // trava reentrância durante o pull inicial
 
-function authRequestLogin(){
+// Pede o código de 6 dígitos por e-mail. NÃO usa link — um app instalado na
+// Tela de Início do iPhone guarda dados separados do Safari/Chrome normal,
+// então um login feito clicando num link (que abre noutro app/aba) nunca
+// chega na sessão do ícone. O código resolve isso: tudo acontece dentro do
+// próprio app, sem trocar de tela.
+function authRequestCode(){
   if(!supa) return;
   const email = (authEmailValue || '').trim();
   if(!email){ authMsg = 'Digite um e-mail.'; render(); return; }
-  authMsg = 'Enviando link...';
+  authMsg = 'Enviando código...';
   render();
-  supa.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } })
+  supa.auth.signInWithOtp({ email })
     .then(({error}) => {
-      authMsg = error ? ('Erro: ' + error.message) : 'Link enviado! Confira seu e-mail e toque no link nesse mesmo iPhone.';
+      if(error){
+        authMsg = 'Erro: ' + error.message;
+      } else {
+        authAwaitingCode = true;
+        authMsg = 'Código enviado! Confira seu e-mail e digite os 6 dígitos aqui embaixo.';
+      }
       render();
     })
     .catch(() => { authMsg = 'Não consegui enviar agora (sem rede?). Tente de novo.'; render(); });
 }
 
+function authVerifyCode(){
+  if(!supa) return;
+  const email = (authEmailValue || '').trim();
+  const token = (authCodeValue || '').trim();
+  if(!token){ authMsg = 'Digite o código que chegou no e-mail.'; render(); return; }
+  authMsg = 'Verificando...';
+  render();
+  supa.auth.verifyOtp({ email, token, type: 'email' })
+    .then(({error}) => {
+      if(error){
+        authMsg = 'Código errado ou expirado. Peça um novo.';
+        render();
+      }
+      // sucesso: onAuthStateChange cuida do resto (authSession, pull, render)
+    })
+    .catch(() => { authMsg = 'Não consegui verificar agora (sem rede?). Tente de novo.'; render(); });
+}
+
+function authBackToEmail(){
+  authAwaitingCode = false;
+  authCodeValue = '';
+  authMsg = '';
+  render();
+}
+
 function authLogout(){
   if(!supa) return;
-  supa.auth.signOut().finally(() => { authSession = null; render(); });
+  supa.auth.signOut().finally(() => { authSession = null; authAwaitingCode = false; authCodeValue = ''; render(); });
 }
 
 // ---------- merge seguro (mesma filosofia da restauração de backup: nunca
@@ -820,14 +857,27 @@ function renderAuthBar(){
       </div>
     `;
   }
-  return `
-    <div class="auth-bar">
-      <form class="auth-login-form" onsubmit="event.preventDefault();authRequestLogin();">
+  const loginFormHtml = authAwaitingCode
+    ? `
+      <form class="auth-login-form" onsubmit="event.preventDefault();authVerifyCode();">
+        <span>Código enviado a ${authEmailValue}:</span>
+        <input class="auth-email-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" value="${authCodeValue}"
+          oninput="authCodeValue=this.value" style="width:90px;letter-spacing:2px;" />
+        <button type="submit" class="auth-link">confirmar</button>
+        <button type="button" class="auth-link" onclick="authBackToEmail()" style="color:var(--text-faint);">trocar e-mail</button>
+      </form>
+    `
+    : `
+      <form class="auth-login-form" onsubmit="event.preventDefault();authRequestCode();">
         <span>Backup na nuvem:</span>
         <input class="auth-email-input" type="email" placeholder="seu@email.com" value="${authEmailValue}"
           oninput="authEmailValue=this.value" />
-        <button type="submit" class="auth-link">entrar</button>
+        <button type="submit" class="auth-link">enviar código</button>
       </form>
+    `;
+  return `
+    <div class="auth-bar">
+      ${loginFormHtml}
       ${authMsg ? `<div class="auth-msg">${authMsg}</div>` : ''}
     </div>
   `;
