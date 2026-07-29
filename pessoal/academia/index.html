@@ -2014,21 +2014,11 @@ function renderBalanca(){
   const periodRows = cutoff ? allRows.filter(r => new Date(r.data) >= cutoff) : allRows;
   const chron = periodRows.slice().reverse(); // mais antigo primeiro
   const latest = chron[chron.length-1];
-  const oldest = chron[0];
-  const periodoLabel = BALANCA_PERIODOS.find(p => p[0] === balancaPeriodDays)[1];
 
   function deltaBlock(campo, label, unidade){
     const atual = latest ? latest[campo] : null;
-    const inicial = oldest ? oldest[campo] : null;
     if(atual === null || atual === undefined) return `<div class="balanca-stat-box"><div class="balanca-stat-num">—</div><div class="balanca-stat-label">${label}</div></div>`;
-    let deltaHtml = '';
-    if(inicial !== null && inicial !== undefined && chron.length > 1){
-      const delta = Math.round((atual - inicial) * 10) / 10;
-      const cls = delta <= 0 ? 'down' : 'up';
-      const sinal = delta > 0 ? '+' : '';
-      deltaHtml = `<div class="balanca-stat-delta ${cls}">${sinal}${delta.toFixed(1)} em ${periodoLabel}</div>`;
-    }
-    return `<div class="balanca-stat-box"><div class="balanca-stat-num">${fmtDisplay(atual)}${unidade}</div>${deltaHtml}<div class="balanca-stat-label">${label}</div></div>`;
+    return `<div class="balanca-stat-box"><div class="balanca-stat-num">${fmtDisplay(atual)}${unidade}</div><div class="balanca-stat-label">${label}</div></div>`;
   }
 
   const statsHtml = `
@@ -2586,27 +2576,18 @@ function renderCalendar(){
       ${DAY_LABELS.map(l=>`<div class="cal-daylabel">${l}</div>`).join('')}
       ${cells}
     </div>
-    <div class="cal-legend">
-      <div class="legend-item"><div class="legend-dot fullbody"></div>Musculação (automático)</div>
-      <div class="legend-item"><div class="legend-dot boxe"></div>Boxe</div>
-      <div class="legend-item"><div class="legend-dot bike"></div>Bike</div>
-      <div class="legend-item"><div class="legend-dot tabata"></div>Tabata</div>
-      <div class="legend-item"><div class="legend-dot esteira"></div>Esteira</div>
-      <div class="legend-item"><div class="legend-dot alongamento"></div>Alongamento</div>
-      <div class="legend-item"><div class="legend-dot abdominal"></div>Abdominal</div>
-    </div>
     <div class="cal-form">
       <label>Data</label>
       <input class="cal-input" type="date" id="act-date" value="${todayKey}">
       <label>Atividade</label>
       <select class="cal-select" id="act-type" onchange="toggleKmField()">
-        <option value="fullbody">Musculação</option>
-        <option value="boxe">Boxe</option>
-        <option value="bike">Bike</option>
-        <option value="tabata">Tabata</option>
-        <option value="esteira">Esteira</option>
-        <option value="alongamento">Alongamento</option>
         <option value="abdominal">Abdominal</option>
+        <option value="alongamento">Alongamento</option>
+        <option value="bike">Bike</option>
+        <option value="boxe">Boxe</option>
+        <option value="esteira">Esteira</option>
+        <option value="fullbody">Musculação</option>
+        <option value="tabata">Tabata</option>
       </select>
       <div id="act-km-wrap" style="display:none;align-items:center;gap:6px;">
         <label>Km</label>
@@ -2843,17 +2824,6 @@ function computeStats(year){
 function renderDashboard(){
   const s = computeStats(dashYear);
 
-  const CATS = [
-    {key:'musc', total: s.musc, legendClass:'fullbody', label:'Musculação'},
-    {key:'boxe', total: s.boxe, legendClass:'boxe', label:'Boxe'},
-    {key:'bike', total: s.bikeCount, legendClass:'bike', label:'Bike'},
-    {key:'tabata', total: s.tabata, legendClass:'tabata', label:'Tabata'},
-    {key:'esteira', total: s.esteiraCount, legendClass:'esteira', label:'Esteira'},
-    {key:'alongamento', total: s.alongamento, legendClass:'alongamento', label:'Alongamento'},
-    {key:'abdominal', total: s.abdominal, legendClass:'abdominal', label:'Abdominal'},
-  ];
-  const activeCats = CATS.filter(c => c.total > 0);
-
   const statBoxesHtml = `
     ${s.musc > 0 ? `<div class="stat-box musc"><div class="stat-num">${s.musc}</div><div class="stat-label">Musculação</div></div>` : ''}
     ${s.boxe > 0 ? `<div class="stat-box boxe"><div class="stat-num">${s.boxe}</div><div class="stat-label">Boxe</div></div>` : ''}
@@ -2866,10 +2836,6 @@ function renderDashboard(){
     ${s.abdominal > 0 ? `<div class="stat-box abdominal"><div class="stat-num">${s.abdominal}</div><div class="stat-label">Abdominal</div></div>` : ''}
   `;
 
-  const legendHtml = activeCats.length === 0 ? '' : activeCats.map(c =>
-    `<div class="legend-item"><div class="legend-dot ${c.legendClass}"></div>${c.label}</div>`
-  ).join('');
-
   return `
     <div class="dash-card">
       <div class="cal-header">
@@ -2880,7 +2846,6 @@ function renderDashboard(){
         </div>
       </div>
       <div class="stat-grid">${statBoxesHtml}</div>
-      <div class="cal-legend">${legendHtml}</div>
       ${renderMonthStats()}
     </div>
   `;
