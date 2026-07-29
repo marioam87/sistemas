@@ -433,6 +433,25 @@
   }
   .auth-msg{font-size:11.5px;color:var(--done);margin-top:6px;width:100%;}
 
+  /* balança */
+  .balanca-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+  .balanca-stat-box{background:var(--surface-2);border-radius:10px;padding:14px 10px;text-align:center;}
+  .balanca-stat-num{font-family:'JetBrains Mono', monospace;font-weight:600;font-size:19px;color:var(--accent);}
+  .balanca-stat-delta{font-family:'JetBrains Mono', monospace;font-size:11px;margin-top:2px;}
+  .balanca-stat-delta.down{color:var(--done);}
+  .balanca-stat-delta.up{color:#c9552b;}
+  .balanca-stat-label{font-size:10.5px;color:var(--text-muted);margin-top:4px;}
+  .balanca-chart-wrap{display:flex;align-items:flex-end;gap:2px;height:90px;padding:0 2px;margin-bottom:18px;}
+  .balanca-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;}
+  .balanca-list-item{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-top:1px solid var(--border);font-size:13px;
+  }
+  .balanca-list-item:first-of-type{border-top:none;}
+  .balanca-list-date{color:var(--text-muted);font-family:'JetBrains Mono', monospace;font-size:11.5px;}
+  .balanca-list-vals{font-family:'JetBrains Mono', monospace;font-size:12.5px;text-align:right;}
+  .balanca-empty-msg{text-align:center;padding:30px 10px;color:var(--text-muted);font-size:14px;line-height:1.6;}
+
   .save-error-banner{
     background:#fde3da;
     color:#a8431c;
@@ -1019,9 +1038,40 @@ let dashYear = today.getFullYear();
 let dashMonthIndex = today.getMonth();
 let activeTab = 'calendario';
 
+let balancaRows = [];
+let balancaLoading = false;
+let balancaError = '';
+
 function setTab(tab){
   activeTab = tab;
+  if(tab === 'balanca') loadBalanca();
   render();
+}
+
+// Busca as últimas medições da balança direto do Supabase (Fase 4/5.2).
+// Não fica salvo em localStorage — é só uma leitura ao vivo, então precisa
+// de login + rede pra funcionar (mostra mensagem clara quando não dá).
+function loadBalanca(){
+  if(!supa || !authSession){ balancaError=''; return; }
+  balancaLoading = true;
+  balancaError = '';
+  render();
+  supa.from('medidas_corporais')
+    .select('data,peso,gordura_pct,imc')
+    .eq('user_id', authSession.user.id)
+    .order('data', {ascending:false})
+    .limit(60)
+    .then(({data, error}) => {
+      balancaLoading = false;
+      if(error){ balancaError = 'Erro ao buscar dados: ' + error.message; }
+      else { balancaRows = data || []; }
+      render();
+    })
+    .catch(() => {
+      balancaLoading = false;
+      balancaError = 'Não consegui buscar agora (sem rede?).';
+      render();
+    });
 }
 
 function changeDashYear(delta){
@@ -1831,6 +1881,89 @@ function elapsedStretchSeconds(){
   }
   return elapsed;
 }
+
+// ===================== BALANÇA (Fase 4/5.2) =====================
+// Lê direto do Supabase (tabela medidas_corporais) — não fica no
+// localStorage nem no state principal, é só uma leitura ao vivo. Sem
+// login, mostra uma mensagem em vez de dado nenhum.
+function formatDataBR(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+}
+
+function renderBalanca(){
+  if(!supa){
+    return `<div class="balanca-empty-msg">Sincronização indisponível offline.<br>Conecte-se à internet e recarregue o app.</div>`;
+  }
+  if(!authSession){
+    return `<div class="balanca-empty-msg">Faça login no cartão "Backup na nuvem" no topo da tela<br>pra ver os dados da balança aqui.</div>`;
+  }
+  if(balancaLoading){
+    return `<div class="balanca-empty-msg">Carregando…</div>`;
+  }
+  if(balancaError){
+    return `<div class="balanca-empty-msg">${balancaError}<br><br><button class="finish-btn ready" style="width:auto;padding:10px 20px;" onclick="loadBalanca()">Tentar de novo</button></div>`;
+  }
+  if(balancaRows.length === 0){
+    return `<div class="balanca-empty-msg">Nenhuma medição ainda.<br>Confere se o Atalho da balança já rodou pelo menos uma vez.</div>`;
+  }
+
+  // balancaRows vem do mais recente pro mais antigo (order desc); pra
+  // estatísticas e gráfico usamos cronológico (mais antigo primeiro).
+  const chron = balancaRows.slice().reverse();
+  const latest = chron[chron.length-1];
+  const oldest = chron[0];
+
+  function deltaBlock(atual, inicial, label, unidade){
+    if(atual === null || atual === undefined) return `<div class="balanca-stat-box"><div class="balanca-stat-num">—</div><div class="balanca-stat-label">${label}</div></div>`;
+    let deltaHtml = '';
+    if(inicial !== null && inicial !== undefined && chron.length > 1){
+      const delta = atual - inicial;
+      const cls = delta <= 0 ? 'down' : 'up';
+      const sinal = delta > 0 ? '+' : '';
+      deltaHtml = `<div class="balanca-stat-delta ${cls}">${sinal}${delta.toFixed(1)} no período</div>`;
+    }
+    return `<div class="balanca-stat-box"><div class="balanca-stat-num">${atual}${unidade}</div>${deltaHtml}<div class="balanca-stat-label">${label}</div></div>`;
+  }
+
+  const statsHtml = `
+    <div class="balanca-stat-grid">
+      ${deltaBlock(latest.peso, oldest.peso, 'Peso', 'kg')}
+      ${deltaBlock(latest.gordura_pct, oldest.gordura_pct, 'Gordura', '%')}
+      ${deltaBlock(latest.imc, oldest.imc, 'IMC', '')}
+    </div>
+  `;
+
+  const pesos = chron.map(r => r.peso).filter(p => p !== null && p !== undefined);
+  let chartHtml = '';
+  if(pesos.length >= 2){
+    const min = Math.min(...pesos), max = Math.max(...pesos);
+    const range = (max - min) || 1;
+    const bars = chron.map(r => {
+      if(r.peso === null || r.peso === undefined) return `<div class="balanca-bar" style="height:2px;opacity:.2;"></div>`;
+      const pct = 15 + ((r.peso - min) / range) * 85; // nunca deixa a barra sumir de vez
+      return `<div class="balanca-bar" style="height:${pct}%;" title="${formatDataBR(r.data)}: ${r.peso}kg"></div>`;
+    }).join('');
+    chartHtml = `<div class="balanca-chart-wrap">${bars}</div>`;
+  }
+
+  const listHtml = balancaRows.map(r => `
+    <div class="balanca-list-item">
+      <div class="balanca-list-date">${formatDataBR(r.data)}</div>
+      <div class="balanca-list-vals">${r.peso ?? '—'}kg${r.gordura_pct !== null && r.gordura_pct !== undefined ? ' · '+r.gordura_pct+'%' : ''}${r.imc !== null && r.imc !== undefined ? ' · IMC '+r.imc : ''}</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="dash-card">
+      ${statsHtml}
+      ${chartHtml}
+      <div class="stretch-list-title" style="padding:0 0 6px;">Últimas medições (${balancaRows.length})</div>
+      ${listHtml}
+    </div>
+  `;
+}
+// =================== FIM BALANÇA ===================
 
 function renderAlongamento(){
   const seg = STRETCH_TIMELINE[stretchIdx];
@@ -2742,6 +2875,7 @@ function render(){
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
       <button class="tab-btn ${activeTab==='abdominal'?'active':''}" onclick="setTab('abdominal')">Abdominal</button>
       <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
+      <button class="tab-btn ${activeTab==='balanca'?'active':''}" onclick="setTab('balanca')">Balança</button>
     </div>
 
     ${activeTab === 'calendario' ? `
@@ -2759,7 +2893,7 @@ function render(){
       <div class="trilha-scroll">${trilhaHtml}</div>
 
       <div class="session-card">${bodyHtml}</div>
-    ` : activeTab === 'abdominal' ? renderAbdominal() : renderAlongamento()}
+    ` : activeTab === 'abdominal' ? renderAbdominal() : activeTab === 'alongamento' ? renderAlongamento() : renderBalanca()}
   `;
 }
 
