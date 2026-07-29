@@ -2,6 +2,15 @@
 
 Documento de handoff para o Claude Code. Este arquivo é um app pessoal de treino/atividade física do Mario, feito como um único arquivo HTML autocontido (HTML+CSS+JS vanilla, sem build, sem dependências externas). Ele foi desenvolvido ao longo de uma conversa longa no Claude.ai e agora está migrando pra manutenção via Claude Code + GitHub Pages.
 
+> 28/07/2026 — Reintroduzida uma 5ª aba, **Peso** (leitura de composição
+> corporal), agora diferente da versão antiga que tinha sido removida: lê
+> ao vivo da tabela `medidas_corporais` no Supabase (não usa `localStorage`
+> nem `state`), com filtro de período (7/30/90/tudo), seleção de métrica
+> (peso/gordura/IMC) no gráfico, toque na barra pra ver o valor do dia, e
+> edição/exclusão inline de cada medição (auto-save direto no Supabase). Ver
+> seção "Aba Peso" abaixo. Cor de destaque também mudou de âmbar pra azul
+> (`#2f6fed`) e o ícone do PWA foi trocado — ver "Preferências de estilo".
+>
 > 20/07/2026 — Este documento foi revisado pra bater com o código real: as
 > abas **Abdominal** e **Alongamento** (timers guiados com lista de
 > exercícios e registro manual no calendário) já existiam no app mas não
@@ -33,7 +42,7 @@ Documento de handoff para o Claude Code. Este arquivo é um app pessoal de trein
 
 ## Estrutura do app
 
-Quatro abas: **Calendário**, **Musculação**, **Abdominal**, **Alongamento**. (Uma quinta aba, de composição corporal, existiu no passado e foi removida a pedido do usuário — não confundir com as abas atuais.)
+Cinco abas: **Calendário**, **Musculação**, **Abdominal**, **Alongamento**, **Peso**. (Uma versão antiga da aba de composição corporal existiu no passado, baseada em `localStorage`/`state`, e foi removida a pedido do usuário. A aba **Peso** atual — adicionada em 28/07/2026 — é uma reimplementação diferente, que lê ao vivo do Supabase; não confundir as duas.)
 
 ### Aba Calendário
 - Resumo anual (navegável por ano, com setas ‹›): cartões de total (Musculação, Boxe, Pedaladas, Km na bike, Tabata, Esteira, Alongamento, Abdominal) — só aparecem categorias com total > 0 naquele ano.
@@ -61,6 +70,14 @@ Quatro abas: **Calendário**, **Musculação**, **Abdominal**, **Alongamento**. 
 - Mesmo padrão de timer da aba Abdominal, mas com `REST_SECONDS = 10s` de descanso entre exercícios.
 - Usa equipamento disponível em casa do Mario: elástico circular (25cm), elástico aberto (1,20m), colchonete, mesa de 87cm, 2 pesos de 3kg, 2 bolinhas de 15cm.
 - Registro manual e independente do timer, igual ao Abdominal — loga `{type:'alongamento', label:'Alongamento'}`.
+
+### Aba Peso
+- Lê direto da tabela `medidas_corporais` no Supabase (colunas `id`, `data`, `peso`, `gordura_pct`, `imc`, filtradas por `user_id` da sessão logada) — **não** usa `localStorage` nem `state`, é leitura ao vivo (precisa de login + rede; mostra mensagem clara quando não dá, inclusive offline).
+- Cards de Peso/Gordura/IMC com delta desde o início do período selecionado; filtro de período (`balancaPeriodDays`: 7/30/90/9999="Tudo") que afeta cards, gráfico e a comparação, mas não a lista completa embaixo.
+- Gráfico de barras com seleção de métrica (`balancaMetric`: peso/gordura_pct/imc); toque numa barra mostra o valor exato do dia (`balancaTapInfo`).
+- Bloco "Melhor · atual · pior" da métrica escolhida, dentro do período selecionado.
+- Lista de todas as medições carregadas (até 500, mais recentes primeiro) — toque numa linha expande edição inline (peso/gordura/IMC) com auto-save no Supabase (`balancaUpdateField`) e botão de excluir (`balancaDeleteRow`, com confirmação).
+- `fmtNum` arredonda pra 1 casa decimal (protege contra sujeira de ponto flutuante do HealthKit/Atalhos); `fmtDisplay` formata sempre com 1 casa pra tela.
 
 ### Áudio dos timers (Abdominal e Alongamento)
 - Usa Web Audio API (`AudioContext`) pra gerar os beeps — sem arquivos de áudio externos.
@@ -127,5 +144,6 @@ pro lugar errado.
 
 - Fundo branco, tema claro (já implementado).
 - Fontes: Space Grotesk (títulos), Inter (corpo), JetBrains Mono (números/dados).
-- Cor de destaque: âmbar (`#c17d2e`). Verde para "concluído"/positivo, laranja-avermelhado para "negativo".
+- Cor de destaque: azul (`#2f6fed`, trocado do âmbar `#c17d2e` original em 28/07/2026). Verde para "concluído"/positivo, laranja-avermelhado para "negativo".
+- Ícone do PWA (`icon-192.png`/`icon-512.png`, referenciados em `manifest.json` e `index.html`) trocado em 28/07/2026 a partir de `opcaoB_pulso_navy_512.png` (fonte 512px; o 192px é gerado por redimensionamento). Se o ícone mudar de novo, gerar os dois tamanhos a partir da mesma fonte e manter `theme_color` do `manifest.json` em sincronia com `--accent`/`theme-color` do `index.html`.
 - Prefere respostas/interfaces compactas, escaneáveis, sem excesso de texto.
