@@ -6,14 +6,13 @@
 // index.html, aumente CACHE_VERSION aqui (mesmo padrão do APP_VERSION lá no
 // index.html). Sem isso, o service worker pode continuar servindo a versão
 // antiga em cache pro usuário, mesmo depois do git push.
-const CACHE_VERSION = 'v2026-07-27';
+const CACHE_VERSION = 'v2026-07-29';
 const CACHE_NAME = 'atividade-fisica-' + CACHE_VERSION;
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './icon-192.png',
   './icon-512.png',
 ];
 
