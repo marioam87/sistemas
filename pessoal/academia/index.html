@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Treino">
 <meta name="theme-color" content="#2f6fed">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" href="icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -475,6 +475,11 @@
     margin-left:auto;font-family:'Inter', sans-serif;font-size:12px;font-weight:600;
     color:#c9552b;background:none;border:none;cursor:pointer;padding:8px 0;
   }
+  .balanca-comp-label{font-family:'Inter', sans-serif;font-weight:700;font-size:12.5px;color:var(--text);}
+  .balanca-comp-label.down{color:var(--done);}
+  .balanca-comp-label.up{color:#c9552b;}
+  .balanca-comp-date{font-family:'JetBrains Mono', monospace;font-size:10.5px;color:var(--text-faint);margin-top:3px;}
+  .balanca-comp-val{font-family:'JetBrains Mono', monospace;font-size:12px;color:var(--text-muted);margin-top:3px;}
 
   .save-error-banner{
     background:#fde3da;
@@ -2046,7 +2051,6 @@ function renderBalanca(){
   const metricInfo = BALANCA_METRICS[balancaMetric];
   const valRows = chron.filter(r => r[balancaMetric] !== null && r[balancaMetric] !== undefined);
   let chartHtml = `<div class="balanca-empty-msg" style="padding:20px 10px;">Sem dados de ${metricInfo.label.toLowerCase()} nesse período.</div>`;
-  let comparisonHtml = '';
   if(valRows.length >= 2){
     const vals = valRows.map(r => r[balancaMetric]);
     const min = Math.min(...vals), max = Math.max(...vals);
@@ -2062,21 +2066,27 @@ function renderBalanca(){
       ? `<div class="balanca-tap-info">${formatDataBR(balancaTapInfo.data)}: <strong>${fmtDisplay(balancaTapInfo.valor)}${metricInfo.unidade}</strong></div>`
       : `<div class="balanca-tap-info balanca-tap-hint">toque numa barra pra ver o valor do dia</div>`;
     chartHtml = `<div class="balanca-chart-wrap">${bars}</div>${infoLine}`;
+  }
 
-    // Comparação: melhor (menor), atual (mais recente) e pior (maior) da
-    // métrica escolhida, dentro do período selecionado, com a data de cada uma.
-    const melhorRow = valRows.reduce((a,b) => a[balancaMetric] <= b[balancaMetric] ? a : b);
-    const piorRow = valRows.reduce((a,b) => a[balancaMetric] >= b[balancaMetric] ? a : b);
-    const atualRow = valRows[valRows.length-1];
+  // Comparação melhor/atual/pior: sempre olha o histórico INTEIRO (não o
+  // período escolhido pro gráfico), baseada no peso. Cada quadro mostra a
+  // "foto" completa daquele dia: data, peso, gordura e IMC juntos.
+  const pesoRows = allRows.filter(r => r.peso !== null && r.peso !== undefined);
+  let comparisonHtml = '';
+  if(pesoRows.length >= 2){
+    const melhorRow = pesoRows.reduce((a,b) => a.peso <= b.peso ? a : b);
+    const piorRow = pesoRows.reduce((a,b) => a.peso >= b.peso ? a : b);
+    const atualRow = pesoRows[0]; // allRows vem do mais recente pro mais antigo
     const compBox = (label, row, cls) => `
       <div class="balanca-stat-box">
-        <div class="balanca-stat-num ${cls}">${fmtDisplay(row[balancaMetric])}${metricInfo.unidade}</div>
-        <div class="balanca-stat-delta">${formatDataBR(row.data)}</div>
-        <div class="balanca-stat-label">${label}</div>
+        <div class="balanca-comp-label ${cls}">${label}</div>
+        <div class="balanca-comp-date">${formatDataBR(row.data)}</div>
+        <div class="balanca-comp-val">${fmtDisplay(row.peso)}kg</div>
+        <div class="balanca-comp-val">${row.gordura_pct !== null && row.gordura_pct !== undefined ? fmtDisplay(row.gordura_pct)+'%' : '—'}</div>
+        <div class="balanca-comp-val">${row.imc !== null && row.imc !== undefined ? 'IMC '+fmtDisplay(row.imc) : '—'}</div>
       </div>
     `;
     comparisonHtml = `
-      <div class="stretch-list-title" style="padding:16px 0 6px;">Melhor · atual · pior — ${metricInfo.label} (${periodoLabel})</div>
       <div class="balanca-stat-grid">
         ${compBox('Melhor', melhorRow, 'down')}
         ${compBox('Atual', atualRow, '')}

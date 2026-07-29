@@ -145,5 +145,5 @@ pro lugar errado.
 - Fundo branco, tema claro (já implementado).
 - Fontes: Space Grotesk (títulos), Inter (corpo), JetBrains Mono (números/dados).
 - Cor de destaque: azul (`#2f6fed`, trocado do âmbar `#c17d2e` original em 28/07/2026). Verde para "concluído"/positivo, laranja-avermelhado para "negativo".
-- Ícone do PWA (`icon-192.png`/`icon-512.png`, referenciados em `manifest.json` e `index.html`) trocado em 28/07/2026 a partir de `opcaoB_pulso_navy_512.png` (fonte 512px; o 192px é gerado por redimensionamento). Se o ícone mudar de novo, gerar os dois tamanhos a partir da mesma fonte e manter `theme_color` do `manifest.json` em sincronia com `--accent`/`theme-color` do `index.html`.
+- Ícone do PWA: só `icon-512.png` (referenciado em `manifest.json` e em `apple-touch-icon`/`icon` do `index.html`). Trocado em 28/07/2026 a partir de `opcaoB_pulso_navy_512.png`; o `icon-192.png` que existia foi removido de propósito (junto com a entrada 192x192 do manifest) — não recriar sem necessidade. Se o ícone mudar de novo, manter `theme_color` do `manifest.json` em sincronia com `--accent`/`theme-color` do `index.html`.
 - Prefere respostas/interfaces compactas, escaneáveis, sem excesso de texto.
