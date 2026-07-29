@@ -3012,12 +3012,14 @@ function render(){
     ${saveErrorFlag ? `<div class="save-error-banner">⚠ Não consegui salvar essa alteração agora (falha no armazenamento). Baixe um backup pra não perder nada, e tente recarregar a página.</div>` : ''}
     <h1>ATIVIDADE FÍSICA</h1>
 
-    <div class="tabs">
+    <div class="tabs" style="margin-bottom:6px;">
       <button class="tab-btn ${activeTab==='calendario'?'active':''}" onclick="setTab('calendario')">Calendário</button>
+      <button class="tab-btn ${activeTab==='balanca'?'active':''}" onclick="setTab('balanca')">Peso</button>
+    </div>
+    <div class="tabs">
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
       <button class="tab-btn ${activeTab==='abdominal'?'active':''}" onclick="setTab('abdominal')">Abdominal</button>
       <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
-      <button class="tab-btn ${activeTab==='balanca'?'active':''}" onclick="setTab('balanca')">Peso</button>
     </div>
 
     ${activeTab === 'calendario' ? `
