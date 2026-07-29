@@ -811,6 +811,14 @@ function authLogout(){
 
 // ---------- merge seguro (mesma filosofia da restauração de backup: nunca
 // jogar fora progresso, só somar) ----------
+// Assinatura estável de uma atividade, independente da ordem dos campos
+// (o Postgres/jsonb pode devolver os campos em ordem diferente da que foi
+// salva, e comparar por JSON.stringify direto detectava isso como "atividade
+// diferente" e duplicava — este helper corrige isso).
+function activitySig(a){
+  return `${a.type || ''}|${a.label || ''}|${a.km ?? ''}`;
+}
+
 function mergeState(local, remote){
   if(!remote) return local;
   const merged = JSON.parse(JSON.stringify(local));
@@ -847,9 +855,9 @@ function mergeState(local, remote){
   Object.keys(remote.activities || {}).forEach(key => {
     const localArr = merged.activities[key] || [];
     const remoteArr = remote.activities[key] || [];
-    const seen = new Set(localArr.map(a => JSON.stringify(a)));
+    const seen = new Set(localArr.map(a => activitySig(a)));
     remoteArr.forEach(a => {
-      const sig = JSON.stringify(a);
+      const sig = activitySig(a);
       if(!seen.has(sig)){ localArr.push(a); seen.add(sig); }
     });
     merged.activities[key] = localArr;
@@ -2646,6 +2654,34 @@ async function loadState(){
       if(state.selected < 2) state.selected = 2;
     }
     state.seededVersion = CURRENT_SEED_VERSION;
+    await saveState();
+  }
+
+  // Correção pontual (uma vez só): um bug de sincronização com a nuvem
+  // duplicava atividades quando o Postgres devolvia os campos em ordem
+  // diferente da que foi salva (ver mergeState/activitySig). Aqui a gente
+  // poda só o EXCESSO além do que o SEED_ACTIVITIES original já previa pra
+  // cada dia — nunca mexe em datas fora do seed (isto é, nada que você
+  // adicionou manualmente é tocado), e preserva corretamente dias que
+  // legitimamente têm a mesma atividade repetida (ex: 2 pedaladas no
+  // mesmo dia), porque o gabarito já conta essas repetições certas.
+  if(!state.dedupSeedFixV1){
+    Object.keys(SEED_ACTIVITIES).forEach(key => {
+      if(!state.activities[key]) return;
+      const seedCounts = {};
+      SEED_ACTIVITIES[key].forEach(a => {
+        const sig = activitySig(a);
+        seedCounts[sig] = (seedCounts[sig] || 0) + 1;
+      });
+      const usedCounts = {};
+      state.activities[key] = state.activities[key].filter(a => {
+        const sig = activitySig(a);
+        usedCounts[sig] = (usedCounts[sig] || 0) + 1;
+        const cap = seedCounts[sig]; // undefined = não veio do seed, nunca poda
+        return cap === undefined || usedCounts[sig] <= cap;
+      });
+    });
+    state.dedupSeedFixV1 = true;
     await saveState();
   }
 
