@@ -464,17 +464,21 @@
   }
 
   /* abas */
-  .tabs{display:flex;gap:6px;margin-bottom:20px;}
+  .tabs{display:flex;gap:4px;margin-bottom:20px;}
   .tab-btn{
     flex:1;
-    padding:10px 4px;
-    border-radius:10px;
+    min-width:0;
+    padding:9px 2px;
+    border-radius:9px;
     border:1px solid var(--border);
     background:var(--surface-2);
     color:var(--text-muted);
     font-family:'Inter', sans-serif;
     font-weight:600;
-    font-size:12.5px;
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
     cursor:pointer;
   }
   .tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -1891,6 +1895,14 @@ function formatDataBR(iso){
   return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
 }
 
+// Arredonda pra 1 casa decimal na exibição — proteção contra "sujeira" de
+// ponto flutuante que às vezes vem do HealthKit/Atalhos (ex: 24.60000038...
+// em vez de 24.6). Nunca deixa o layout variar de tamanho por causa disso.
+function fmtNum(n){
+  if(n === null || n === undefined) return null;
+  return Math.round(n * 10) / 10;
+}
+
 function renderBalanca(){
   if(!supa){
     return `<div class="balanca-empty-msg">Sincronização indisponível offline.<br>Conecte-se à internet e recarregue o app.</div>`;
@@ -1908,9 +1920,16 @@ function renderBalanca(){
     return `<div class="balanca-empty-msg">Nenhuma medição ainda.<br>Confere se o Atalho da balança já rodou pelo menos uma vez.</div>`;
   }
 
-  // balancaRows vem do mais recente pro mais antigo (order desc); pra
-  // estatísticas e gráfico usamos cronológico (mais antigo primeiro).
-  const chron = balancaRows.slice().reverse();
+  // balancaRows vem do mais recente pro mais antigo (order desc). Normaliza
+  // peso/gordura/imc pra 1 casa decimal logo de cara, pra tudo que usar
+  // esses valores daqui pra baixo (cards, gráfico, lista) já vir limpo.
+  const rows = balancaRows.map(r => ({
+    data: r.data,
+    peso: fmtNum(r.peso),
+    gordura_pct: fmtNum(r.gordura_pct),
+    imc: fmtNum(r.imc),
+  }));
+  const chron = rows.slice().reverse();
   const latest = chron[chron.length-1];
   const oldest = chron[0];
 
@@ -1947,7 +1966,7 @@ function renderBalanca(){
     chartHtml = `<div class="balanca-chart-wrap">${bars}</div>`;
   }
 
-  const listHtml = balancaRows.map(r => `
+  const listHtml = rows.map(r => `
     <div class="balanca-list-item">
       <div class="balanca-list-date">${formatDataBR(r.data)}</div>
       <div class="balanca-list-vals">${r.peso ?? '—'}kg${r.gordura_pct !== null && r.gordura_pct !== undefined ? ' · '+r.gordura_pct+'%' : ''}${r.imc !== null && r.imc !== undefined ? ' · IMC '+r.imc : ''}</div>
@@ -2875,7 +2894,7 @@ function render(){
       <button class="tab-btn ${activeTab==='musculacao'?'active':''}" onclick="setTab('musculacao')">Musculação</button>
       <button class="tab-btn ${activeTab==='abdominal'?'active':''}" onclick="setTab('abdominal')">Abdominal</button>
       <button class="tab-btn ${activeTab==='alongamento'?'active':''}" onclick="setTab('alongamento')">Alongamento</button>
-      <button class="tab-btn ${activeTab==='balanca'?'active':''}" onclick="setTab('balanca')">Balança</button>
+      <button class="tab-btn ${activeTab==='balanca'?'active':''}" onclick="setTab('balanca')">Peso</button>
     </div>
 
     ${activeTab === 'calendario' ? `
