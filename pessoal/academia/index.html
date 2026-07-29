@@ -451,6 +451,30 @@
   .balanca-list-date{color:var(--text-muted);font-family:'JetBrains Mono', monospace;font-size:11.5px;}
   .balanca-list-vals{font-family:'JetBrains Mono', monospace;font-size:12.5px;text-align:right;}
   .balanca-empty-msg{text-align:center;padding:30px 10px;color:var(--text-muted);font-size:14px;line-height:1.6;}
+  .balanca-bar{cursor:pointer;}
+  .balanca-bar.tapped{background:var(--done);}
+  .balanca-tap-info{
+    text-align:center;font-family:'JetBrains Mono', monospace;font-size:12px;
+    color:var(--text);margin:8px 0 4px;
+  }
+  .balanca-tap-info.balanca-tap-hint{color:var(--text-faint);font-family:'Inter', sans-serif;font-size:11.5px;}
+  .balanca-list-item{cursor:pointer;}
+  .balanca-list-item-open{color:var(--accent);}
+  .balanca-edit-row{
+    display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;
+    background:var(--surface-2);border-radius:9px;padding:12px;margin:-4px 0 10px;
+  }
+  .balanca-edit-field{display:flex;flex-direction:column;gap:4px;}
+  .balanca-edit-field label{font-size:10.5px;color:var(--text-muted);}
+  .balanca-edit-field input{
+    font-family:'JetBrains Mono', monospace;font-size:13px;
+    padding:6px 8px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);width:70px;
+  }
+  .balanca-delete-btn{
+    margin-left:auto;font-family:'Inter', sans-serif;font-size:12px;font-weight:600;
+    color:#c9552b;background:none;border:none;cursor:pointer;padding:8px 0;
+  }
 
   .save-error-banner{
     background:#fde3da;
@@ -1045,11 +1069,49 @@ let activeTab = 'calendario';
 let balancaRows = [];
 let balancaLoading = false;
 let balancaError = '';
+let balancaPeriodDays = 30;   // filtro do gráfico/cards: 7, 30, 90 ou 9999 (tudo)
+let balancaMetric = 'peso';   // qual métrica o gráfico mostra: peso | gordura_pct | imc
+let balancaTapInfo = null;    // ponto tocado no gráfico: {data, valor}
+let balancaExpandedId = null; // qual linha da lista está aberta pra editar/excluir
 
 function setTab(tab){
   activeTab = tab;
   if(tab === 'balanca') loadBalanca();
   render();
+}
+
+function setBalancaPeriod(days){ balancaPeriodDays = days; balancaTapInfo = null; render(); }
+function setBalancaMetric(m){ balancaMetric = m; balancaTapInfo = null; render(); }
+function tapBalancaPoint(dataIso, valor){
+  balancaTapInfo = (balancaTapInfo && balancaTapInfo.data === dataIso) ? null : {data: dataIso, valor};
+  render();
+}
+function toggleBalancaExpand(id){
+  balancaExpandedId = balancaExpandedId === id ? null : id;
+  render();
+}
+
+// Edita um campo direto no Supabase (auto-save, sem botão separado — mesmo
+// padrão do resto do app). value vazio grava null.
+async function balancaUpdateField(id, field, value){
+  if(!supa || !authSession) return;
+  const trimmed = (value || '').trim();
+  const num = trimmed === '' ? null : parseFloat(trimmed.replace(',', '.'));
+  if(trimmed !== '' && isNaN(num)) return;
+  try{
+    await supa.from('medidas_corporais').update({[field]: num}).eq('id', id);
+    loadBalanca();
+  }catch(e){ /* sem rede — o valor no campo já mudou visualmente, tenta de novo depois */ }
+}
+
+async function balancaDeleteRow(id){
+  if(!supa || !authSession) return;
+  if(!confirm('Excluir essa medição? Não dá pra desfazer.')) return;
+  try{
+    await supa.from('medidas_corporais').delete().eq('id', id);
+    balancaExpandedId = null;
+    loadBalanca();
+  }catch(e){ alert('Não consegui excluir agora (sem rede?). Tente de novo.'); }
 }
 
 // Busca as últimas medições da balança direto do Supabase (Fase 4/5.2).
@@ -1061,10 +1123,10 @@ function loadBalanca(){
   balancaError = '';
   render();
   supa.from('medidas_corporais')
-    .select('data,peso,gordura_pct,imc')
+    .select('id,data,peso,gordura_pct,imc')
     .eq('user_id', authSession.user.id)
     .order('data', {ascending:false})
-    .limit(60)
+    .limit(500)
     .then(({data, error}) => {
       balancaLoading = false;
       if(error){ balancaError = 'Erro ao buscar dados: ' + error.message; }
@@ -1077,6 +1139,7 @@ function loadBalanca(){
       render();
     });
 }
+
 
 function changeDashYear(delta){
   dashYear += delta;
@@ -1903,6 +1966,13 @@ function fmtNum(n){
   return Math.round(n * 10) / 10;
 }
 
+const BALANCA_METRICS = {
+  peso: {label:'Peso', unidade:'kg'},
+  gordura_pct: {label:'Gordura', unidade:'%'},
+  imc: {label:'IMC', unidade:''},
+};
+const BALANCA_PERIODOS = [ [7,'7d'], [30,'30d'], [90,'90d'], [9999,'Tudo'] ];
+
 function renderBalanca(){
   if(!supa){
     return `<div class="balanca-empty-msg">Sincronização indisponível offline.<br>Conecte-se à internet e recarregue o app.</div>`;
@@ -1920,64 +1990,116 @@ function renderBalanca(){
     return `<div class="balanca-empty-msg">Nenhuma medição ainda.<br>Confere se o Atalho da balança já rodou pelo menos uma vez.</div>`;
   }
 
-  // balancaRows vem do mais recente pro mais antigo (order desc). Normaliza
-  // peso/gordura/imc pra 1 casa decimal logo de cara, pra tudo que usar
-  // esses valores daqui pra baixo (cards, gráfico, lista) já vir limpo.
-  const rows = balancaRows.map(r => ({
+  // Normaliza pra 1 casa decimal logo de cara (protege contra sujeira de
+  // ponto flutuante do HealthKit/Atalhos).
+  const allRows = balancaRows.map(r => ({
+    id: r.id,
     data: r.data,
     peso: fmtNum(r.peso),
     gordura_pct: fmtNum(r.gordura_pct),
     imc: fmtNum(r.imc),
   }));
-  const chron = rows.slice().reverse();
+
+  // Filtra pro período escolhido — só afeta os cards e o gráfico. A lista
+  // embaixo sempre mostra tudo que foi carregado, pra dar pra editar/apagar
+  // qualquer medição antiga também.
+  const cutoff = balancaPeriodDays >= 9999 ? null : new Date(Date.now() - balancaPeriodDays*24*60*60*1000);
+  const periodRows = cutoff ? allRows.filter(r => new Date(r.data) >= cutoff) : allRows;
+  const chron = periodRows.slice().reverse(); // mais antigo primeiro, pra estatísticas e gráfico
   const latest = chron[chron.length-1];
   const oldest = chron[0];
+  const periodoLabel = BALANCA_PERIODOS.find(p => p[0] === balancaPeriodDays)[1];
 
-  function deltaBlock(atual, inicial, label, unidade){
+  function deltaBlock(campo, label, unidade){
+    const atual = latest ? latest[campo] : null;
+    const inicial = oldest ? oldest[campo] : null;
     if(atual === null || atual === undefined) return `<div class="balanca-stat-box"><div class="balanca-stat-num">—</div><div class="balanca-stat-label">${label}</div></div>`;
     let deltaHtml = '';
     if(inicial !== null && inicial !== undefined && chron.length > 1){
-      const delta = atual - inicial;
+      const delta = Math.round((atual - inicial) * 10) / 10;
       const cls = delta <= 0 ? 'down' : 'up';
       const sinal = delta > 0 ? '+' : '';
-      deltaHtml = `<div class="balanca-stat-delta ${cls}">${sinal}${delta.toFixed(1)} no período</div>`;
+      deltaHtml = `<div class="balanca-stat-delta ${cls}">${sinal}${delta} em ${periodoLabel}</div>`;
     }
     return `<div class="balanca-stat-box"><div class="balanca-stat-num">${atual}${unidade}</div>${deltaHtml}<div class="balanca-stat-label">${label}</div></div>`;
   }
 
+  const periodBtnsHtml = BALANCA_PERIODOS.map(([days,label]) =>
+    `<button class="tab-btn ${balancaPeriodDays===days?'active':''}" style="padding:7px 2px;font-size:10.5px;" onclick="setBalancaPeriod(${days})">${label}</button>`
+  ).join('');
+
   const statsHtml = `
     <div class="balanca-stat-grid">
-      ${deltaBlock(latest.peso, oldest.peso, 'Peso', 'kg')}
-      ${deltaBlock(latest.gordura_pct, oldest.gordura_pct, 'Gordura', '%')}
-      ${deltaBlock(latest.imc, oldest.imc, 'IMC', '')}
+      ${deltaBlock('peso', 'Peso', 'kg')}
+      ${deltaBlock('gordura_pct', 'Gordura', '%')}
+      ${deltaBlock('imc', 'IMC', '')}
     </div>
   `;
 
-  const pesos = chron.map(r => r.peso).filter(p => p !== null && p !== undefined);
-  let chartHtml = '';
-  if(pesos.length >= 2){
-    const min = Math.min(...pesos), max = Math.max(...pesos);
+  // Gráfico: métrica escolhida, com toque pra ver o valor exato do dia.
+  const metricBtnsHtml = Object.keys(BALANCA_METRICS).map(m =>
+    `<button class="tab-btn ${balancaMetric===m?'active':''}" style="padding:7px 2px;font-size:10.5px;" onclick="setBalancaMetric('${m}')">${BALANCA_METRICS[m].label}</button>`
+  ).join('');
+
+  const vals = chron.map(r => r[balancaMetric]).filter(v => v !== null && v !== undefined);
+  let chartHtml = `<div class="balanca-empty-msg" style="padding:20px 10px;">Sem dados de ${BALANCA_METRICS[balancaMetric].label.toLowerCase()} nesse período.</div>`;
+  if(vals.length >= 2){
+    const min = Math.min(...vals), max = Math.max(...vals);
     const range = (max - min) || 1;
     const bars = chron.map(r => {
-      if(r.peso === null || r.peso === undefined) return `<div class="balanca-bar" style="height:2px;opacity:.2;"></div>`;
-      const pct = 15 + ((r.peso - min) / range) * 85; // nunca deixa a barra sumir de vez
-      return `<div class="balanca-bar" style="height:${pct}%;" title="${formatDataBR(r.data)}: ${r.peso}kg"></div>`;
+      const v = r[balancaMetric];
+      if(v === null || v === undefined) return `<div class="balanca-bar" style="height:2px;opacity:.2;"></div>`;
+      const pct = 15 + ((v - min) / range) * 85; // nunca deixa a barra sumir de vez
+      const isTapped = balancaTapInfo && balancaTapInfo.data === r.data;
+      return `<div class="balanca-bar ${isTapped?'tapped':''}" style="height:${pct}%;" onclick="tapBalancaPoint('${r.data}', ${v})"></div>`;
     }).join('');
-    chartHtml = `<div class="balanca-chart-wrap">${bars}</div>`;
+    const infoLine = balancaTapInfo
+      ? `<div class="balanca-tap-info">${formatDataBR(balancaTapInfo.data)}: <strong>${balancaTapInfo.valor}${BALANCA_METRICS[balancaMetric].unidade}</strong></div>`
+      : `<div class="balanca-tap-info balanca-tap-hint">toque numa barra pra ver o valor do dia</div>`;
+    chartHtml = `<div class="balanca-chart-wrap">${bars}</div>${infoLine}`;
   }
 
-  const listHtml = rows.map(r => `
-    <div class="balanca-list-item">
-      <div class="balanca-list-date">${formatDataBR(r.data)}</div>
-      <div class="balanca-list-vals">${r.peso ?? '—'}kg${r.gordura_pct !== null && r.gordura_pct !== undefined ? ' · '+r.gordura_pct+'%' : ''}${r.imc !== null && r.imc !== undefined ? ' · IMC '+r.imc : ''}</div>
-    </div>
-  `).join('');
+  const listHtml = allRows.map(r => {
+    const isOpen = balancaExpandedId === r.id;
+    const summary = `${r.peso ?? '—'}kg${r.gordura_pct !== null && r.gordura_pct !== undefined ? ' · '+r.gordura_pct+'%' : ''}${r.imc !== null && r.imc !== undefined ? ' · IMC '+r.imc : ''}`;
+    if(!isOpen){
+      return `
+        <div class="balanca-list-item" onclick="toggleBalancaExpand(${r.id})">
+          <div class="balanca-list-date">${formatDataBR(r.data)}</div>
+          <div class="balanca-list-vals">${summary}</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="balanca-list-item balanca-list-item-open" onclick="toggleBalancaExpand(${r.id})">
+        <div class="balanca-list-date">${formatDataBR(r.data)}</div>
+        <div class="balanca-list-vals">${summary} ▾</div>
+      </div>
+      <div class="balanca-edit-row" onclick="event.stopPropagation()">
+        <div class="balanca-edit-field">
+          <label>Peso (kg)</label>
+          <input type="text" inputmode="decimal" value="${r.peso ?? ''}" onchange="balancaUpdateField(${r.id},'peso',this.value)" />
+        </div>
+        <div class="balanca-edit-field">
+          <label>Gordura (%)</label>
+          <input type="text" inputmode="decimal" value="${r.gordura_pct ?? ''}" onchange="balancaUpdateField(${r.id},'gordura_pct',this.value)" />
+        </div>
+        <div class="balanca-edit-field">
+          <label>IMC</label>
+          <input type="text" inputmode="decimal" value="${r.imc ?? ''}" onchange="balancaUpdateField(${r.id},'imc',this.value)" />
+        </div>
+        <button class="balanca-delete-btn" onclick="balancaDeleteRow(${r.id})">Excluir esta medição</button>
+      </div>
+    `;
+  }).join('');
 
   return `
     <div class="dash-card">
+      <div class="tabs" style="margin-bottom:12px;">${periodBtnsHtml}</div>
       ${statsHtml}
+      <div class="tabs" style="margin-bottom:8px;">${metricBtnsHtml}</div>
       ${chartHtml}
-      <div class="stretch-list-title" style="padding:0 0 6px;">Últimas medições (${balancaRows.length})</div>
+      <div class="stretch-list-title" style="padding:16px 0 6px;">Todas as medições (${allRows.length}) — toque pra editar ou excluir</div>
       ${listHtml}
     </div>
   `;
