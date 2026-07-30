@@ -1114,7 +1114,7 @@ const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 
 // Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
 // serve pra confirmar que o Safari carregou a versão nova depois do git push
 // (sem isso, o PWA às vezes continua servindo uma versão em cache).
-const APP_VERSION = '2026-07-29d';
+const APP_VERSION = '2026-07-29e';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -1130,13 +1130,17 @@ let balancaMetric = 'peso';   // qual métrica o gráfico mostra: peso | gordura
 let balancaTapInfo = null;    // ponto tocado no gráfico: {data, valor}
 let balancaExpandedId = null; // qual linha da lista está aberta pra editar/excluir
 let balancaFormMsg = '';      // mensagem de status do formulário de inserção manual
-let balancaExpandedYear = today.getFullYear();  // qual ano está expandido na lista (só um por vez)
+let balancaExpandedYear = null;  // qual ano está expandido na lista (só um por vez) — começa retraído
 let balancaExpandedMonthKey = null;             // qual mês está expandido, formato "ano-mes" (só um por vez)
 let balancaFormDate = toKey(today.getFullYear(), today.getMonth(), today.getDate()); // data escolhida no formulário manual
 
 function setTab(tab){
   activeTab = tab;
-  if(tab === 'balanca') loadBalanca();
+  if(tab === 'balanca'){
+    balancaExpandedYear = null;
+    balancaExpandedMonthKey = null;
+    loadBalanca();
+  }
   render();
 }
 
