@@ -1114,7 +1114,7 @@ const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 
 // Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
 // serve pra confirmar que o Safari carregou a versão nova depois do git push
 // (sem isso, o PWA às vezes continua servindo uma versão em cache).
-const APP_VERSION = '2026-07-29e';
+const APP_VERSION = '2026-07-29f';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -2321,7 +2321,6 @@ function renderBalanca(){
 
   const addFormHtml = `
     <div class="balanca-add-card">
-      <div class="balanca-add-title">Adicionar medição manual</div>
       <div class="balanca-edit-row" style="margin:0 0 8px;">
         <div class="balanca-edit-field">
           <label>Data</label>
@@ -2342,11 +2341,15 @@ function renderBalanca(){
           <label>IMC</label>
           <input type="text" inputmode="decimal" id="balanca-add-imc" placeholder="26.4" />
         </div>
+        <div class="balanca-edit-field">
+          <label>&nbsp;</label>
+          <button class="cal-add-btn" style="padding:9px 14px;" onclick="balancaSubmitManual()">Adicionar</button>
+        </div>
       </div>
-      <button class="cal-add-btn" onclick="balancaSubmitManual()">Adicionar medição</button>
       ${balancaFormMsg ? `<div class="balanca-tap-info" style="margin:8px 0 0;">${balancaFormMsg}</div>` : ''}
     </div>
   `;
+
 
 
   return `
