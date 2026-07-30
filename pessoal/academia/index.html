@@ -451,24 +451,32 @@
     background:var(--surface);padding:0 3px;white-space:nowrap;
   }
   .balanca-year-header{
+    display:flex;justify-content:space-between;align-items:center;
     font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:15px;
-    padding:16px 0 4px;
+    padding:14px 4px;margin-top:6px;
+    background:var(--surface-2);border-radius:9px;
+    cursor:pointer;
   }
-  .balanca-year-header:first-child{padding-top:4px;}
+  .balanca-year-header:first-child{margin-top:0;}
   .balanca-month-header{
-    font-family:'JetBrains Mono', monospace;font-size:10.5px;color:var(--text-faint);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'JetBrains Mono', monospace;font-size:11px;color:var(--text-muted);
     text-transform:uppercase;letter-spacing:.06em;
-    padding:8px 0 2px;
+    padding:10px 4px 10px 14px;margin-top:6px;
+    border-radius:8px;background:rgba(0,0,0,0.02);
+    cursor:pointer;
   }
+  .balanca-chevron{color:var(--text-faint);font-size:11px;padding-right:4px;}
   .balanca-add-card{
     margin-top:18px;padding-top:16px;border-top:1px solid var(--border);
   }
   .balanca-add-title{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:14.5px;margin-bottom:10px;}
-  .balanca-add-date-input{
-    font-family:'JetBrains Mono', monospace;font-size:13px;
-    padding:6px 8px;border-radius:7px;border:1px solid var(--border);
-    background:var(--surface);color:var(--text);
+  .balanca-add-date-display{
+    font-family:'JetBrains Mono', monospace;font-size:13px;font-weight:600;color:var(--text);
+    padding:6px 10px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);cursor:pointer;
   }
+  .balanca-add-date-display:hover{border-color:var(--accent);color:var(--accent);}
   .balanca-list-item{
     display:flex;justify-content:space-between;align-items:center;
     padding:10px 0;border-top:1px solid var(--border);font-size:13px;
@@ -1097,7 +1105,7 @@ const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 
 // Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
 // serve pra confirmar que o Safari carregou a versão nova depois do git push
 // (sem isso, o PWA às vezes continua servindo uma versão em cache).
-const APP_VERSION = '2026-07-29b';
+const APP_VERSION = '2026-07-29c';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -1113,6 +1121,9 @@ let balancaMetric = 'peso';   // qual métrica o gráfico mostra: peso | gordura
 let balancaTapInfo = null;    // ponto tocado no gráfico: {data, valor}
 let balancaExpandedId = null; // qual linha da lista está aberta pra editar/excluir
 let balancaFormMsg = '';      // mensagem de status do formulário de inserção manual
+let balancaExpandedYear = today.getFullYear();  // qual ano está expandido na lista (só um por vez)
+let balancaExpandedMonthKey = null;             // qual mês está expandido, formato "ano-mes" (só um por vez)
+let balancaFormDate = toKey(today.getFullYear(), today.getMonth(), today.getDate()); // data escolhida no formulário manual
 
 function setTab(tab){
   activeTab = tab;
@@ -1128,6 +1139,35 @@ function tapBalancaPoint(dataIso, valor){
 }
 function toggleBalancaExpand(id){
   balancaExpandedId = balancaExpandedId === id ? null : id;
+  render();
+}
+
+// Navegação da lista agrupada: clicar num ano abre/fecha a lista de meses
+// daquele ano; clicar num mês abre/fecha as medições daquele mês. Só um ano
+// e um mês ficam abertos por vez, pra manter a lista compacta.
+function toggleBalancaYear(year){
+  balancaExpandedYear = balancaExpandedYear === year ? null : year;
+  balancaExpandedMonthKey = null;
+  render();
+}
+function toggleBalancaMonth(year, month){
+  const key = year + '-' + month;
+  balancaExpandedMonthKey = balancaExpandedMonthKey === key ? null : key;
+  render();
+}
+
+// Abre o seletor de data nativo (calendário) escondido por trás do texto
+// formatado "29/07/26" — evita mostrar o input de data cru na tela.
+function balancaOpenDatePicker(){
+  const el = document.getElementById('balanca-add-date');
+  if(!el) return;
+  if(el.showPicker){ try{ el.showPicker(); return; }catch(e){} }
+  el.focus();
+  el.click();
+}
+function balancaSetFormDate(value){
+  if(!value) return;
+  balancaFormDate = value;
   render();
 }
 
@@ -1161,11 +1201,10 @@ async function balancaDeleteRow(id){
 // ordenação aqui.
 async function balancaSubmitManual(){
   if(!supa || !authSession) return;
-  const dateEl = document.getElementById('balanca-add-date');
   const pesoEl = document.getElementById('balanca-add-peso');
   const gordEl = document.getElementById('balanca-add-gordura');
   const imcEl = document.getElementById('balanca-add-imc');
-  const dateVal = dateEl ? dateEl.value : '';
+  const dateVal = balancaFormDate;
   if(!dateVal){ balancaFormMsg = 'Escolha uma data.'; render(); return; }
 
   const parseField = (v) => {
@@ -2254,13 +2293,27 @@ function renderBalanca(){
     mGroup.rows.push(r);
   });
 
-  const listHtml = yearGroups.map(yGroup => `
-    <div class="balanca-year-header">${yGroup.year}</div>
-    ${yGroup.months.map(mGroup => `
-      <div class="balanca-month-header">${MESES_LONGOS[mGroup.month]}</div>
-      ${mGroup.rows.map(renderBalancaRow).join('')}
-    `).join('')}
-  `).join('');
+  const listHtml = yearGroups.map(yGroup => {
+    const yearOpen = balancaExpandedYear === yGroup.year;
+    const monthsHtml = !yearOpen ? '' : yGroup.months.map(mGroup => {
+      const mKey = yGroup.year + '-' + mGroup.month;
+      const monthOpen = balancaExpandedMonthKey === mKey;
+      return `
+        <div class="balanca-month-header" onclick="toggleBalancaMonth(${yGroup.year},${mGroup.month})">
+          <span>${MESES_LONGOS[mGroup.month]}</span>
+          <span class="balanca-chevron">${monthOpen ? '▾' : '▸'}</span>
+        </div>
+        ${monthOpen ? mGroup.rows.map(renderBalancaRow).join('') : ''}
+      `;
+    }).join('');
+    return `
+      <div class="balanca-year-header" onclick="toggleBalancaYear(${yGroup.year})">
+        <span>${yGroup.year}</span>
+        <span class="balanca-chevron">${yearOpen ? '▾' : '▸'}</span>
+      </div>
+      ${monthsHtml}
+    `;
+  }).join('');
 
   const addFormHtml = `
     <div class="balanca-add-card">
@@ -2268,7 +2321,11 @@ function renderBalanca(){
       <div class="balanca-edit-row" style="margin:0 0 8px;">
         <div class="balanca-edit-field">
           <label>Data</label>
-          <input type="date" id="balanca-add-date" class="balanca-add-date-input" value="${toKey(today.getFullYear(), today.getMonth(), today.getDate())}" />
+          <div style="position:relative;">
+            <button type="button" class="balanca-add-date-display" onclick="balancaOpenDatePicker()">${formatDataBR(balancaFormDate)}</button>
+            <input type="date" id="balanca-add-date" value="${balancaFormDate}" onchange="balancaSetFormDate(this.value)"
+              style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;border:none;pointer-events:none;" />
+          </div>
         </div>
         <div class="balanca-edit-field">
           <label>Peso (kg)</label>
@@ -2287,6 +2344,7 @@ function renderBalanca(){
       ${balancaFormMsg ? `<div class="balanca-tap-info" style="margin:8px 0 0;">${balancaFormMsg}</div>` : ''}
     </div>
   `;
+
 
   return `
     <div class="dash-card">
