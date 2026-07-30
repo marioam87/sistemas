@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Treino">
 <meta name="theme-color" content="#2f6fed">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" href="icon-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -441,8 +441,34 @@
   .balanca-stat-delta.down{color:var(--done);}
   .balanca-stat-delta.up{color:#c9552b;}
   .balanca-stat-label{font-size:10.5px;color:var(--text-muted);margin-top:4px;}
-  .balanca-chart-wrap{display:flex;align-items:flex-end;gap:2px;height:90px;padding:0 2px;margin-bottom:18px;}
+  .balanca-chart-outer{position:relative;margin:6px 0 18px;}
+  .balanca-chart-wrap{display:flex;align-items:flex-end;gap:2px;height:90px;padding:0 2px;}
   .balanca-bar{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;}
+  .balanca-avg-line{position:absolute;left:2px;right:2px;border-top:1px dashed var(--text-faint);}
+  .balanca-avg-label{
+    position:absolute;right:0;top:-15px;
+    font-family:'JetBrains Mono', monospace;font-size:9.5px;color:var(--text-muted);
+    background:var(--surface);padding:0 3px;white-space:nowrap;
+  }
+  .balanca-year-header{
+    font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:15px;
+    padding:16px 0 4px;
+  }
+  .balanca-year-header:first-child{padding-top:4px;}
+  .balanca-month-header{
+    font-family:'JetBrains Mono', monospace;font-size:10.5px;color:var(--text-faint);
+    text-transform:uppercase;letter-spacing:.06em;
+    padding:8px 0 2px;
+  }
+  .balanca-add-card{
+    margin-top:18px;padding-top:16px;border-top:1px solid var(--border);
+  }
+  .balanca-add-title{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:14.5px;margin-bottom:10px;}
+  .balanca-add-date-input{
+    font-family:'JetBrains Mono', monospace;font-size:13px;
+    padding:6px 8px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);
+  }
   .balanca-list-item{
     display:flex;justify-content:space-between;align-items:center;
     padding:10px 0;border-top:1px solid var(--border);font-size:13px;
@@ -1071,7 +1097,7 @@ const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 
 // Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
 // serve pra confirmar que o Safari carregou a versão nova depois do git push
 // (sem isso, o PWA às vezes continua servindo uma versão em cache).
-const APP_VERSION = '2026-07-27';
+const APP_VERSION = '2026-07-29b';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -1086,6 +1112,7 @@ let balancaPeriodDays = 30;   // filtro do gráfico/cards: 7, 30, 90 ou 9999 (tu
 let balancaMetric = 'peso';   // qual métrica o gráfico mostra: peso | gordura_pct | imc
 let balancaTapInfo = null;    // ponto tocado no gráfico: {data, valor}
 let balancaExpandedId = null; // qual linha da lista está aberta pra editar/excluir
+let balancaFormMsg = '';      // mensagem de status do formulário de inserção manual
 
 function setTab(tab){
   activeTab = tab;
@@ -1125,6 +1152,62 @@ async function balancaDeleteRow(id){
     balancaExpandedId = null;
     loadBalanca();
   }catch(e){ alert('Não consegui excluir agora (sem rede?). Tente de novo.'); }
+}
+
+// Insere uma medição manual (data + peso/gordura/IMC) direto no Supabase.
+// Depois de salvar, recarrega a lista inteira (loadBalanca já ordena por
+// data decrescente), então a entrada nova aparece automaticamente na
+// posição cronológica correta — sem precisar de nenhuma lógica extra de
+// ordenação aqui.
+async function balancaSubmitManual(){
+  if(!supa || !authSession) return;
+  const dateEl = document.getElementById('balanca-add-date');
+  const pesoEl = document.getElementById('balanca-add-peso');
+  const gordEl = document.getElementById('balanca-add-gordura');
+  const imcEl = document.getElementById('balanca-add-imc');
+  const dateVal = dateEl ? dateEl.value : '';
+  if(!dateVal){ balancaFormMsg = 'Escolha uma data.'; render(); return; }
+
+  const parseField = (v) => {
+    const t = (v || '').trim();
+    if(t === '') return null;
+    const n = parseFloat(t.replace(',', '.'));
+    return isNaN(n) ? undefined : n;
+  };
+  const peso = parseField(pesoEl && pesoEl.value);
+  const gordura = parseField(gordEl && gordEl.value);
+  const imc = parseField(imcEl && imcEl.value);
+  if(peso === undefined || gordura === undefined || imc === undefined){
+    balancaFormMsg = 'Valor inválido em algum dos campos.';
+    render();
+    return;
+  }
+  if(peso === null && gordura === null && imc === null){
+    balancaFormMsg = 'Preencha ao menos uma medida.';
+    render();
+    return;
+  }
+
+  balancaFormMsg = 'Salvando...';
+  render();
+  try{
+    const { error } = await supa.from('medidas_corporais').insert({
+      user_id: authSession.user.id,
+      data: dateVal,
+      peso, gordura_pct: gordura, imc,
+      fonte: 'manual',
+    });
+    if(error){
+      balancaFormMsg = 'Erro ao salvar: ' + error.message;
+      render();
+      return;
+    }
+    balancaFormMsg = '';
+    loadBalanca();
+  }catch(e){
+    balancaFormMsg = 'Não consegui salvar agora (sem rede?). Tente de novo.';
+    render();
+  }
 }
 
 // Busca as últimas medições da balança direto do Supabase (Fase 4/5.2).
@@ -1990,6 +2073,17 @@ const BALANCA_METRICS = {
 };
 const BALANCA_PERIODOS = [ [7,'7d'], [30,'30d'], [90,'90d'], [9999,'Tudo'] ];
 
+// Altura do Mario ao quadrado (1,73m), usada só como fallback de exibição
+// quando a medição não tem IMC gravado no Supabase (ex: bug antigo do
+// Atalho, ou medição manual em que só peso/gordura foram preenchidos).
+// Nunca grava nada no banco — é só um cálculo feito na hora, na tela.
+const BALANCA_ALTURA_M2 = 2.9929;
+function balancaImcComFallback(pesoNum, imcCru){
+  if(imcCru !== null && imcCru !== undefined) return fmtNum(imcCru);
+  if(pesoNum === null || pesoNum === undefined) return null;
+  return fmtNum(pesoNum / BALANCA_ALTURA_M2);
+}
+
 function renderBalanca(){
   if(!supa){
     return `<div class="balanca-empty-msg">Sincronização indisponível offline.<br>Conecte-se à internet e recarregue o app.</div>`;
@@ -2007,13 +2101,16 @@ function renderBalanca(){
     return `<div class="balanca-empty-msg">Nenhuma medição ainda.<br>Confere se o Atalho da balança já rodou pelo menos uma vez.</div>`;
   }
 
-  const allRows = balancaRows.map(r => ({
-    id: r.id,
-    data: r.data,
-    peso: fmtNum(r.peso),
-    gordura_pct: fmtNum(r.gordura_pct),
-    imc: fmtNum(r.imc),
-  }));
+  const allRows = balancaRows.map(r => {
+    const pesoNum = fmtNum(r.peso);
+    return {
+      id: r.id,
+      data: r.data,
+      peso: pesoNum,
+      gordura_pct: fmtNum(r.gordura_pct),
+      imc: balancaImcComFallback(pesoNum, r.imc),
+    };
+  });
 
   // Filtra pro período escolhido — só afeta os cards, o gráfico e a
   // comparação. A lista embaixo sempre mostra tudo, pra dar pra editar
@@ -2053,6 +2150,8 @@ function renderBalanca(){
     const vals = valRows.map(r => r[balancaMetric]);
     const min = Math.min(...vals), max = Math.max(...vals);
     const range = (max - min) || 1;
+    const avg = vals.reduce((a,b)=>a+b, 0) / vals.length;
+    const avgPct = 15 + ((avg - min) / range) * 85;
     const bars = chron.map(r => {
       const v = r[balancaMetric];
       if(v === null || v === undefined) return `<div class="balanca-bar" style="height:2px;opacity:.2;"></div>`;
@@ -2063,7 +2162,12 @@ function renderBalanca(){
     const infoLine = balancaTapInfo
       ? `<div class="balanca-tap-info">${formatDataBR(balancaTapInfo.data)}: <strong>${fmtDisplay(balancaTapInfo.valor)}${metricInfo.unidade}</strong></div>`
       : `<div class="balanca-tap-info balanca-tap-hint">toque numa barra pra ver o valor do dia</div>`;
-    chartHtml = `<div class="balanca-chart-wrap">${bars}</div>${infoLine}`;
+    const avgLineHtml = `
+      <div class="balanca-avg-line" style="bottom:${avgPct}%;">
+        <span class="balanca-avg-label">média ${fmtDisplay(fmtNum(avg))}${metricInfo.unidade}</span>
+      </div>
+    `;
+    chartHtml = `<div class="balanca-chart-outer"><div class="balanca-chart-wrap">${bars}</div>${avgLineHtml}</div>${infoLine}`;
   }
 
   // Comparação melhor/atual/pior: sempre olha o histórico INTEIRO (não o
@@ -2093,7 +2197,7 @@ function renderBalanca(){
     `;
   }
 
-  const listHtml = allRows.map(r => {
+  function renderBalancaRow(r){
     const isOpen = balancaExpandedId === r.id;
     const summary = `${fmtDisplay(r.peso)}kg${r.gordura_pct !== null && r.gordura_pct !== undefined ? ' · '+fmtDisplay(r.gordura_pct)+'%' : ''}${r.imc !== null && r.imc !== undefined ? ' · IMC '+fmtDisplay(r.imc) : ''}`;
     if(!isOpen){
@@ -2125,7 +2229,64 @@ function renderBalanca(){
         <button class="balanca-delete-btn" onclick="balancaDeleteRow(${r.id})">Excluir esta medição</button>
       </div>
     `;
-  }).join('');
+  }
+
+  // Agrupa a lista completa por ano e, dentro de cada ano, por mês — ambos
+  // do mais recente pro mais antigo. allRows já vem nessa ordem (a query no
+  // Supabase pede `order('data', {ascending:false})`), então só precisamos
+  // preservar essa ordem ao agrupar, sem re-ordenar nada.
+  const MESES_LONGOS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const yearGroups = []; // [{year, months: [{month, rows}]}]
+  allRows.forEach(r => {
+    const d = new Date(r.data);
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    let yGroup = yearGroups[yearGroups.length-1];
+    if(!yGroup || yGroup.year !== y){
+      yGroup = {year: y, months: []};
+      yearGroups.push(yGroup);
+    }
+    let mGroup = yGroup.months[yGroup.months.length-1];
+    if(!mGroup || mGroup.month !== m){
+      mGroup = {month: m, rows: []};
+      yGroup.months.push(mGroup);
+    }
+    mGroup.rows.push(r);
+  });
+
+  const listHtml = yearGroups.map(yGroup => `
+    <div class="balanca-year-header">${yGroup.year}</div>
+    ${yGroup.months.map(mGroup => `
+      <div class="balanca-month-header">${MESES_LONGOS[mGroup.month]}</div>
+      ${mGroup.rows.map(renderBalancaRow).join('')}
+    `).join('')}
+  `).join('');
+
+  const addFormHtml = `
+    <div class="balanca-add-card">
+      <div class="balanca-add-title">Adicionar medição manual</div>
+      <div class="balanca-edit-row" style="margin:0 0 8px;">
+        <div class="balanca-edit-field">
+          <label>Data</label>
+          <input type="date" id="balanca-add-date" class="balanca-add-date-input" value="${toKey(today.getFullYear(), today.getMonth(), today.getDate())}" />
+        </div>
+        <div class="balanca-edit-field">
+          <label>Peso (kg)</label>
+          <input type="text" inputmode="decimal" id="balanca-add-peso" placeholder="79.2" />
+        </div>
+        <div class="balanca-edit-field">
+          <label>Gordura (%)</label>
+          <input type="text" inputmode="decimal" id="balanca-add-gordura" placeholder="24.5" />
+        </div>
+        <div class="balanca-edit-field">
+          <label>IMC</label>
+          <input type="text" inputmode="decimal" id="balanca-add-imc" placeholder="26.4" />
+        </div>
+      </div>
+      <button class="cal-add-btn" onclick="balancaSubmitManual()">Adicionar medição</button>
+      ${balancaFormMsg ? `<div class="balanca-tap-info" style="margin:8px 0 0;">${balancaFormMsg}</div>` : ''}
+    </div>
+  `;
 
   return `
     <div class="dash-card">
@@ -2135,6 +2296,7 @@ function renderBalanca(){
       ${chartHtml}
       ${comparisonHtml}
       ${listHtml}
+      ${addFormHtml}
     </div>
   `;
 }
