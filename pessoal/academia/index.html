@@ -471,12 +471,21 @@
     margin-top:18px;padding-top:16px;border-top:1px solid var(--border);
   }
   .balanca-add-title{font-family:'Space Grotesk', sans-serif;font-weight:600;font-size:14.5px;margin-bottom:10px;}
+  .balanca-add-date-wrap{position:relative;display:inline-block;}
   .balanca-add-date-display{
+    display:block;
     font-family:'JetBrains Mono', monospace;font-size:13px;font-weight:600;color:var(--text);
     padding:6px 10px;border-radius:7px;border:1px solid var(--border);
-    background:var(--surface);cursor:pointer;
+    background:var(--surface);white-space:nowrap;
   }
-  .balanca-add-date-display:hover{border-color:var(--accent);color:var(--accent);}
+  /* O input real fica em cima, do mesmo tamanho, totalmente transparente —
+     assim o toque do usuário cai direto nele (obrigatório no Safari iOS pra
+     abrir o calendário nativo; um clique disparado via JS em outro elemento
+     não funciona), enquanto o texto formatado do span aparece por baixo. */
+  .balanca-add-date-wrap input[type="date"]{
+    position:absolute;inset:0;width:100%;height:100%;
+    opacity:0;border:none;background:none;margin:0;padding:0;
+  }
   .balanca-list-item{
     display:flex;justify-content:space-between;align-items:center;
     padding:10px 0;border-top:1px solid var(--border);font-size:13px;
@@ -1105,7 +1114,7 @@ const CURRENT_SEED_VERSION = 4; // v1 = histórico 2026, v2 = + histórico 2025 
 // Atualize esta data a cada deploy — aparece discretamente no rodapé do app,
 // serve pra confirmar que o Safari carregou a versão nova depois do git push
 // (sem isso, o PWA às vezes continua servindo uma versão em cache).
-const APP_VERSION = '2026-07-29c';
+const APP_VERSION = '2026-07-29d';
 
 const today = new Date();
 let calView = { year: today.getFullYear(), month: today.getMonth() };
@@ -1156,15 +1165,6 @@ function toggleBalancaMonth(year, month){
   render();
 }
 
-// Abre o seletor de data nativo (calendário) escondido por trás do texto
-// formatado "29/07/26" — evita mostrar o input de data cru na tela.
-function balancaOpenDatePicker(){
-  const el = document.getElementById('balanca-add-date');
-  if(!el) return;
-  if(el.showPicker){ try{ el.showPicker(); return; }catch(e){} }
-  el.focus();
-  el.click();
-}
 function balancaSetFormDate(value){
   if(!value) return;
   balancaFormDate = value;
@@ -2321,10 +2321,9 @@ function renderBalanca(){
       <div class="balanca-edit-row" style="margin:0 0 8px;">
         <div class="balanca-edit-field">
           <label>Data</label>
-          <div style="position:relative;">
-            <button type="button" class="balanca-add-date-display" onclick="balancaOpenDatePicker()">${formatDataBR(balancaFormDate)}</button>
-            <input type="date" id="balanca-add-date" value="${balancaFormDate}" onchange="balancaSetFormDate(this.value)"
-              style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;border:none;pointer-events:none;" />
+          <div class="balanca-add-date-wrap">
+            <span class="balanca-add-date-display">${formatDataBR(balancaFormDate)}</span>
+            <input type="date" id="balanca-add-date" value="${balancaFormDate}" onchange="balancaSetFormDate(this.value)" />
           </div>
         </div>
         <div class="balanca-edit-field">
