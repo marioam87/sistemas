@@ -311,6 +311,7 @@
   .activity-pill.bike{background:#dcefe9;color:#1f6e5a;}
   .activity-pill.tabata{background:#efe0f7;color:#6b3fa0;}
   .activity-pill.esteira{background:#dbe7f7;color:#2058a3;}
+  .activity-pill.caminhada{background:#dfeee0;color:#2c7a3d;}
   .activity-label{
     overflow:hidden;
     text-overflow:ellipsis;
@@ -355,6 +356,7 @@
   .legend-dot.bike{background:#2c8a70;}
   .legend-dot.tabata{background:#8547b8;}
   .legend-dot.esteira{background:#3068b8;}
+  .legend-dot.caminhada{background:#2c7a3d;}
 
   .cal-form{
     display:flex;gap:8px;flex-wrap:wrap;align-items:center;
@@ -579,6 +581,7 @@
   .stat-box.bike .stat-num{color:#2c8a70;}
   .stat-box.tabata .stat-num{color:#8547b8;}
   .stat-box.esteira .stat-num{color:#3068b8;}
+  .stat-box.caminhada .stat-num{color:#2c7a3d;}
 
   .chart-wrap{display:flex;justify-content:space-between;align-items:flex-end;height:110px;gap:3px;padding:0 2px;}
   .chart-month{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;justify-content:flex-end;}
@@ -589,6 +592,7 @@
   .chart-bar.bike{background:#2c8a70;}
   .chart-bar.tabata{background:#8547b8;}
   .chart-bar.esteira{background:#3068b8;}
+  .chart-bar.caminhada{background:#2c7a3d;}
   .chart-mlabel{font-family:'JetBrains Mono', monospace;font-size:9px;color:var(--text-faint);margin-top:6px;text-transform:uppercase;}
 
   .activity-pill.alongamento{background:#e8e6f7;color:#4a4a9e;}
@@ -1105,7 +1109,7 @@ let state = {
   sessionWeights: {}, // índice da sessão -> {nome do exercício: carga usada ao concluir}. Só existe
                        // pra sessões concluídas a partir da introdução do catálogo (Fase 2) —
                        // sessões concluídas antes disso não têm esse retrato histórico.
-  activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira'|'alongamento', label, km}]
+  activities: {}, // 'YYYY-MM-DD' -> [{type:'fullbody'|'boxe'|'bike'|'tabata'|'esteira'|'caminhada'|'alongamento'|'abdominal', label, km}]
   seededVersion: 0, // controla quais rodadas de histórico importado já foram mescladas
 };
 
@@ -2740,7 +2744,7 @@ function changeMonth(delta){
 
 function toggleKmField(){
   const type = document.getElementById('act-type').value;
-  document.getElementById('act-km-wrap').style.display = (type === 'bike' || type === 'esteira') ? 'flex' : 'none';
+  document.getElementById('act-km-wrap').style.display = (type === 'bike' || type === 'esteira' || type === 'caminhada') ? 'flex' : 'none';
 }
 
 function submitActivity(){
@@ -2748,7 +2752,7 @@ function submitActivity(){
   const type = document.getElementById('act-type').value;
   if(!dateVal) return;
   const entry = { type };
-  if(type === 'bike' || type === 'esteira'){
+  if(type === 'bike' || type === 'esteira' || type === 'caminhada'){
     const km = document.getElementById('act-km').value;
     entry.km = km ? parseFloat(km) : null;
   }
@@ -2790,6 +2794,7 @@ function renderCalendar(){
       else if(a.type === 'tabata'){ cls='tabata'; emoji='🔥'; label = 'Tabata'; }
       else if(a.type === 'alongamento'){ cls='alongamento'; emoji='🧘'; label = 'Alongamento'; }
       else if(a.type === 'abdominal'){ cls='abdominal'; emoji='💥'; label = 'Abdominal'; }
+      else if(a.type === 'caminhada'){ cls='caminhada'; emoji='🚶'; label = a.km ? a.km+'km' : 'Caminhada'; }
       else { cls='esteira'; emoji='🏃'; label = a.km ? a.km+'km' : 'Esteira'; }
       const pillId = key + '|' + idx;
       const isExpanded = expandedPill === pillId;
@@ -2819,6 +2824,7 @@ function renderCalendar(){
         <option value="alongamento">Alongamento</option>
         <option value="bike">Bike</option>
         <option value="boxe">Boxe</option>
+        <option value="caminhada">Caminhada</option>
         <option value="esteira">Esteira</option>
         <option value="fullbody">Musculação</option>
         <option value="tabata">Tabata</option>
@@ -3013,7 +3019,7 @@ function completeSession(i){
 const MONTH_ABBR = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
 function computeMonthStats(year, month){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0, abdominal=0;
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, caminhadaCount=0, caminhadaKm=0, alongamento=0, abdominal=0;
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -3024,12 +3030,13 @@ function computeMonthStats(year, month){
       else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); }
       else if(a.type === 'tabata'){ tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); }
+      else if(a.type === 'caminhada'){ caminhadaCount++; caminhadaKm += (a.km || 0); }
       else if(a.type === 'alongamento'){ alongamento++; }
       else if(a.type === 'abdominal'){ abdominal++; }
     });
   });
 
-  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, abdominal};
+  return {year, month, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, caminhadaCount, caminhadaKm, alongamento, abdominal};
 }
 
 function renderMonthStats(){
@@ -3042,10 +3049,12 @@ function renderMonthStats(){
     ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+    ${s.caminhadaCount > 0 ? `<div class="stat-box caminhada"><div class="stat-num">${s.caminhadaCount}</div><div class="stat-label">Caminhada</div></div>` : ''}
+    ${s.caminhadaCount > 0 ? `<div class="stat-box caminhada"><div class="stat-num">${s.caminhadaKm}</div><div class="stat-label">Km caminhados</div></div>` : ''}
     ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
     ${s.abdominal > 0 ? `<div class="stat-box abdominal"><div class="stat-num">${s.abdominal}</div><div class="stat-label">Abdominal</div></div>` : ''}
   `;
-  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount + s.alongamento + s.abdominal) > 0;
+  const hasAny = (s.musc + s.boxe + s.bikeCount + s.tabata + s.esteiraCount + s.caminhadaCount + s.alongamento + s.abdominal) > 0;
 
   return `
     <div class="cal-header" style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border);">
@@ -3062,8 +3071,8 @@ function renderMonthStats(){
 }
 
 function computeStats(year){
-  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, alongamento=0, abdominal=0;
-  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0, alongamento:0, abdominal:0}));
+  let musc=0, boxe=0, bikeCount=0, bikeKm=0, tabata=0, esteiraCount=0, esteiraKm=0, caminhadaCount=0, caminhadaKm=0, alongamento=0, abdominal=0;
+  const monthly = Array.from({length:12}, () => ({musc:0, boxe:0, bike:0, tabata:0, esteira:0, caminhada:0, alongamento:0, abdominal:0}));
 
   Object.keys(state.activities).forEach(key => {
     const [y,m] = key.split('-').map(Number);
@@ -3075,12 +3084,13 @@ function computeStats(year){
       else if(a.type === 'bike'){ bikeCount++; bikeKm += (a.km || 0); monthly[mi].bike++; }
       else if(a.type === 'tabata'){ tabata++; monthly[mi].tabata++; }
       else if(a.type === 'esteira'){ esteiraCount++; esteiraKm += (a.km || 0); monthly[mi].esteira++; }
+      else if(a.type === 'caminhada'){ caminhadaCount++; caminhadaKm += (a.km || 0); monthly[mi].caminhada++; }
       else if(a.type === 'alongamento'){ alongamento++; monthly[mi].alongamento++; }
       else if(a.type === 'abdominal'){ abdominal++; monthly[mi].abdominal++; }
     });
   });
 
-  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, alongamento, abdominal, monthly};
+  return {year, musc, boxe, bikeCount, bikeKm, tabata, esteiraCount, esteiraKm, caminhadaCount, caminhadaKm, alongamento, abdominal, monthly};
 }
 
 function renderDashboard(){
@@ -3094,6 +3104,8 @@ function renderDashboard(){
     ${s.tabata > 0 ? `<div class="stat-box tabata"><div class="stat-num">${s.tabata}</div><div class="stat-label">Tabata</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraCount}</div><div class="stat-label">Esteira</div></div>` : ''}
     ${s.esteiraCount > 0 ? `<div class="stat-box esteira"><div class="stat-num">${s.esteiraKm}</div><div class="stat-label">Km na esteira</div></div>` : ''}
+    ${s.caminhadaCount > 0 ? `<div class="stat-box caminhada"><div class="stat-num">${s.caminhadaCount}</div><div class="stat-label">Caminhada</div></div>` : ''}
+    ${s.caminhadaCount > 0 ? `<div class="stat-box caminhada"><div class="stat-num">${s.caminhadaKm}</div><div class="stat-label">Km caminhados</div></div>` : ''}
     ${s.alongamento > 0 ? `<div class="stat-box alongamento"><div class="stat-num">${s.alongamento}</div><div class="stat-label">Alongamento</div></div>` : ''}
     ${s.abdominal > 0 ? `<div class="stat-box abdominal"><div class="stat-num">${s.abdominal}</div><div class="stat-label">Abdominal</div></div>` : ''}
   `;
