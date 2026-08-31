@@ -1764,45 +1764,94 @@ function formatMMSS(totalSeconds){
 // zeram se a página recarregar. Zera automaticamente quando o treino
 // correspondente é lançado no calendário (completeSession / registerAbsSession
 // / registerStretchSession).
+//
+// Baseado em horário real (Date.now()), não em contagem de "ticks" do
+// setInterval — o iOS Safari pausa/atrasa timers de JS quando a tela apaga
+// ou o app vai pra segundo plano (isso é uma restrição do sistema, nenhum
+// site consegue "rodar" de verdade com a tela apagada). Por calcular a
+// partir do horário de início em vez de somar 1 a cada tick, o valor exibido
+// sempre bate certo assim que a tela volta a acender — sem atraso acumulado.
+//
+// IMPORTANTE: cada tick atualiza só o próprio elemento do cronômetro no DOM
+// (por id), nunca chama render() inteiro — um render() completo a cada
+// segundo reescrevia os checkboxes e o campo de peso, atrapalhando o toque
+// e apagando o que estava sendo digitado.
 const sessionClocks = {
-  musc: {seconds:0, running:false, interval:null},
-  abs: {seconds:0, running:false, interval:null},
-  stretch: {seconds:0, running:false, interval:null},
+  musc: {accumulated:0, running:false, startedAt:null, interval:null},
+  abs: {accumulated:0, running:false, startedAt:null, interval:null},
+  stretch: {accumulated:0, running:false, startedAt:null, interval:null},
 };
+
+function clockElapsed(key){
+  const c = sessionClocks[key];
+  if(!c.running || !c.startedAt) return c.accumulated;
+  return c.accumulated + Math.floor((Date.now() - c.startedAt)/1000);
+}
+
+function updateClockDisplay(key){
+  const el = document.getElementById('clock-time-'+key);
+  if(el) el.textContent = formatMMSS(clockElapsed(key));
+}
+
+function updateClockButton(key){
+  const btn = document.getElementById('clock-toggle-'+key);
+  if(!btn) return;
+  const running = sessionClocks[key].running;
+  btn.textContent = running ? '⏸ Pausar' : '▶ Iniciar';
+  btn.classList.toggle('primary', !running);
+}
 
 function clockToggle(key){
   const c = sessionClocks[key];
-  c.running = !c.running;
   clearInterval(c.interval);
   if(c.running){
-    c.interval = setInterval(() => {
-      sessionClocks[key].seconds++;
-      render();
-    }, 1000);
+    // pausar: consolida o tempo decorrido no acumulado
+    c.accumulated = clockElapsed(key);
+    c.running = false;
+    c.startedAt = null;
+    c.interval = null;
+  } else {
+    c.running = true;
+    c.startedAt = Date.now();
+    c.interval = setInterval(() => updateClockDisplay(key), 1000);
   }
-  render();
+  updateClockDisplay(key);
+  updateClockButton(key);
 }
 
 function clockReset(key){
   const c = sessionClocks[key];
   clearInterval(c.interval);
   c.interval = null;
-  c.seconds = 0;
+  c.accumulated = 0;
   c.running = false;
+  c.startedAt = null;
+  updateClockDisplay(key);
+  updateClockButton(key);
 }
 
 function renderSessionClock(key){
   const c = sessionClocks[key];
   return `
     <div class="session-clock-card">
-      <div class="session-clock-time">${formatMMSS(c.seconds)}</div>
+      <div class="session-clock-time" id="clock-time-${key}">${formatMMSS(clockElapsed(key))}</div>
       <div class="session-clock-controls">
-        <button class="session-clock-btn ${c.running ? '' : 'primary'}" onclick="clockToggle('${key}')">${c.running ? '⏸ Pausar' : '▶ Iniciar'}</button>
-        <button class="session-clock-btn" onclick="clockReset('${key}'); render();">↺ Zerar</button>
+        <button class="session-clock-btn ${c.running ? '' : 'primary'}" id="clock-toggle-${key}" onclick="clockToggle('${key}')">${c.running ? '⏸ Pausar' : '▶ Iniciar'}</button>
+        <button class="session-clock-btn" onclick="clockReset('${key}')">↺ Zerar</button>
       </div>
     </div>
   `;
 }
+
+// Quando o app volta a ficar visível (tela acendeu de novo / voltou de outro
+// app), resincroniza na hora os cronômetros que estavam rodando — sem
+// esperar o próximo tick do setInterval, que pode ter ficado atrasado.
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  Object.keys(sessionClocks).forEach(key => {
+    if(sessionClocks[key].running) updateClockDisplay(key);
+  });
+});
 
 let stretchIdx = 0;
 let stretchRemaining = STRETCH_TIMELINE[0].duracao;
