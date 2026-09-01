@@ -61,7 +61,9 @@ Depois, editar `eu_fui_master.json` (não mais o `index.html`):
 
 ## O que é calculado automaticamente (nunca mais editar à mão)
 
-- `ANOS`, `PAISES`, `PAISES_MAP`, `MAP_DATA`, `CIDADES` — direto do array `shows`
+- `ANOS`, `CIDADES` — nº de shows, direto do array `shows`
+- `PAISES` / `MAP_DATA` — nº de **bandas distintas** por país (não shows),
+  usado no mapa-múndi e na aba "Países das Bandas"
 - `RANKING` e `COMP_GRUPOS` — agrupamento por nº de aparições (trata sufixos
   romanos II/III/IV/V como a mesma banda). Se uma banda passa de 2→3 shows, ela
   migra de grupo sozinha.

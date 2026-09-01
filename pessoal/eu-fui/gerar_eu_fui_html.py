@@ -131,13 +131,14 @@ def derive_all(master):
         for y in range(anos_keys[0], anos_keys[-1] + 1)
     )
 
-    # ── PAISES / PAISES_MAP / MAP_DATA ──
-    paises_count = defaultdict(int)
+    # ── PAISES / PAISES_MAP / MAP_DATA (nº de bandas distintas por país, não shows) ──
+    paises_bandas = defaultdict(set)
     paises_map = {}
     for s in shows:
         flag, _, nome = s['pais'].partition(' ')
-        paises_count[nome] += 1
+        paises_bandas[nome].add(base_name(s['banda']))
         paises_map[nome] = flag
+    paises_count = {nome: len(bandas) for nome, bandas in paises_bandas.items()}
     PAISES = OrderedDict(sorted(paises_count.items()))
     PAISES_MAP = OrderedDict(sorted(paises_map.items()))
 
@@ -271,8 +272,8 @@ def validar(master, derived):
         erros.append(f"soma de ANOS ({soma_anos}) != total de shows ({len(shows)})")
 
     soma_paises = sum(derived['PAISES'].values())
-    if soma_paises != len(shows):
-        erros.append(f"soma de PAISES ({soma_paises}) != total de shows ({len(shows)})")
+    if soma_paises != derived['stats']['bandas']:
+        erros.append(f"soma de PAISES ({soma_paises}) != total de bandas distintas ({derived['stats']['bandas']})")
 
     soma_cidades = sum(derived['CIDADES'].values())
     if soma_cidades != len(shows):
