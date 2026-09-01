@@ -13,15 +13,14 @@ dashboard HTML interativa é **gerada automaticamente** a partir de uma fonte
   **É este arquivo que se edita ao adicionar um show novo.**
 - **`eu_fui_template.html`** — esqueleto da dashboard (layout, CSS, JS), sem
   dados embutidos. Só se edita para mudanças de design/funcionalidade.
-- **`gerar_eu_fui_html.py`** — junta master + template e produz o `eu_fui.html`
-  final. Deriva automaticamente: ANOS, PAISES, PAISES_MAP, MAP_DATA, CIDADES,
-  RANKING, COMP_GRUPOS, percentuais de ESTILOS e todos os números dos cards.
-- **`validar_eu_fui.py`** — auditoria independente de qualquer `eu_fui.html`
-  (gerado ou editado à mão), reconfere consistência sem precisar do master.
-- **`index.html`** — cópia exata do `eu_fui.html` gerado, é o arquivo que o
-  GitHub Pages efetivamente publica (Pages serve a partir da raiz do branch
-  `main`). **Sempre atualizar junto** depois de gerar um `eu_fui.html` novo,
-  senão a página publicada fica desatualizada.
+- **`gerar_eu_fui_html.py`** — junta master + template e produz o `index.html`
+  final (é esse arquivo, direto, que o GitHub Pages publica — Pages serve a
+  partir da raiz do branch `main`). Deriva automaticamente: ANOS, PAISES,
+  PAISES_MAP, MAP_DATA, CIDADES, RANKING, COMP_GRUPOS, percentuais de ESTILOS
+  e todos os números dos cards.
+- **`validar_eu_fui.py`** — auditoria independente de qualquer HTML gerado
+  (ou editado à mão), reconfere consistência sem precisar do master.
+- **`index.html`** — dashboard final publicada. Gerada, não editada à mão.
 - **`REGRAS.md`** — este arquivo.
 - **`gerar_eu_fui.js`** ⚠️ — gerador DOCX (Node.js), ainda não integrado a esta
   automação. O `eu_fui_master.json` foi desenhado para também alimentá-lo no
@@ -41,7 +40,7 @@ Quando informar um show novo, reunir:
 6. **Foi \*Pri?** (sim/não) → vira `pri: true/false` no objeto do show
 7. **Se banda nova: qual gênero musical** (para classificar em `estilos.bandas`)
 
-Depois, editar `eu_fui_master.json` (não mais o `eu_fui.html`):
+Depois, editar `eu_fui_master.json` (não mais o `index.html`):
 
 1. Adicionar o show ao final do array `shows`, com o próximo `n` sequencial:
    ```json
@@ -55,11 +54,10 @@ Depois, editar `eu_fui_master.json` (não mais o `eu_fui.html`):
 3. Se for show de festival, adicionar/confirmar a entrada em `festivais`.
 4. Rodar:
    ```
-   python3 gerar_eu_fui_html.py --out eu_fui.html
-   cp eu_fui.html index.html
+   python3 gerar_eu_fui_html.py --out index.html
    ```
-   Gera o `eu_fui.html` final já recalculado e validado, e sincroniza o
-   `index.html` (o que o GitHub Pages publica de fato).
+   Gera o `index.html` final já recalculado e validado — é o arquivo
+   publicado pelo GitHub Pages, gerado direto, sem cópia intermediária.
 
 ## O que é calculado automaticamente (nunca mais editar à mão)
 
