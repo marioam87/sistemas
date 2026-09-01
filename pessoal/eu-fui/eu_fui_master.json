@@ -2410,7 +2410,7 @@
         "Guys Like You Make Us Look Bad",
         "Promised Ones",
         "You Wear a Crown But You're No King",
-        "Hey Baby Here's That Song You Wanted"
+        "Hey Baby, Here's That Song You Wanted"
       ]
     },
     {
@@ -3181,6 +3181,57 @@
         "A.D.I.D.A.S.",
         "Freak on a Leash"
       ]
+    },
+    {
+      "n": 122,
+      "banda": "BLESSTHEFALL",
+      "pais": "🇺🇸 EUA",
+      "data": "30/08/2026",
+      "local": "Tork n' Roll, Curitiba – PR",
+      "pri": false,
+      "sets": [
+        "You Wear a Crown But You're No King",
+        "Cutthroat",
+        "Hollow Bodies",
+        "2.0",
+        "What's Left of Me",
+        "Youngbloods",
+        "Drag Me Under",
+        "Mallxcore",
+        "Venom",
+        "Promised Ones",
+        "Guys Like You Make Us Look Bad",
+        "40 Days...",
+        "Wake the Dead",
+        "Hey Baby, Here's That Song You Wanted"
+      ]
+    },
+    {
+      "n": 123,
+      "banda": "MEMPHIS MAY FIRE",
+      "pais": "🇺🇸 EUA",
+      "data": "30/08/2026",
+      "local": "Tork n' Roll, Curitiba – PR",
+      "pri": false,
+      "sets": [
+        "The Sinner",
+        "Vices",
+        "Paralyzed",
+        "Shapeshifter",
+        "Bleed Me Dry",
+        "Somebody",
+        "Misery",
+        "Left for Dead",
+        "The Other Side",
+        "Infection",
+        "Overdose",
+        "Make Believe",
+        "Versus",
+        "Love Is War",
+        "Miles Away",
+        "Blood & Water",
+        "Chaotic"
+      ]
     }
   ],
   "festivais": [
@@ -3360,6 +3411,7 @@
         "Limp Bizkit",
         "Linkin Park",
         "Marilyn Manson",
+        "Memphis May Fire",
         "P.O.D.",
         "Poppy",
         "Rammstein",

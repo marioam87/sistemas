@@ -18,6 +18,10 @@ dashboard HTML interativa é **gerada automaticamente** a partir de uma fonte
   RANKING, COMP_GRUPOS, percentuais de ESTILOS e todos os números dos cards.
 - **`validar_eu_fui.py`** — auditoria independente de qualquer `eu_fui.html`
   (gerado ou editado à mão), reconfere consistência sem precisar do master.
+- **`index.html`** — cópia exata do `eu_fui.html` gerado, é o arquivo que o
+  GitHub Pages efetivamente publica (Pages serve a partir da raiz do branch
+  `main`). **Sempre atualizar junto** depois de gerar um `eu_fui.html` novo,
+  senão a página publicada fica desatualizada.
 - **`REGRAS.md`** — este arquivo.
 - **`gerar_eu_fui.js`** ⚠️ — gerador DOCX (Node.js), ainda não integrado a esta
   automação. O `eu_fui_master.json` foi desenhado para também alimentá-lo no
@@ -51,9 +55,11 @@ Depois, editar `eu_fui_master.json` (não mais o `eu_fui.html`):
 3. Se for show de festival, adicionar/confirmar a entrada em `festivais`.
 4. Rodar:
    ```
-   python3 gerar_eu_fui_html.py
+   python3 gerar_eu_fui_html.py --out eu_fui.html
+   cp eu_fui.html index.html
    ```
-   Gera o `eu_fui.html` final já recalculado e validado.
+   Gera o `eu_fui.html` final já recalculado e validado, e sincroniza o
+   `index.html` (o que o GitHub Pages publica de fato).
 
 ## O que é calculado automaticamente (nunca mais editar à mão)
 
